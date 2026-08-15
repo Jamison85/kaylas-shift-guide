@@ -1,0 +1,45 @@
+/* Coworker system. Loaded after styles.css so it can retire the old CSS-doodle mascot cleanly. */
+
+.mini-status{color:#8fa0b6;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+
+.start{position:relative;overflow:hidden;display:block}.start-copy{position:relative;z-index:3;width:min(72%,420px)}.start-character{position:absolute;right:-18px;bottom:-92px;width:190px;height:315px;z-index:2;opacity:.98;transform:rotate(-2deg);pointer-events:none}.start::after{content:"";position:absolute;right:-70px;bottom:-96px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(101,128,255,.18),rgba(242,106,46,.08) 48%,transparent 70%);z-index:1}
+
+.character-stage{min-height:190px}.character-stage>p{width:60%}.stage-character{position:absolute;right:-6px;bottom:-88px;width:155px;height:275px;z-index:1;pointer-events:none}
+
+.splash-character{position:absolute;right:clamp(-36px,2vw,18px);bottom:-10px;width:min(44vw,270px);height:min(68vh,455px);z-index:1;pointer-events:none}.splash-copy{padding-bottom:175px}
+
+.finish-character{position:absolute;right:2px;bottom:-8px;width:195px;height:340px;z-index:3;pointer-events:none}
+
+.task-reaction{position:fixed;right:max(8px,calc((100vw - 720px)/2 + 8px));bottom:76px;width:126px;height:215px;z-index:28;pointer-events:none;animation:reactionPop .9s cubic-bezier(.2,.75,.2,1) both}
+
+/* New SVG character base. */
+.coworker{position:relative!important;width:100%!important;height:100%!important;right:auto!important;bottom:auto!important;filter:none!important;transform-origin:50% 100%;pointer-events:none}.coworker svg{width:100%;height:100%;display:block;overflow:visible}.coworker .cw-character{transform-origin:130px 438px}.coworker .cw-head{transform-origin:130px 150px}.coworker .cw-arm{transform-box:fill-box;transform-origin:50% 10%}.coworker .cw-prop{opacity:0;transform-origin:center;pointer-events:none}.coworker .cw-keys{transform-origin:94px 311px}
+
+/* Variants crop by placement rather than building a second cartoon. */
+.coworker--bust svg{transform:scale(1.12) translateY(54px)}.coworker--lean svg{transform:rotate(-3deg)}.coworker--reaction svg{transform:scale(.96)}.coworker--world svg{transform:scale(.98)}
+
+/* Expressive moods. */
+.coworker--ready .cw-character{animation:cwBreathe 3.8s ease-in-out infinite}.coworker--point .cw-arm--right{transform:rotate(-33deg) translate(7px,-8px)}.coworker--point .cw-head{transform:rotate(-3deg)}.coworker--thinking .cw-head{transform:rotate(7deg)}.coworker--thinking .cw-arm--right{transform:rotate(-42deg) translate(-12px,-22px)}.coworker--thinking .cw-brow--left{transform:rotate(9deg);transform-origin:center}.coworker--thinking .cw-brow--right{transform:rotate(-8deg);transform-origin:center}.coworker--celebrate .cw-arm--left{transform:rotate(38deg) translate(-10px,-12px)}.coworker--celebrate .cw-arm--right{transform:rotate(-38deg) translate(10px,-12px)}.coworker--celebrate .cw-character{animation:cwBounce .72s ease-in-out infinite alternate}.coworker--tired .cw-head{transform:rotate(-6deg) translateY(5px)}.coworker--tired .cw-mouth{d:path("M110 136 C123 129 142 129 153 137")}.coworker--panic .cw-character{animation:cwPanic .18s linear 5 alternate}.coworker--panic .cw-mouth{d:path("M119 129 C122 146 141 146 144 129")}.coworker--panic .cw-brow--left{transform:translateY(-5px) rotate(-12deg);transform-origin:center}.coworker--panic .cw-brow--right{transform:translateY(-5px) rotate(12deg);transform-origin:center}
+
+/* Random work activities. */
+.coworker--activity-clipboard .cw-prop--clipboard{opacity:1;animation:propIn .25s ease both}.coworker--activity-clipboard .cw-arm--left{transform:rotate(-20deg) translate(17px,-13px)}.coworker--activity-clipboard .cw-arm--right{transform:rotate(22deg) translate(-11px,-4px)}.coworker--activity-clipboard .cw-pencil{animation:scribble .35s ease-in-out infinite alternate}
+
+.coworker--activity-coffee .cw-prop--coffee{opacity:1;animation:coffeeSip 2.9s ease-in-out both}.coworker--activity-coffee .cw-arm--right{transform:rotate(-47deg) translate(-18px,-26px)}.coworker--activity-coffee .cw-head{animation:sipHead 2.9s ease-in-out both}.cw-steam{animation:steam 1.2s ease-in-out infinite}.cw-steam--2{animation-delay:.35s}
+
+.coworker--activity-receipt .cw-prop--receipt{opacity:1;animation:receiptFight 2.2s ease-in-out infinite alternate}.coworker--activity-receipt .cw-head{animation:receiptLook .8s ease-in-out infinite alternate}.coworker--activity-receipt .cw-arm--left{transform:rotate(19deg) translate(5px,-7px)}
+
+.coworker--activity-box .cw-prop--box{opacity:1;animation:boxWobble 1s ease-in-out infinite alternate}.coworker--activity-box .cw-character{animation:carryWobble 1s ease-in-out infinite alternate}.coworker--activity-box .cw-arm--left{transform:rotate(24deg) translate(18px,16px)}.coworker--activity-box .cw-arm--right{transform:rotate(-22deg) translate(-18px,15px)}
+
+.coworker--activity-wipe .cw-prop--wipe{opacity:1;animation:wipeCloth .75s ease-in-out infinite alternate}.coworker--activity-wipe .cw-arm--right{animation:wipeArm .75s ease-in-out infinite alternate}.cw-spark{animation:spark .6s ease-in-out infinite alternate}.cw-spark--2{animation-delay:.25s}
+
+.coworker--activity-keys .cw-keys{animation:jingle .22s ease-in-out 9 alternate}.coworker--activity-keys .cw-head{transform:rotate(-8deg)}
+
+/* Safe interface mischief layer. It never receives taps. */
+.coworker-world{position:fixed;width:94px;height:150px;z-index:24;pointer-events:none;filter:drop-shadow(0 10px 12px rgba(0,0,0,.22));animation:worldArrive .34s cubic-bezier(.2,.9,.2,1) both}.coworker-world__person{position:absolute;inset:0}.coworker-world--sit-label .coworker-world__person{transform:rotate(3deg)}.coworker-world--balance-chip .coworker-world__person{transform:rotate(-4deg)}.coworker-world--hang-brand .coworker-world__person{transform:rotate(178deg) scale(.82);transform-origin:50% 15%}.coworker-world--peek-category .coworker-world__person{transform:translateX(28px) rotate(5deg)}
+
+.coworker-world--word-ladder{width:132px;height:196px}.coworker-world--word-ladder .coworker-world__person{left:48px;top:31px;width:82px;height:155px;animation:climbWords 1.15s ease-in-out infinite alternate}.coworker-word-ladder{position:absolute;left:0;top:5px;width:82px;display:flex;flex-direction:column-reverse;gap:7px;align-items:stretch}.coworker-word-ladder span{position:relative;display:block;padding:3px 7px;border-radius:7px;background:rgba(248,251,255,.97);border:1px solid rgba(101,128,255,.28);color:#25334a;font-size:9px;font-weight:900;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.12);transform:rotate(var(--r,0deg))}.coworker-word-ladder span:nth-child(odd){margin-left:7px;transform:rotate(-2deg)}.coworker-word-ladder span:nth-child(even){margin-right:7px;transform:rotate(2deg)}.coworker-word-ladder span::before,.coworker-word-ladder span::after{content:"";position:absolute;top:50%;width:8px;height:2px;background:#7990aa}.coworker-word-ladder span::before{left:-8px}.coworker-word-ladder span::after{right:-8px}
+
+@keyframes cwBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@keyframes cwBounce{to{transform:translateY(-8px) rotate(1deg)}}@keyframes cwPanic{to{transform:translateX(4px) rotate(.7deg)}}@keyframes propIn{from{opacity:0;transform:scale(.7) translateY(10px)}to{opacity:1;transform:none}}@keyframes scribble{to{transform:translate(5px,4px) rotate(7deg)}}@keyframes coffeeSip{0%,12%{transform:translateY(30px);opacity:0}25%,72%{transform:translateY(0);opacity:1}90%,100%{transform:translateY(25px);opacity:0}}@keyframes sipHead{35%,65%{transform:rotate(8deg) translateY(3px)}}@keyframes steam{0%{opacity:0;transform:translateY(8px)}50%{opacity:.9}100%{opacity:0;transform:translateY(-8px)}}@keyframes receiptFight{to{transform:rotate(7deg) translateX(5px)}}@keyframes receiptLook{to{transform:rotate(-7deg)}}@keyframes boxWobble{to{transform:rotate(2deg) translateY(-2px)}}@keyframes carryWobble{to{transform:translateX(3px) rotate(1deg)}}@keyframes wipeCloth{to{transform:translateX(-25px) rotate(-7deg)}}@keyframes wipeArm{to{transform:rotate(-30deg) translate(-22px,-8px)}}@keyframes spark{to{opacity:.25;transform:scale(.7)}}@keyframes jingle{to{transform:rotate(13deg) translateX(2px)}}@keyframes reactionPop{0%{opacity:0;transform:translateY(28px) scale(.72)}20%,75%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(16px) scale(.86)}}@keyframes worldArrive{from{opacity:0;transform:scale(.72) translateY(14px)}to{opacity:1;transform:none}}@keyframes climbWords{to{transform:translateY(-24px) rotate(-3deg)}}
+
+@media(max-width:430px){.start-copy{width:70%}.start-character{right:-34px;width:178px}.mini-status{display:none}.coworker-world{z-index:18}}
+@media(prefers-reduced-motion:reduce){.coworker-world,.coworker *, .task-reaction{animation-duration:.001ms!important;animation-iteration-count:1!important}}
