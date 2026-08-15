@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Coworker from "./Coworker";
 
 const interactions = [
@@ -20,7 +20,7 @@ function clamp(value, min, max) {
 
 export default function CoworkerWorld({ screen }) {
   const [scene, setScene] = useState(null);
-  const [previousKind, setPreviousKind] = useState(null);
+  const previousKind = useRef(null);
 
   useEffect(() => {
     if (screen === "splash" || screen === "complete") {
@@ -42,7 +42,7 @@ export default function CoworkerWorld({ screen }) {
           return;
         }
 
-        const picked = choose(available, previousKind);
+        const picked = choose(available, previousKind.current);
         const target = document.querySelector(picked.selector);
         if (!target) {
           schedule();
@@ -50,7 +50,7 @@ export default function CoworkerWorld({ screen }) {
         }
 
         const rect = target.getBoundingClientRect();
-        setPreviousKind(picked.kind);
+        previousKind.current = picked.kind;
         setScene({
           ...picked,
           text: target.textContent?.trim() || "",
@@ -79,7 +79,7 @@ export default function CoworkerWorld({ screen }) {
       window.clearTimeout(startTimer);
       window.clearTimeout(endTimer);
     };
-  }, [screen, previousKind]);
+  }, [screen]);
 
   useEffect(() => {
     if (!scene) return undefined;
