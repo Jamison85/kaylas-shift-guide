@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { coworkerAtlas } from "../characterAtlas.js";
 
 const moods = ["ready", "thinking", "judge", "tired", "panic"];
 const workActivities = ["clipboard", "coffee", "receipt", "box", "wipe", "keys", "walkby", "inspect"];
@@ -90,6 +89,8 @@ export default function Coworker({
     [activity, mood],
   );
 
+  const atlasUrl = `${import.meta.env.BASE_URL}characters-v3/coworker-atlas.webp`;
+
   return (
     <div
       className={`coworker coworker--${variant} coworker--pose-${pose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
@@ -98,7 +99,7 @@ export default function Coworker({
       <div className="coworker__shadow" />
       <div
         className="coworker__sprite"
-        style={{ backgroundImage: `url("${coworkerAtlas}")` }}
+        style={{ backgroundImage: `url("${atlasUrl}")` }}
       />
 
       {activity === "clipboard" && (
