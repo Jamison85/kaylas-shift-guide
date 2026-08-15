@@ -69,7 +69,7 @@ export default function CoworkerWorld({ screen }) {
           if (!alive) return;
           setScene(null);
           schedule();
-        }, 3600 + Math.random() * 1800);
+        }, 5200 + Math.random() * 1600);
       }, delay);
     };
 
@@ -99,31 +99,31 @@ export default function CoworkerWorld({ screen }) {
 
     if (scene.kind === "word-ladder") {
       return {
-        left: clamp(scene.rect.left - 12, 10, viewportWidth - 142),
-        top: clamp(scene.rect.bottom + 3, 78, viewportHeight - 218),
+        left: clamp(scene.rect.left - 14, 8, viewportWidth - 152),
+        top: clamp(scene.rect.bottom + 4, 76, viewportHeight - 238),
       };
     }
     if (scene.kind === "sit-label") {
       return {
-        left: clamp(scene.rect.right - 50, 10, viewportWidth - 102),
-        top: clamp(scene.rect.top - 108, 78, viewportHeight - 160),
+        left: clamp(scene.rect.right - 58, 8, viewportWidth - 110),
+        top: clamp(scene.rect.top - 125, 74, viewportHeight - 175),
       };
     }
     if (scene.kind === "balance-chip") {
       return {
-        left: clamp(scene.rect.right - 30, 10, viewportWidth - 105),
-        top: clamp(scene.rect.top - 112, 78, viewportHeight - 160),
+        left: clamp(scene.rect.right - 42, 8, viewportWidth - 112),
+        top: clamp(scene.rect.top - 130, 74, viewportHeight - 175),
       };
     }
     if (scene.kind === "hang-brand") {
       return {
-        left: clamp(scene.rect.right - 30, 10, viewportWidth - 92),
-        top: clamp(scene.rect.bottom - 3, 70, viewportHeight - 152),
+        left: clamp(scene.rect.right - 38, 8, viewportWidth - 106),
+        top: clamp(scene.rect.bottom - 8, 68, viewportHeight - 170),
       };
     }
     return {
-      left: clamp(scene.rect.right - 28, 10, viewportWidth - 92),
-      top: clamp(scene.rect.top - 48, 76, viewportHeight - 152),
+      left: clamp(scene.rect.right - 32, 8, viewportWidth - 106),
+      top: clamp(scene.rect.top - 62, 74, viewportHeight - 170),
     };
   }, [scene]);
 
