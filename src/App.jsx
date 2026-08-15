@@ -42,7 +42,7 @@ export default function App() {
 
   useEffect(() => {
     if (!showReaction) return undefined;
-    const timer = window.setTimeout(() => setShowReaction(false), 1250);
+    const timer = window.setTimeout(() => setShowReaction(false), 2000);
     return () => window.clearTimeout(timer);
   }, [showReaction, motion]);
 
