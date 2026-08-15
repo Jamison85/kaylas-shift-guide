@@ -13,12 +13,24 @@ Mobile-first working/training guide for **Kayla** at **Casey's Store 2593**. It 
 7. Health Department and Gas Inspection use Yes/No decisions revealing corresponding directions.
 8. If Jamo or Loretta is clickable in an info area, each person's name appears only once in that bubble/panel.
 9. Coworker character: tall, skinny, a little older, blond hair, blue eyes, red Casey's-style polo, highly expressive, integrated with screen/card edges, stronger reactions between tasks, random-feeling idle actions, never blocks critical text.
-10. Beginning/end wisdom is dry, relatable and useful, not motivational-poster sludge.
-11. Red is reserved for genuine urgency/escalation.
-12. Mobile-first, polished, premium and fast.
-13. Do **not** reintroduce older Store Pilot features such as generic manager sign-in or short-staffed mode.
-14. Do **not** reintroduce the old Recovery Photos workflow.
-15. LTO reporting day is no longer a current task.
+10. The coworker should sometimes do silly little *work* things on his own: clipboard scribbling, coffee sipping, receipt inspection, carrying a stock box, wiping a surface, jingling keys, etc.
+11. He should also occasionally treat harmless pieces of the app as physical scenery: sit or lean on edges, hang from harmless labels, peek around panels, balance on decorative chips, and even use noncritical words as ladder rungs.
+12. Only explicitly marked coworker-safe elements may be used for those antics. Important numbers, percentages, counts, money/variance values, task instructions, Yes/No controls, escalation information, and task navigation/completion controls are never props and must remain fully readable.
+13. Beginning/end wisdom is dry, relatable and useful, not motivational-poster sludge.
+14. Red is reserved for genuine urgency/escalation.
+15. Mobile-first, polished, premium and fast.
+16. Do **not** reintroduce older Store Pilot features such as generic manager sign-in or short-staffed mode.
+17. Do **not** reintroduce the old Recovery Photos workflow.
+18. LTO reporting day is no longer a current task.
+
+## Character behavior philosophy
+The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a weird but lovable coworker who happens to live inside the interface.
+
+Use two behavior layers:
+- **Task reactions:** more noticeable actions when Kayla advances/completes tasks.
+- **Ambient behavior:** shorter, rarer, random-feeling work antics and interface mischief while the user is reading or working.
+
+The humor should happen around the work, never at the expense of the work. If an animation could cause a real instruction, number, decision, or control to be missed, it is the wrong animation.
 
 ## Protected operational facts
 ### Store Walk
@@ -79,6 +91,8 @@ Mobile-first working/training guide for **Kayla** at **Casey's Store 2593**. It 
 
 ## Architecture rule
 `src/data/guide.js` is the operational source of truth. Visual redesign is welcome. Silent business-rule rewrites are not.
+
+Character behavior is implemented separately from operational content. Keep it that way. Ambient visual behavior should not be encoded into `src/data/guide.js`.
 
 ## Provenance
 This project is a reconstruction of the latest settled requirements because the ChatGPT Sites source tree could not be directly exported. Do not describe it as the original byte-for-byte Sites source.
