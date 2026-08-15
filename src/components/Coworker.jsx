@@ -25,11 +25,11 @@ const activityPose = {
 };
 
 const poseFiles = {
-  stand: "characters-hires/coworker-stand-v4.webp",
+  stand: "characters-hires/coworker-stand-v5.webp",
   arms: "characters-hires/coworker-arms-v4.webp",
   think: "characters-hires/coworker-think-v4.webp",
-  panic: "characters-hires/coworker-panic-v4.webp",
-  tired: "characters-hires/coworker-tired-v4.webp",
+  panic: "characters-hires/coworker-panic-v5.webp",
+  tired: "characters-hires/coworker-tired-v5.webp",
 };
 
 function pickDifferent(items, previous) {
@@ -98,7 +98,7 @@ export default function Coworker({
   );
 
   // App-world stunts need a complete body. Mood still drives the scene animation,
-  // but the figure stays physically coherent while climbing/hanging/balancing.
+  // but the figure stays physically coherent while climbing, hanging, and balancing.
   const visualPose = variant === "world" ? "stand" : requestedPose;
   const base = import.meta.env.BASE_URL;
   const imageUrl = `${base}${poseFiles[visualPose] || poseFiles.stand}`;
