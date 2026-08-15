@@ -6,16 +6,16 @@ const workActivities = ["clipboard", "coffee", "receipt", "box", "wipe", "keys",
 const moodPose = {
   ready: "stand",
   point: "stand",
-  celebrate: "celebrate",
+  celebrate: "stand",
   thinking: "think",
   judge: "arms",
-  tired: "arms",
+  tired: "coffee",
   panic: "panic",
 };
 
 const activityPose = {
   clipboard: "think",
-  coffee: "arms",
+  coffee: "coffee",
   receipt: "think",
   box: "stand",
   wipe: "stand",
@@ -89,7 +89,9 @@ export default function Coworker({
     [activity, mood],
   );
 
-  const atlasUrl = `${import.meta.env.BASE_URL}characters-v3/coworker-atlas.webp`;
+  const base = import.meta.env.BASE_URL;
+  const imageUrl = `${base}characters/coworker-${pose}.webp`;
+  const fallbackUrl = `${base}characters/coworker-stand.webp`;
 
   return (
     <div
@@ -97,9 +99,16 @@ export default function Coworker({
       aria-hidden="true"
     >
       <div className="coworker__shadow" />
-      <div
-        className="coworker__sprite"
-        style={{ backgroundImage: `url("${atlasUrl}")` }}
+      <img
+        className="coworker__sprite coworker__image"
+        src={imageUrl}
+        alt=""
+        draggable="false"
+        onError={(event) => {
+          if (event.currentTarget.src !== new URL(fallbackUrl, window.location.href).href) {
+            event.currentTarget.src = fallbackUrl;
+          }
+        }}
       />
 
       {activity === "clipboard" && (
@@ -111,15 +120,11 @@ export default function Coworker({
       )}
 
       {activity === "coffee" && (
-        <div className="coworker-prop coworker-prop--coffee">
-          <i /><i />
-        </div>
+        <div className="coworker-prop coworker-prop--coffee"><i /><i /></div>
       )}
 
       {activity === "receipt" && (
-        <div className="coworker-prop coworker-prop--receipt">
-          <i /><i /><i /><i />
-        </div>
+        <div className="coworker-prop coworker-prop--receipt"><i /><i /><i /><i /></div>
       )}
 
       {activity === "box" && (
