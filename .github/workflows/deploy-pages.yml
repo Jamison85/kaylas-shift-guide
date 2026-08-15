@@ -1,5 +1,6 @@
 name: Deploy Kayla's Shift Guide to GitHub Pages
 
+# Publishes the Vite production build whenever main changes.
 on:
   push:
     branches: ["main"]
