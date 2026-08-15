@@ -1,8 +1,8 @@
-/* Reliable character rendering override.
-   The previous v3 atlas file was corrupt in the deployed artifact. The coworker
-   is now a real IMG element using known-good pose assets. Keep this file loaded
-   after character.css so animation choreography remains intact while image
-   delivery stays boring and dependable. */
+/*
+  Kayla coworker render system v4.
+  Real high-resolution transparent pose files, rendered through normal IMG tags.
+  character.css owns the choreography; this file owns reliable presentation.
+*/
 
 .coworker__sprite.coworker__image {
   display: block !important;
@@ -16,30 +16,57 @@
   background: none !important;
   opacity: 1 !important;
   visibility: visible !important;
+  image-rendering: auto;
   transform-origin: 50% 100%;
   -webkit-user-drag: none;
+  user-select: none;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, .28));
 }
 
-/* Atlas-only positioning is meaningless for the IMG implementation. */
+/* Old atlas positioning rules have no meaning for actual image elements. */
 .coworker--pose-stand .coworker__image,
 .coworker--pose-arms .coworker__image,
 .coworker--pose-think .coworker__image,
 .coworker--pose-panic .coworker__image,
-.coworker--pose-celebrate .coworker__image {
+.coworker--pose-tired .coworker__image {
   background-position: initial !important;
 }
 
-/* Slightly reduce the amount the small source art is enlarged on the main
-   home surfaces while the new high-resolution pose pack is prepared. */
-.start-character { width: 132px !important; }
-.stage-character { width: 118px !important; }
-.task-reaction { width: 128px !important; }
-.splash-character { width: 165px !important; }
-.finish-character { width: 155px !important; }
+/* The reaction poses are torso crops by design. Let them read larger and more
+   expressive instead of shrinking them into a full-body-sized empty canvas. */
+.coworker--pose-arms .coworker__image,
+.coworker--pose-think .coworker__image,
+.coworker--pose-panic .coworker__image {
+  width: 116% !important;
+  left: -8% !important;
+}
+
+.coworker--pose-tired .coworker__image {
+  width: 138% !important;
+  left: -19% !important;
+  object-position: center 88% !important;
+}
+
+/* With real source resolution available, the character can occupy enough space
+   to feel like a coworker in the interface rather than a postage stamp. */
+.start-character { width: 148px !important; }
+.stage-character { width: 136px !important; }
+.task-reaction { width: 142px !important; }
+.splash-character { width: 184px !important; }
+.finish-character { width: 170px !important; }
+
+/* World stunts always use the full-body source so climbing, hanging and balancing
+   have actual legs. A surprisingly important feature for ladders. */
+.coworker--world .coworker__image {
+  width: 100% !important;
+  left: 0 !important;
+  object-position: center bottom !important;
+}
 
 @media (max-width: 430px) {
-  .start-character { width: 126px !important; right: -8px !important; }
-  .stage-character { width: 112px !important; }
-  .task-reaction { width: 120px !important; }
-  .splash-character { width: 158px !important; }
+  .start-character { width: 138px !important; right: -8px !important; }
+  .stage-character { width: 126px !important; }
+  .task-reaction { width: 132px !important; }
+  .splash-character { width: 174px !important; }
+  .finish-character { width: 162px !important; }
 }

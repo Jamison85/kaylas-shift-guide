@@ -33,7 +33,9 @@ export default function CoworkerWorld({ screen }) {
     let alive = true;
 
     const schedule = () => {
-      const delay = 12000 + Math.random() * 15000;
+      // Frequent enough that the character feels alive, sparse enough that he
+      // does not turn morning bookwork into a theme-park queue.
+      const delay = 8000 + Math.random() * 10000;
       startTimer = window.setTimeout(() => {
         if (!alive) return;
 
@@ -69,7 +71,7 @@ export default function CoworkerWorld({ screen }) {
           if (!alive) return;
           setScene(null);
           schedule();
-        }, 5200 + Math.random() * 1600);
+        }, 5600 + Math.random() * 1600);
       }, delay);
     };
 

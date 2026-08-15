@@ -9,19 +9,27 @@ const moodPose = {
   celebrate: "stand",
   thinking: "think",
   judge: "arms",
-  tired: "coffee",
+  tired: "tired",
   panic: "panic",
 };
 
 const activityPose = {
   clipboard: "think",
-  coffee: "coffee",
+  coffee: "tired",
   receipt: "think",
   box: "stand",
   wipe: "stand",
   keys: "arms",
   walkby: "stand",
   inspect: "think",
+};
+
+const poseFiles = {
+  stand: "characters-hires/coworker-stand-v4.webp",
+  arms: "characters-hires/coworker-arms-v4.webp",
+  think: "characters-hires/coworker-think-v4.webp",
+  panic: "characters-hires/coworker-panic-v4.webp",
+  tired: "characters-hires/coworker-tired-v4.webp",
 };
 
 function pickDifferent(items, previous) {
@@ -72,8 +80,8 @@ export default function Coworker({
           if (!alive) return;
           setActivity(null);
           schedule();
-        }, 3900 + Math.random() * 2300);
-      }, 6500 + Math.random() * 10500);
+        }, 4200 + Math.random() * 2200);
+      }, 5200 + Math.random() * 7800);
     };
 
     schedule();
@@ -84,18 +92,21 @@ export default function Coworker({
     };
   }, [ambient]);
 
-  const pose = useMemo(
+  const requestedPose = useMemo(
     () => activityPose[activity] || moodPose[mood] || "stand",
     [activity, mood],
   );
 
+  // App-world stunts need a complete body. Mood still drives the scene animation,
+  // but the figure stays physically coherent while climbing/hanging/balancing.
+  const visualPose = variant === "world" ? "stand" : requestedPose;
   const base = import.meta.env.BASE_URL;
-  const imageUrl = `${base}characters/coworker-${pose}.webp`;
+  const imageUrl = `${base}${poseFiles[visualPose] || poseFiles.stand}`;
   const fallbackUrl = `${base}characters/coworker-stand.webp`;
 
   return (
     <div
-      className={`coworker coworker--${variant} coworker--pose-${pose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
+      className={`coworker coworker--${variant} coworker--pose-${visualPose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
       aria-hidden="true"
     >
       <div className="coworker__shadow" />
@@ -104,8 +115,11 @@ export default function Coworker({
         src={imageUrl}
         alt=""
         draggable="false"
+        loading="eager"
+        decoding="async"
         onError={(event) => {
-          if (event.currentTarget.src !== new URL(fallbackUrl, window.location.href).href) {
+          if (!event.currentTarget.dataset.fallbackApplied) {
+            event.currentTarget.dataset.fallbackApplied = "true";
             event.currentTarget.src = fallbackUrl;
           }
         }}
