@@ -1,25 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
+import { coworkerAtlas } from "../characterAtlas.js";
 
 const moods = ["ready", "thinking", "judge", "tired", "panic"];
-const workActivities = ["clipboard", "coffee", "receipt", "box", "wipe", "keys"];
+const workActivities = ["clipboard", "coffee", "receipt", "box", "wipe", "keys", "walkby", "inspect"];
 
 const moodPose = {
   ready: "stand",
   point: "stand",
-  celebrate: "stand",
+  celebrate: "celebrate",
   thinking: "think",
   judge: "arms",
-  tired: "coffee",
+  tired: "arms",
   panic: "panic",
 };
 
 const activityPose = {
-  clipboard: "stand",
-  coffee: "coffee",
+  clipboard: "think",
+  coffee: "arms",
   receipt: "think",
   box: "stand",
   wipe: "stand",
   keys: "arms",
+  walkby: "stand",
+  inspect: "think",
 };
 
 function pickDifferent(items, previous) {
@@ -70,7 +73,7 @@ export default function Coworker({
           if (!alive) return;
           setActivity(null);
           schedule();
-        }, 2800 + Math.random() * 2400);
+        }, 3900 + Math.random() * 2300);
       }, 6500 + Math.random() * 10500);
     };
 
@@ -87,29 +90,41 @@ export default function Coworker({
     [activity, mood],
   );
 
-  const src = `${import.meta.env.BASE_URL}characters/coworker-${pose}.webp`;
-
   return (
     <div
-      className={`coworker coworker--${variant} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
+      className={`coworker coworker--${variant} coworker--pose-${pose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
       aria-hidden="true"
     >
-      <div className="coworker__aura" />
-      <img className="coworker__image" src={src} alt="" draggable="false" />
+      <div className="coworker__shadow" />
+      <div
+        className="coworker__sprite"
+        style={{ backgroundImage: `url("${coworkerAtlas}")` }}
+      />
 
       {activity === "clipboard" && (
         <div className="coworker-prop coworker-prop--clipboard">
+          <span className="coworker-prop__clip" />
           <i /><i /><i />
+          <b />
         </div>
       )}
+
+      {activity === "coffee" && (
+        <div className="coworker-prop coworker-prop--coffee">
+          <i /><i />
+        </div>
+      )}
+
       {activity === "receipt" && (
         <div className="coworker-prop coworker-prop--receipt">
           <i /><i /><i /><i />
         </div>
       )}
+
       {activity === "box" && (
         <div className="coworker-prop coworker-prop--box"><span>STOCK</span></div>
       )}
+
       {activity === "wipe" && (
         <>
           <div className="coworker-prop coworker-prop--cloth" />
@@ -117,11 +132,13 @@ export default function Coworker({
           <div className="coworker-spark coworker-spark--two">✦</div>
         </>
       )}
+
       {activity === "keys" && (
         <div className="coworker-prop coworker-prop--keys"><i /><i /><i /></div>
       )}
+
       {mood === "celebrate" && (
-        <div className="coworker-confetti"><i /><i /><i /><i /><i /></div>
+        <div className="coworker-confetti"><i /><i /><i /><i /><i /><i /></div>
       )}
     </div>
   );
