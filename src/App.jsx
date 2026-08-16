@@ -16,22 +16,13 @@ const pick = (items, seed) =>
 const reactionMoods = ["ready", "thinking", "judge", "panic", "tired", "celebrate"];
 
 function openingAlreadyPlayed() {
-  try {
-    return window.sessionStorage.getItem("kayla-guide-opening-played") === "yes";
-  } catch {
-    return false;
-  }
+  try { return window.sessionStorage.getItem("kayla-guide-opening-played") === "yes"; }
+  catch { return false; }
 }
 
 export default function App() {
   const day = dateKey();
-  const [progress, setProgress] = useLocalStorage(`kayla-guide-${day}`, {
-    completed: [],
-    currentIndex: 0,
-    mode: "learn",
-    answers: {},
-  });
-
+  const [progress, setProgress] = useLocalStorage(`kayla-guide-${day}`, { completed: [], currentIndex: 0, mode: "learn", answers: {} });
   const [screen, setScreen] = useState(() => (openingAlreadyPlayed() ? "home" : "splash"));
   const [motion, setMotion] = useState(0);
   const [showReaction, setShowReaction] = useState(false);
@@ -66,46 +57,27 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [showReaction, motion]);
 
-  const react = () => {
-    setMotion((value) => value + 1);
-    setShowReaction(true);
-  };
-
+  const react = () => { setMotion((value) => value + 1); setShowReaction(true); };
   const go = (nextIndex) => {
     const safeIndex = Math.max(0, Math.min(nextIndex, guideTasks.length - 1));
     setProgress((current) => ({ ...current, currentIndex: safeIndex }));
     react();
     setScreen("task");
   };
-
   const startOrResume = () => go(resumeIndex);
-
-  const setMode = (nextMode) => {
-    setProgress((current) => ({ ...current, mode: nextMode }));
-  };
-
-  const setDecision = (taskId, answer) => {
-    setProgress((current) => ({
-      ...current,
-      answers: { ...(current.answers || {}), [taskId]: answer },
-    }));
-  };
+  const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
+  const setDecision = (taskId, answer) => setProgress((current) => ({ ...current, answers: { ...(current.answers || {}), [taskId]: answer } }));
 
   const doneAndNext = () => {
     if (!canComplete) return;
-
-    const nextCompleted = completed.has(task.id)
-      ? [...(progress.completed || [])]
-      : [...(progress.completed || []), task.id];
+    const nextCompleted = completed.has(task.id) ? [...(progress.completed || [])] : [...(progress.completed || []), task.id];
     const nextCount = new Set(nextCompleted).size;
-
     if (nextCount === guideTasks.length) {
       setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: index }));
       react();
       window.setTimeout(() => setScreen("complete"), 380);
       return;
     }
-
     const nextIndex = Math.min(index + 1, guideTasks.length - 1);
     setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: nextIndex }));
     react();
@@ -121,20 +93,12 @@ export default function App() {
   if (screen === "splash") {
     return (
       <main className="splash">
-        <div className="splash__orb splash__orb--one" />
-        <div className="splash__orb splash__orb--two" />
+        <div className="splash__orb splash__orb--one" /><div className="splash__orb splash__orb--two" />
         <div className="splash-copy">
-          <small>SHIFT GUIDE · 2593</small>
-          <h1>Good morning, Kayla.</h1>
-          <p>{wisdom}</p>
-          <button type="button" onClick={() => {
-            try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {}
-            setScreen("home");
-          }}>Start shift</button>
+          <small>SHIFT GUIDE · 2593</small><h1>Good morning, Kayla.</h1><p>{wisdom}</p>
+          <button type="button" onClick={() => { try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {} setScreen("home"); }}>Start shift</button>
         </div>
-        <div className="splash-character">
-          <Coworker variant="full" mood="ready" transitionKey={wisdom} />
-        </div>
+        <div className="splash-character"><Coworker variant="full" mood="ready" transitionKey={wisdom} /></div>
       </main>
     );
   }
@@ -142,13 +106,7 @@ export default function App() {
   return (
     <div className="shell">
       <header className="mini">
-        <button type="button" onClick={() => setScreen("home")} className="mini__brand">
-          <i />
-          <span>
-            <b data-coworker-safe="brand">Kayla&apos;s Shift Guide</b>
-            <small>Casey&apos;s 2593</small>
-          </span>
-        </button>
+        <button type="button" onClick={() => setScreen("home")} className="mini__brand"><i /><span><b data-coworker-safe="brand">Kayla&apos;s Shift Guide</b><small>Casey&apos;s 2593</small></span></button>
         <div className="mode-toggle" aria-label="Guide detail mode">
           <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
           <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
@@ -159,15 +117,8 @@ export default function App() {
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
-              <div>
-                <small data-coworker-safe="greeting">Good morning, Kayla</small>
-                <h1>{percent}% done</h1>
-                <p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "Start at the beginning. One thing at a time."}</p>
-              </div>
-              <div className="progress-ring" style={{ "--p": `${percent * 3.6}deg` }} aria-label={`${percent}% complete`}>
-                <span>{completedCount}</span>
-                <small>of {guideTasks.length}</small>
-              </div>
+              <div><small data-coworker-safe="greeting">Good morning, Kayla</small><h1>{percent}% done</h1><p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "Start at the beginning. One thing at a time."}</p></div>
+              <div className="progress-ring" style={{ "--p": `${percent * 3.6}deg` }} aria-label={`${percent}% complete`}><span>{completedCount}</span><small>of {guideTasks.length}</small></div>
             </div>
 
             <button type="button" className="start" onClick={startOrResume}>
@@ -177,49 +128,22 @@ export default function App() {
                 <p>{mode === "learn" ? "Learn mode shows the full directions and checks." : "Quick mode keeps the same order with shorter directions."}</p>
                 <span>{completedCount ? "Continue" : "Start"} <b>→</b></span>
               </div>
-              <div className="start-character">
-                <Coworker variant="bust" mood={completedCount ? "thinking" : "ready"} transitionKey={motion} />
-              </div>
+              <div className="start-character"><Coworker variant="bust" mood={completedCount ? "thinking" : "ready"} ambient transitionKey={motion} /></div>
             </button>
           </section>
         )}
 
         {screen === "task" && (
           <>
-            <TaskFocus
-              task={task}
-              index={index}
-              total={guideTasks.length}
-              done={completed.has(task.id)}
-              mode={mode}
-              decisionAnswer={decisionAnswer}
-              canComplete={canComplete}
-              onDecisionChange={(answer) => setDecision(task.id, answer)}
-              onDoneNext={doneAndNext}
-              onBack={() => go(index - 1)}
-            />
-            {showReaction && (
-              <div key={motion} className={`task-reaction task-reaction--${reactionMood}`}>
-                <Coworker variant="reaction" mood={reactionMood} transitionKey={motion} />
-              </div>
-            )}
+            <TaskFocus task={task} index={index} total={guideTasks.length} done={completed.has(task.id)} mode={mode} decisionAnswer={decisionAnswer} canComplete={canComplete} onDecisionChange={(answer) => setDecision(task.id, answer)} onDoneNext={doneAndNext} onBack={() => go(index - 1)} />
+            {showReaction && <div key={motion} className={`task-reaction task-reaction--${reactionMood}`}><Coworker variant="reaction" mood={reactionMood} transitionKey={motion} /></div>}
           </>
         )}
 
         {screen === "complete" && (
           <section className="finish">
-            <div className="finish__card">
-              <small>Morning guide complete</small>
-              <h1>Kayla, you survived the paperwork.</h1>
-              <p>{closing}</p>
-              <div className="finish__actions">
-                <button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button>
-                <button type="button" onClick={reset}>Reset today</button>
-              </div>
-            </div>
-            <div className="finish-character">
-              <Coworker variant="full" mood="celebrate" transitionKey={closing} />
-            </div>
+            <div className="finish__card"><small>Morning guide complete</small><h1>Kayla, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
+            <div className="finish-character"><Coworker variant="full" mood="celebrate" transitionKey={closing} /></div>
           </section>
         )}
       </main>
@@ -228,15 +152,9 @@ export default function App() {
 
       {screen !== "complete" && (
         <nav className="bottom-nav" aria-label="Primary navigation">
-          <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}>
-            <span>⌂</span><small>Home</small>
-          </button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}>
-            <span>✓</span><small>Guide</small>
-          </button>
-          <button type="button" onClick={reset}>
-            <span>↻</span><small>Reset</small>
-          </button>
+          <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><span>⌂</span><small>Home</small></button>
+          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><span>✓</span><small>Guide</small></button>
+          <button type="button" onClick={reset}><span>↻</span><small>Reset</small></button>
         </nav>
       )}
     </div>
