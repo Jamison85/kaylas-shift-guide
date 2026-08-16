@@ -15,14 +15,24 @@ const pick = (items, seed) =>
 
 const reactionMoods = ["ready", "thinking", "judge", "panic", "tired", "celebrate"];
 
+function openingAlreadyPlayed() {
+  try {
+    return window.sessionStorage.getItem("kayla-guide-opening-played") === "yes";
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   const day = dateKey();
   const [progress, setProgress] = useLocalStorage(`kayla-guide-${day}`, {
     completed: [],
     currentIndex: 0,
+    mode: "learn",
+    answers: {},
   });
 
-  const [screen, setScreen] = useState("splash");
+  const [screen, setScreen] = useState(() => (openingAlreadyPlayed() ? "home" : "splash"));
   const [motion, setMotion] = useState(0);
   const [showReaction, setShowReaction] = useState(false);
 
@@ -30,19 +40,29 @@ export default function App() {
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
   const completed = useMemo(() => new Set(progress.completed || []), [progress.completed]);
   const completedCount = completed.size;
-  const index = Math.min(progress.currentIndex || 0, guideTasks.length - 1);
+  const mode = progress.mode === "quick" ? "quick" : "learn";
+  const answers = progress.answers || {};
+  const firstIncomplete = guideTasks.findIndex((item) => !completed.has(item.id));
+  const resumeIndex = firstIncomplete === -1 ? guideTasks.length - 1 : firstIncomplete;
+  const index = Math.max(0, Math.min(progress.currentIndex ?? resumeIndex, guideTasks.length - 1));
   const task = guideTasks[index];
   const percent = Math.round((completedCount / guideTasks.length) * 100);
   const reactionMood = reactionMoods[motion % reactionMoods.length];
+  const decisionAnswer = answers[task.id] || null;
+  const canComplete = !task.decision || Boolean(decisionAnswer);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setScreen("home"), 3900);
+    if (screen !== "splash") return undefined;
+    const timer = window.setTimeout(() => {
+      try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {}
+      setScreen("home");
+    }, 3900);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [screen]);
 
   useEffect(() => {
     if (!showReaction) return undefined;
-    const timer = window.setTimeout(() => setShowReaction(false), 2000);
+    const timer = window.setTimeout(() => setShowReaction(false), 2100);
     return () => window.clearTimeout(timer);
   }, [showReaction, motion]);
 
@@ -58,26 +78,42 @@ export default function App() {
     setScreen("task");
   };
 
-  const complete = () => {
-    const wasDone = completed.has(task.id);
-    const nextCompleted = wasDone
-      ? progress.completed.filter((id) => id !== task.id)
-      : [...(progress.completed || []), task.id];
+  const startOrResume = () => go(resumeIndex);
 
+  const setMode = (nextMode) => {
+    setProgress((current) => ({ ...current, mode: nextMode }));
+  };
+
+  const setDecision = (taskId, answer) => {
     setProgress((current) => ({
       ...current,
-      completed: nextCompleted,
-      currentIndex: !wasDone && index < guideTasks.length - 1 ? index + 1 : index,
+      answers: { ...(current.answers || {}), [taskId]: answer },
     }));
+  };
 
-    react();
-    if (!wasDone && completedCount + 1 === guideTasks.length) {
-      window.setTimeout(() => setScreen("complete"), 420);
+  const doneAndNext = () => {
+    if (!canComplete) return;
+
+    const nextCompleted = completed.has(task.id)
+      ? [...(progress.completed || [])]
+      : [...(progress.completed || []), task.id];
+    const nextCount = new Set(nextCompleted).size;
+
+    if (nextCount === guideTasks.length) {
+      setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: index }));
+      react();
+      window.setTimeout(() => setScreen("complete"), 380);
+      return;
     }
+
+    const nextIndex = Math.min(index + 1, guideTasks.length - 1);
+    setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: nextIndex }));
+    react();
+    setScreen("task");
   };
 
   const reset = () => {
-    setProgress({ completed: [], currentIndex: 0 });
+    setProgress({ completed: [], currentIndex: 0, mode: "learn", answers: {} });
     setScreen("home");
     react();
   };
@@ -91,7 +127,10 @@ export default function App() {
           <small>SHIFT GUIDE · 2593</small>
           <h1>Good morning, Kayla.</h1>
           <p>{wisdom}</p>
-          <button type="button" onClick={() => setScreen("home")}>Start shift</button>
+          <button type="button" onClick={() => {
+            try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {}
+            setScreen("home");
+          }}>Start shift</button>
         </div>
         <div className="splash-character">
           <Coworker variant="full" mood="ready" transitionKey={wisdom} />
@@ -110,17 +149,20 @@ export default function App() {
             <small>Casey&apos;s 2593</small>
           </span>
         </button>
-        <span className="mini-status">Morning · 2593</span>
+        <div className="mode-toggle" aria-label="Guide detail mode">
+          <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
+          <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
+        </div>
       </header>
 
       <main className="content">
         {screen === "home" && (
-          <section className="home">
+          <section className="home home--compact">
             <div className="home-head">
               <div>
                 <small data-coworker-safe="greeting">Good morning, Kayla</small>
                 <h1>{percent}% done</h1>
-                <p>{completedCount ? `${completedCount} tasks handled. Keep the machine moving.` : "Bookwork first. Chaos can wait in line."}</p>
+                <p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "Start at the beginning. One thing at a time."}</p>
               </div>
               <div className="progress-ring" style={{ "--p": `${percent * 3.6}deg` }} aria-label={`${percent}% complete`}>
                 <span>{completedCount}</span>
@@ -128,28 +170,17 @@ export default function App() {
               </div>
             </div>
 
-            <button type="button" className="start" onClick={() => go(index)}>
+            <button type="button" className="start" onClick={startOrResume}>
               <div className="start-copy">
                 <small data-coworker-safe="start-label">Start here</small>
-                <strong>{completedCount ? "Continue the morning guide" : "Begin the morning guide"}</strong>
-                <p>One task at a time. The store can manufacture its own chaos.</p>
+                <strong>{completedCount ? "Continue where you left off" : "Begin the morning guide"}</strong>
+                <p>{mode === "learn" ? "Learn mode shows the full directions and checks." : "Quick mode keeps the same order with shorter directions."}</p>
                 <span>{completedCount ? "Continue" : "Start"} <b>→</b></span>
               </div>
               <div className="start-character">
                 <Coworker variant="bust" mood={completedCount ? "thinking" : "ready"} transitionKey={motion} />
               </div>
             </button>
-
-            <div className="character-stage">
-              <div className="character-stage__copy">
-                <small data-coworker-safe="energy">Coworker status</small>
-                <b>{completedCount ? "Still employed. Mildly impressed." : "Helpful. Slightly concerned. Already caffeinated."}</b>
-                <p>He has been asked to help. What he does with that instruction is apparently between him and God.</p>
-              </div>
-              <div className="stage-character">
-                <Coworker variant="lean" ambient transitionKey={motion} />
-              </div>
-            </div>
           </section>
         )}
 
@@ -160,9 +191,12 @@ export default function App() {
               index={index}
               total={guideTasks.length}
               done={completed.has(task.id)}
-              onComplete={complete}
+              mode={mode}
+              decisionAnswer={decisionAnswer}
+              canComplete={canComplete}
+              onDecisionChange={(answer) => setDecision(task.id, answer)}
+              onDoneNext={doneAndNext}
               onBack={() => go(index - 1)}
-              onNext={() => go(index + 1)}
             />
             {showReaction && (
               <div key={motion} className={`task-reaction task-reaction--${reactionMood}`}>
@@ -197,7 +231,7 @@ export default function App() {
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}>
             <span>⌂</span><small>Home</small>
           </button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={() => go(index)}>
+          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}>
             <span>✓</span><small>Guide</small>
           </button>
           <button type="button" onClick={reset}>
