@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { contacts } from "../data/guide";
 
-function Decision({ decision }) {
-  const [answer, setAnswer] = useState(null);
+function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
 
   return (
-    <section className="decision" aria-label={decision.question}>
+    <section className="decision zoomable-panel" aria-label={decision.question}>
       <div className="decision-kicker">Decision point</div>
       <strong>{decision.question}</strong>
       <div className="decision-buttons">
-        <button type="button" className={answer === "no" ? "selected" : ""} aria-pressed={answer === "no"} onClick={() => setAnswer("no")}>No</button>
-        <button type="button" className={answer === "yes" ? "selected" : ""} aria-pressed={answer === "yes"} onClick={() => setAnswer("yes")}>Yes</button>
+        <button type="button" className={answer === "no" ? "selected" : ""} aria-pressed={answer === "no"} onClick={() => onChange("no")}>No</button>
+        <button type="button" className={answer === "yes" ? "selected" : ""} aria-pressed={answer === "yes"} onClick={() => onChange("yes")}>Yes</button>
       </div>
       {answer && (
         <div className="bubble" role="status">
@@ -48,59 +47,77 @@ function Contacts({ ids = [] }) {
   );
 }
 
-function Step({ step, index, taskId }) {
+function normalizedStep(step, index) {
   const isDetailed = typeof step === "object" && step !== null;
-  const title = isDetailed ? step.title : `Step ${index + 1}`;
-  const detail = isDetailed ? step.detail : step;
-  return (
-    <li key={`${taskId}-${index}`}>
-      <b>{index + 1}</b>
-      <div><strong>{title}</strong><p>{detail}</p></div>
-    </li>
-  );
+  return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step };
 }
 
-export default function TaskFocus({ task, index, total, done, onComplete, onBack, onNext }) {
+export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
+  const [zoom, setZoom] = useState(null);
+  const steps = task.steps.map(normalizedStep);
+  const openZoom = (label, title, body) => setZoom({ label, title, body });
+
   return (
     <section className="task-card">
       <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
-      <header><span>Task {index + 1} of {total}</span><em data-coworker-safe="task-category">{task.category}</em></header>
+      <header><span>Screen {index + 1} of {total}</span><em data-coworker-safe="task-category">{task.category}</em></header>
 
       <div className="title-row">
         <div><small>{task.short}</small><h1>{task.title}</h1></div>
         <b className={done ? "status done" : "status"}>{done ? "Done" : "Current"}</b>
       </div>
 
-      <p className="purpose">{task.purpose}</p>
+      {mode === "learn" && <p className="purpose">{task.purpose}</p>}
 
-      {task.location && (
-        <section className="task-location"><small>Where you are</small><p>{task.location}</p></section>
+      {task.location && mode === "learn" && (
+        <button type="button" className="task-location zoomable-panel" onClick={() => openZoom("Where you are", task.title, task.location)}>
+          <small>Where you are</small><p>{task.location}</p><span>Tap to enlarge</span>
+        </button>
       )}
 
       <div className="steps-heading">
-        <div><small>Step by step</small><strong>Do these in order</strong></div>
-        <span>{task.steps.length} steps</span>
+        <div><small>{mode === "learn" ? "Step by step" : "Quick steps"}</small><strong>Do these in order</strong></div>
+        <span>{steps.length} steps</span>
       </div>
 
-      <ol className="steps steps--detailed">
-        {task.steps.map((step, stepIndex) => <Step key={`${task.id}-${stepIndex}`} step={step} index={stepIndex} taskId={task.id} />)}
+      <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
+        {steps.map((step, stepIndex) => (
+          <li key={`${task.id}-${stepIndex}`} className="zoomable-panel" onClick={() => mode === "learn" && openZoom(`Step ${stepIndex + 1}`, step.title, step.detail)}>
+            <b>{stepIndex + 1}</b>
+            <div><strong>{step.title}</strong>{mode === "learn" && <p>{step.detail}</p>}</div>
+          </li>
+        ))}
       </ol>
 
-      {task.decision && <Decision decision={task.decision} />}
+      {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
-      {task.check && (
-        <section className="move-on-check"><small>Before you move on</small><p>{task.check}</p></section>
+      {task.check && mode === "learn" && (
+        <button type="button" className="move-on-check zoomable-panel" onClick={() => openZoom("Before you move on", task.title, task.check)}>
+          <small>Before you move on</small><p>{task.check}</p><span>Tap to enlarge</span>
+        </button>
       )}
 
-      {task.tip && <aside><small>Shift note</small><p>{task.tip}</p></aside>}
+      {task.tip && mode === "learn" && <aside data-coworker-safe="shift-note"><small>Shift note</small><p>{task.tip}</p></aside>}
       <Contacts ids={task.contacts} />
 
-      <footer>
+      {task.decision && !canComplete && <p className="completion-gate">Answer the Yes / No question above before moving on.</p>}
+
+      <footer className="guided-footer">
         <button type="button" disabled={index === 0} onClick={onBack}>Back</button>
-        <button type="button" className={done ? "complete" : "primary"} onClick={onComplete}>{done ? "Completed ✓" : task.completeLabel}</button>
-        <button type="button" disabled={index === total - 1} onClick={onNext}>Next</button>
+        <button type="button" className={done ? "complete done-next" : "primary done-next"} disabled={!canComplete} onClick={onDoneNext}>
+          {index === total - 1 ? "Finish morning" : done ? "Done · Next →" : "Done & Next →"}
+        </button>
       </footer>
+
+      {zoom && (
+        <div className="panel-zoom" role="dialog" aria-modal="true" onClick={() => setZoom(null)}>
+          <article onClick={(event) => event.stopPropagation()}>
+            <small>{zoom.label}</small><h2>{zoom.title}</h2><p>{zoom.body}</p>
+            <button type="button" onClick={() => setZoom(null)}>Got it</button>
+          </article>
+        </div>
+      )}
     </section>
   );
 }
