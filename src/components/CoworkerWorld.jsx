@@ -15,6 +15,11 @@ const interactions = [
   { kind: "paper-toss", selector: null, mood: "ready" },
 ];
 
+const firstSceneByScreen = {
+  home: ["nav-walk", "card-push", "edge-rappel"],
+  task: ["task-edge", "paper-toss", "side-peek"],
+};
+
 function choose(items, previousKind) {
   const choices = items.filter((item) => item.kind !== previousKind);
   return choices[Math.floor(Math.random() * choices.length)] || items[0];
@@ -28,10 +33,18 @@ export default function CoworkerWorld({ screen }) {
   const [scene, setScene] = useState(null);
   const previousKind = useRef(null);
   const activeTarget = useRef(null);
+  const sceneCount = useRef(0);
+  const previousScreen = useRef(screen);
 
   useEffect(() => {
+    if (previousScreen.current !== screen) {
+      sceneCount.current = 0;
+      previousScreen.current = screen;
+    }
+
     if (screen === "splash" || screen === "complete") {
       setScene(null);
+      document.body.classList.remove("till-is-roaming");
       return undefined;
     }
 
@@ -44,10 +57,22 @@ export default function CoworkerWorld({ screen }) {
         activeTarget.current.element.classList.remove(activeTarget.current.className);
       }
       activeTarget.current = null;
+      document.body.classList.remove("till-is-roaming");
+    };
+
+    const pickScene = (available) => {
+      const forcedKinds = firstSceneByScreen[screen] || [];
+      if (sceneCount.current < forcedKinds.length) {
+        const forced = available.find((item) => item.kind === forcedKinds[sceneCount.current]);
+        if (forced) return forced;
+      }
+      return choose(available, previousKind.current);
     };
 
     const schedule = () => {
-      const delay = 6500 + Math.random() * 8500;
+      const isOpeningScene = sceneCount.current === 0;
+      const delay = isOpeningScene ? 1200 + Math.random() * 700 : 4200 + Math.random() * 3800;
+
       startTimer = window.setTimeout(() => {
         if (!alive) return;
 
@@ -57,10 +82,12 @@ export default function CoworkerWorld({ screen }) {
           return;
         }
 
-        const picked = choose(available, previousKind.current);
+        const picked = pickScene(available);
         const target = picked.selector ? document.querySelector(picked.selector) : null;
         previousKind.current = picked.kind;
+        sceneCount.current += 1;
         clearTarget();
+        document.body.classList.add("till-is-roaming");
 
         if (target && picked.targetClass) {
           target.classList.add(picked.targetClass);
@@ -86,7 +113,7 @@ export default function CoworkerWorld({ screen }) {
           setScene(null);
           clearTarget();
           schedule();
-        }, 5600 + Math.random() * 1700);
+        }, 4800 + Math.random() * 900);
       }, delay);
     };
 
@@ -101,7 +128,10 @@ export default function CoworkerWorld({ screen }) {
 
   useEffect(() => {
     if (!scene) return undefined;
-    const cancel = () => setScene(null);
+    const cancel = () => {
+      setScene(null);
+      document.body.classList.remove("till-is-roaming");
+    };
     window.addEventListener("resize", cancel);
     return () => window.removeEventListener("resize", cancel);
   }, [scene]);
@@ -112,14 +142,14 @@ export default function CoworkerWorld({ screen }) {
     const vh = window.innerHeight;
     const r = scene.rect;
 
-    if (scene.kind === "edge-rappel") return { left: clamp(vw * .66, 160, vw - 116), top: 62 };
-    if (scene.kind === "side-peek") return { left: vw - 72, top: clamp(vh * .38, 160, vh - 250) };
-    if (scene.kind === "paper-toss") return { left: 12, top: clamp(vh * .28, 120, vh - 250) };
+    if (scene.kind === "edge-rappel") return { left: clamp(vw * .64, 145, vw - 120), top: 48 };
+    if (scene.kind === "side-peek") return { left: vw - 68, top: clamp(vh * .36, 150, vh - 250) };
+    if (scene.kind === "paper-toss") return { left: 8, top: clamp(vh * .26, 112, vh - 250) };
     if (!r) return { left: 8, top: 100 };
 
-    if (scene.kind === "nav-walk") return { left: clamp(r.left + 16, 8, vw - 112), top: clamp(r.top - 155, 80, vh - 190) };
-    if (scene.kind === "card-push") return { left: clamp(r.right - 58, 8, vw - 112), top: clamp(r.top + r.height * .34, 80, vh - 190) };
-    if (scene.kind === "task-edge") return { left: clamp(r.right - 52, 8, vw - 108), top: clamp(r.top + 98, 76, vh - 190) };
+    if (scene.kind === "nav-walk") return { left: clamp(r.left + 18, 8, vw - 112), top: clamp(r.top - 166, 80, vh - 198) };
+    if (scene.kind === "card-push") return { left: clamp(r.right - 64, 8, vw - 112), top: clamp(r.top + r.height * .34, 80, vh - 190) };
+    if (scene.kind === "task-edge") return { left: clamp(r.right - 55, 8, vw - 108), top: clamp(r.top + 92, 76, vh - 190) };
     if (scene.kind === "word-ladder") return { left: clamp(r.left - 14, 8, vw - 152), top: clamp(r.bottom + 4, 76, vh - 238) };
     if (scene.kind === "sit-label") return { left: clamp(r.right - 58, 8, vw - 110), top: clamp(r.top - 125, 74, vh - 175) };
     if (scene.kind === "balance-chip") return { left: clamp(r.right - 42, 8, vw - 112), top: clamp(r.top - 130, 74, vh - 175) };
@@ -132,15 +162,11 @@ export default function CoworkerWorld({ screen }) {
 
   return (
     <div className={`coworker-world coworker-world--${scene.kind}`} style={{ left: placement.left, top: placement.top }} aria-hidden="true">
-      {scene.kind === "word-ladder" && (
-        <div className="coworker-word-ladder">{words.map((word, wordIndex) => <span key={`${word}-${wordIndex}`}>{word}</span>)}</div>
-      )}
+      {scene.kind === "word-ladder" && <div className="coworker-word-ladder">{words.map((word, wordIndex) => <span key={`${word}-${wordIndex}`}>{word}</span>)}</div>}
       {scene.kind === "edge-rappel" && <div className="coworker-rope" />}
       {scene.kind === "paper-toss" && <div className="coworker-paper-plane">2593</div>}
       {scene.kind === "nav-walk" && <div className="coworker-step-dust"><i /><i /><i /></div>}
-      <div className="coworker-world__person">
-        <Coworker variant="world" mood={scene.mood} transitionKey={scene.kind} />
-      </div>
+      <div className="coworker-world__person"><Coworker variant="world" mood={scene.mood} transitionKey={scene.kind} /></div>
     </div>
   );
 }
