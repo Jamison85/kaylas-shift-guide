@@ -1,0 +1,9 @@
+/* Blonde hair pass. Uses a masked duplicate of the real character art, so the hair keeps its texture instead of becoming a CSS helmet. */
+.coworker__hair-tint{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;pointer-events:none;z-index:3;filter:sepia(1) saturate(2.7) hue-rotate(352deg) brightness(1.45) contrast(.92);opacity:.96;transform-origin:50% 100%;clip-path:polygon(20% 0,80% 0,82% 16%,68% 13%,58% 10%,48% 11%,38% 14%,24% 17%)}
+.coworker--pose-stand .coworker__hair-tint{clip-path:polygon(24% 0,76% 0,79% 14%,68% 12%,57% 9%,47% 10%,36% 13%,23% 16%)}
+.coworker--pose-arms .coworker__hair-tint{clip-path:polygon(18% 0,82% 0,84% 25%,71% 22%,61% 18%,49% 17%,36% 21%,20% 27%)}
+.coworker--pose-panic .coworker__hair-tint{clip-path:polygon(18% 0,77% 0,76% 28%,65% 25%,54% 20%,43% 21%,31% 25%,20% 30%)}
+.coworker--pose-tired .coworker__hair-tint{clip-path:polygon(27% 0,73% 0,72% 33%,62% 29%,52% 24%,43% 24%,34% 29%,26% 34%)}
+/* The thinking crop lost most of its hair. Borrow only the hair region from the arms-crossed pose and seat it above the forehead. */
+.coworker--pose-think .coworker__hair-tint{inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;clip-path:polygon(16% 0,84% 0,84% 25%,72% 23%,61% 19%,49% 18%,36% 21%,18% 26%);transform:translateY(-7%) scale(1.03);filter:sepia(1) saturate(2.7) hue-rotate(352deg) brightness(1.45) contrast(.92)}
+.coworker--world .coworker__hair-tint{clip-path:polygon(24% 0,76% 0,79% 14%,68% 12%,57% 9%,47% 10%,36% 13%,23% 16%)}
