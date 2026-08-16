@@ -1,0 +1,1 @@
+Verified transparent blonde Till pose set generated from the approved character reference. These replace the temporary CSS hair-tint overlay.
