@@ -37,12 +37,7 @@ function pickDifferent(items, previous) {
   return choices[Math.floor(Math.random() * choices.length)] || items[0];
 }
 
-export default function Coworker({
-  transitionKey = 0,
-  variant = "full",
-  mood: forcedMood,
-  ambient = false,
-}) {
+export default function Coworker({ transitionKey = 0, variant = "full", mood: forcedMood, ambient = false }) {
   const [mood, setMood] = useState(forcedMood || "ready");
   const [activity, setActivity] = useState(null);
 
@@ -56,9 +51,7 @@ export default function Coworker({
 
   useEffect(() => {
     if (forcedMood || ambient) return undefined;
-    const id = window.setInterval(() => {
-      setMood((previous) => pickDifferent(moods, previous));
-    }, 18000);
+    const id = window.setInterval(() => setMood((previous) => pickDifferent(moods, previous)), 18000);
     return () => window.clearInterval(id);
   }, [forcedMood, ambient]);
 
@@ -71,7 +64,6 @@ export default function Coworker({
     let startTimer;
     let endTimer;
     let alive = true;
-
     const schedule = () => {
       startTimer = window.setTimeout(() => {
         if (!alive) return;
@@ -83,7 +75,6 @@ export default function Coworker({
         }, 4200 + Math.random() * 2200);
       }, 5200 + Math.random() * 7800);
     };
-
     schedule();
     return () => {
       alive = false;
@@ -92,23 +83,15 @@ export default function Coworker({
     };
   }, [ambient]);
 
-  const requestedPose = useMemo(
-    () => activityPose[activity] || moodPose[mood] || "stand",
-    [activity, mood],
-  );
-
-  // App-world stunts need a complete body. Mood still drives the scene animation,
-  // but the figure stays physically coherent while climbing, hanging, and balancing.
+  const requestedPose = useMemo(() => activityPose[activity] || moodPose[mood] || "stand", [activity, mood]);
   const visualPose = variant === "world" ? "stand" : requestedPose;
   const base = import.meta.env.BASE_URL;
   const imageUrl = `${base}${poseFiles[visualPose] || poseFiles.stand}`;
+  const hairUrl = `${base}${visualPose === "think" ? poseFiles.arms : (poseFiles[visualPose] || poseFiles.stand)}`;
   const fallbackUrl = `${base}characters/coworker-stand.webp`;
 
   return (
-    <div
-      className={`coworker coworker--${variant} coworker--pose-${visualPose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`}
-      aria-hidden="true"
-    >
+    <div className={`coworker coworker--${variant} coworker--pose-${visualPose} coworker--mood-${mood} coworker--activity-${activity || "idle"}`} aria-hidden="true">
       <div className="coworker__shadow" />
       <img
         className="coworker__sprite coworker__image"
@@ -124,42 +107,15 @@ export default function Coworker({
           }
         }}
       />
+      <img className="coworker__hair-tint" src={hairUrl} alt="" draggable="false" aria-hidden="true" />
 
-      {activity === "clipboard" && (
-        <div className="coworker-prop coworker-prop--clipboard">
-          <span className="coworker-prop__clip" />
-          <i /><i /><i />
-          <b />
-        </div>
-      )}
-
-      {activity === "coffee" && (
-        <div className="coworker-prop coworker-prop--coffee"><i /><i /></div>
-      )}
-
-      {activity === "receipt" && (
-        <div className="coworker-prop coworker-prop--receipt"><i /><i /><i /><i /></div>
-      )}
-
-      {activity === "box" && (
-        <div className="coworker-prop coworker-prop--box"><span>STOCK</span></div>
-      )}
-
-      {activity === "wipe" && (
-        <>
-          <div className="coworker-prop coworker-prop--cloth" />
-          <div className="coworker-spark coworker-spark--one">✦</div>
-          <div className="coworker-spark coworker-spark--two">✦</div>
-        </>
-      )}
-
-      {activity === "keys" && (
-        <div className="coworker-prop coworker-prop--keys"><i /><i /><i /></div>
-      )}
-
-      {mood === "celebrate" && (
-        <div className="coworker-confetti"><i /><i /><i /><i /><i /><i /></div>
-      )}
+      {activity === "clipboard" && <div className="coworker-prop coworker-prop--clipboard"><span className="coworker-prop__clip" /><i /><i /><i /><b /></div>}
+      {activity === "coffee" && <div className="coworker-prop coworker-prop--coffee"><i /><i /></div>}
+      {activity === "receipt" && <div className="coworker-prop coworker-prop--receipt"><i /><i /><i /><i /></div>}
+      {activity === "box" && <div className="coworker-prop coworker-prop--box"><span>STOCK</span></div>}
+      {activity === "wipe" && <><div className="coworker-prop coworker-prop--cloth" /><div className="coworker-spark coworker-spark--one">✦</div><div className="coworker-spark coworker-spark--two">✦</div></>}
+      {activity === "keys" && <div className="coworker-prop coworker-prop--keys"><i /><i /><i /></div>}
+      {mood === "celebrate" && <div className="coworker-confetti"><i /><i /><i /><i /><i /><i /></div>}
     </div>
   );
 }
