@@ -138,23 +138,24 @@ export const guideTasks = [
     check:"State Inspection of Gas Dispensers is saved with Not Applicable when there was no inspection, Passed when it passed, or Failed when it failed, plus initials and Complete checked.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
   },
   {
-    id:"price-server", title:"Price Server Editor", short:"Approve each item group, then auto-post the batch.", category:"Bookwork",
-    purpose:"Clear Price Server Editor correctly before you move deeper into End of Day.", location:"Office computer → bottom-left Start menu → Programs → StorePoint Office → Price Server Editor.",
+    id:"price-server", title:"Apply the Morning Price Changes", short:"Highlight each pending row and approve it with Auto Post Batch.", category:"Bookwork",
+    purpose:"Price Server Editor is the simple morning tool used to apply the store’s price changes in the computer system before moving into End of Day.", location:"Office computer → bottom-left Start menu → Programs → StorePoint Office → Price Server Editor.",
     steps:[
       {title:"Click the Start menu",detail:"On the office computer, select Start in the bottom-left corner of the Windows taskbar."},
       {title:"Open Programs",detail:"Choose Programs from the Start menu."},
       {title:"Open StorePoint Office",detail:"Select StorePoint Office from the Programs list."},
       {title:"Open Price Server Editor",detail:"Choose Price Server Editor inside StorePoint Office."},
       {title:"Sign in",detail:"Use your first and last name plus your register sign-in number."},
-      {title:"Look for item groups",detail:"Check how many item groups are waiting. If there are zero groups, you do not have anything to approve."},
-      {title:"Open the first item group",detail:"Review the group that is waiting for approval instead of trying to approve everything blindly at once."},
-      {title:"Approve that group",detail:"Approve the current item group, then return to the group list."},
-      {title:"Repeat for every remaining group",detail:"Each item group is approved separately. Keep going until no groups remain waiting."},
-      {title:"Run Auto Post Batch",detail:"After the item groups are approved, choose Auto Post Batch."},
-      {title:"Close Price Server Editor",detail:"If there were zero groups, or after the approvals and Auto Post Batch are complete, close the editor and continue."}
+      {title:"Look for pending price-change rows",detail:"Check whether any price-change batches are waiting. If there are no rows to approve, close Price Server Editor and continue."},
+      {title:"Click a row to highlight it",detail:"Select one pending item so the entire row is highlighted before you approve it."},
+      {title:"Open Approve",detail:"Click Approve in the toolbar at the top of the page. You can also right-click the highlighted row and choose Approve."},
+      {title:"Choose Auto Post Batch",detail:"The approval window opens with several options. Select Auto Post Batch in that window."},
+      {title:"Confirm the approval",detail:"Click Approve in the options window to finish approving the highlighted price-change batch."},
+      {title:"Repeat for another pending row",detail:"If another price-change row is still waiting, highlight that row and repeat the same Approve → Auto Post Batch process."},
+      {title:"Close Price Server Editor",detail:"When no pending price-change rows remain, close the editor and continue."}
     ],
-    check:"There are no unapproved item groups left, and Auto Post Batch has been run when groups were present.",
-    tip:"Approve each group separately. Clicking enthusiastically is not a substitute for reading.", contacts:["jamo"], completeLabel:"Price Server complete"
+    check:"Every pending price-change row has been highlighted and approved with Auto Post Batch selected, or there were no rows waiting.",
+    tip:"One highlighted row at a time. The prices deserve slightly more precision than a game of Whac-A-Mole.", contacts:["jamo"], completeLabel:"Price changes applied"
   },
   {
     id:"eod-status", title:"Check End of Day Status", short:"Yesterday should be Pending; older days should be Closed.", category:"Bookwork",
