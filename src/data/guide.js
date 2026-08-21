@@ -200,7 +200,7 @@ export const guideTasks = [
       {title:"Place the Lottery Report under it",detail:"The Lottery Report goes directly underneath the Deposit Report."},
       {title:"Add waste and corrections",detail:"Place the waste/correction paperwork with the packet and staple it in front as required."},
       {title:"Straighten the packet before writing on it",detail:"Make sure you have the day’s paperwork together and in order before adding the final date, correction notes, customer count, and initials."},
-      {title:"Know where the finished packet goes",detail:"After all details are complete, the finished packet goes in the bin below the office desk."}
+      {title:"Keep the packet on the desk for now",detail:"Do not file it yet. The date, corrections, customer count, and initials still need to be completed on the next screen."}
     ],
     check:"Deposit Report is on front, Lottery Report is directly under it, waste/corrections are attached, and the packet is ready for final details.",
     tip:"Paperwork has an order because apparently even paper needs management.", contacts:[], completeLabel:"Packet assembled"
@@ -215,9 +215,10 @@ export const guideTasks = [
       {title:"Go to page 3",detail:"The customer count you need is on page 3."},
       {title:"Add the customer count",detail:"Write the customer count onto the paperwork where it belongs."},
       {title:"Sign or initial",detail:"Add your signature or initials anywhere the packet requires them."},
-      {title:"File the finished packet",detail:"Once the paperwork is complete, place the finished packet in the bin below the office desk."}
+      {title:"Put the completed packet in the brown paper bag",detail:"Only after every required detail is complete, place the finished daily packet into the brown paper filing bag."},
+      {title:"Put the bagged paperwork in the box under the desk",detail:"The brown-bag paperwork is stored in the box below the office desk. The accumulated paperwork is taken out about once a month."}
     ],
-    check:"Yesterday’s date, any required safe corrections, the page-3 customer count, and initials/signature are on the packet, and the packet is filed below the desk.", contacts:["jamo"], completeLabel:"Paperwork details complete"
+    check:"Yesterday’s date, any required safe corrections, the page-3 customer count, and initials/signature are complete before the packet is placed in the brown paper bag and stored in the box below the desk.", contacts:["jamo"], completeLabel:"Paperwork details complete"
   },
   {
     id:"lottery-audit-start", title:"Start the Lottery Audit", short:"Open a new audit and enter yesterday’s beginning/ending numbers.", category:"Lottery",
