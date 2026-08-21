@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import CharacterProp from "./components/CharacterProp";
+import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import CoworkerWorld from "./components/CoworkerWorld";
-import TaskFocus from "./components/TaskFocus";
 
 const dateKey = () => {
   const date = new Date();
@@ -32,6 +32,7 @@ export default function App() {
   const resumeIndex = firstIncomplete === -1 ? guideTasks.length - 1 : firstIncomplete;
   const index = Math.max(0, Math.min(progress.currentIndex ?? resumeIndex, guideTasks.length - 1));
   const task = guideTasks[index];
+  const nextTask = guideTasks[resumeIndex];
   const percent = Math.round((completedCount / guideTasks.length) * 100);
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
@@ -41,7 +42,7 @@ export default function App() {
     const timer = window.setTimeout(() => {
       try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {}
       setScreen("home");
-    }, 3900);
+    }, 4300);
     return () => window.clearTimeout(timer);
   }, [screen]);
 
@@ -75,20 +76,27 @@ export default function App() {
 
   if (screen === "splash") {
     return (
-      <main className="splash">
-        <div className="splash__orb splash__orb--one" /><div className="splash__orb splash__orb--two" />
-        <div className="splash-copy">
-          <small>SHIFT GUIDE · 2593</small><h1>Good morning, Kayla.</h1><p>{wisdom}</p>
-          <button type="button" onClick={() => { try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {} setScreen("home"); }}>Start shift</button>
-        </div>
+      <main className="splash scene-surface">
+        <section className="splash-sheet">
+          <div className="splash-copy">
+            <small>KAYLA&apos;S SHIFT GUIDE · 2593</small>
+            <h1>Good morning, Kayla.</h1>
+            <p>{wisdom}</p>
+            <button type="button" onClick={() => { try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {} setScreen("home"); }}>Start shift <span>→</span></button>
+          </div>
+          <CharacterProp pose="wave" className="splash-prop" />
+        </section>
       </main>
     );
   }
 
   return (
-    <div className="shell">
+    <div className={`shell shell--${screen}`}>
       <header className="mini">
-        <button type="button" onClick={() => setScreen("home")} className="mini__brand"><i /><span><b>Kayla&apos;s Shift Guide</b><small>Casey&apos;s 2593</small></span></button>
+        <button type="button" onClick={() => setScreen("home")} className="mini__brand">
+          <i />
+          <span><b>Kayla&apos;s Shift Guide</b><small>2593</small></span>
+        </button>
         <div className="mode-toggle" aria-label="Guide detail mode">
           <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
           <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
@@ -99,18 +107,23 @@ export default function App() {
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
-              <div><small>Good morning, Kayla</small><h1>{percent}% done</h1><p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "Start at the beginning. One thing at a time."}</p></div>
+              <div><small>Good morning, Kayla</small><h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1><p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "One important thing at a time."}</p></div>
               <div className="progress-ring" style={{ "--p": `${percent * 3.6}deg` }} aria-label={`${percent}% complete`}><span>{completedCount}</span><small>of {guideTasks.length}</small></div>
             </div>
 
             <button type="button" className="start" onClick={startOrResume}>
-              <div className="start-copy">
-                <small>Start here</small>
-                <strong>{completedCount ? "Continue where you left off" : "Begin the morning guide"}</strong>
-                <p>{mode === "learn" ? "Learn mode shows the full directions and checks." : "Quick mode keeps the same order with shorter directions."}</p>
-                <span>{completedCount ? "Continue" : "Start"} <b>→</b></span>
+              <div className="start-sheet">
+                <div className="start-copy">
+                  <small>Start here</small>
+                  <strong>{nextTask.title}</strong>
+                  <p>{nextTask.short}</p>
+                  <div className="start-meta"><span>{completedCount} of {guideTasks.length}</span><b>{completedCount ? "Continue" : "Begin"} <i>→</i></b></div>
+                </div>
               </div>
+              <CharacterProp pose="hold" className="start-prop" />
             </button>
+
+            <div className="coach-bubble"><span>Shift note</span><p>{wisdom}</p></div>
           </section>
         )}
 
@@ -120,17 +133,18 @@ export default function App() {
 
         {screen === "complete" && (
           <section className="finish">
-            <div className="finish__card"><small>Morning guide complete</small><h1>Kayla, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
+            <div className="finish__card">
+              <div className="finish__copy"><small>Morning guide complete</small><h1>Kayla, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
+              <CharacterProp pose="celebrate" className="finish-prop" />
+            </div>
           </section>
         )}
       </main>
 
-      <CoworkerWorld screen={screen} />
-
       {screen !== "complete" && (
         <nav className="bottom-nav" aria-label="Primary navigation">
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><span>⌂</span><small>Home</small></button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><span>✓</span><small>Guide</small></button>
+          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><span>▣</span><small>Guide</small></button>
           <button type="button" onClick={reset}><span>↻</span><small>Reset</small></button>
         </nav>
       )}
