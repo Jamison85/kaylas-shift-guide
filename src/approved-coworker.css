@@ -1,0 +1,61 @@
+/* Approved 2.5D coworker proof: one real six-pose card-edge interaction. */
+.coworker-world--side-peek {
+  width: 300px !important;
+  height: 300px !important;
+  overflow: visible;
+  filter: none !important;
+  animation: approvedPeekScene 5s cubic-bezier(.2,.8,.2,1) both !important;
+}
+
+.approved-peek {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: 50% 50%;
+}
+
+.approved-peek__frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  filter: drop-shadow(0 14px 14px rgba(0,0,0,.3));
+  transition: opacity 70ms linear;
+  will-change: opacity;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.approved-peek__frame.is-active {
+  opacity: 1;
+}
+
+@keyframes approvedPeekScene {
+  0% { opacity: 0; transform: translateX(132px) rotate(3deg) scale(.92); }
+  9% { opacity: 1; }
+  20% { transform: translateX(38px) rotate(-1deg) scale(1); }
+  64% { opacity: 1; transform: translateX(0) rotate(0) scale(1); }
+  82% { opacity: 1; transform: translateX(26px) rotate(1deg) scale(.98); }
+  100% { opacity: 0; transform: translateX(138px) rotate(4deg) scale(.92); }
+}
+
+@media (max-width: 430px) {
+  .coworker-world--side-peek {
+    width: 276px !important;
+    height: 276px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coworker-world--side-peek {
+    animation-duration: .001ms !important;
+  }
+
+  .approved-peek__frame:not(.is-active) {
+    display: none;
+  }
+}

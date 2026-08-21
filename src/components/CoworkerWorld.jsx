@@ -16,9 +16,50 @@ const interactions = [
 ];
 
 const firstSceneByScreen = {
-  home: ["nav-walk", "card-push", "edge-rappel"],
+  home: ["side-peek", "nav-walk", "card-push"],
   task: ["task-edge", "paper-toss", "side-peek"],
 };
+
+const peekFrames = Array.from({ length: 6 }, (_, index) => `characters-approved/peek-${index}.webp`);
+const peekTimeline = [
+  { at: 0, frame: 0 },
+  { at: 280, frame: 1 },
+  { at: 650, frame: 2 },
+  { at: 1040, frame: 3 },
+  { at: 1900, frame: 4 },
+  { at: 2290, frame: 3 },
+  { at: 2740, frame: 4 },
+  { at: 3130, frame: 5 },
+  { at: 3520, frame: 1 },
+  { at: 3910, frame: 0 },
+];
+
+function PeekSequence() {
+  const [frame, setFrame] = useState(0);
+  const base = import.meta.env.BASE_URL;
+
+  useEffect(() => {
+    const timers = peekTimeline.map(({ at, frame: nextFrame }) => (
+      window.setTimeout(() => setFrame(nextFrame), at)
+    ));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  return (
+    <div className="approved-peek" aria-hidden="true">
+      {peekFrames.map((src, index) => (
+        <img
+          key={src}
+          className={`approved-peek__frame${frame === index ? " is-active" : ""}`}
+          src={`${base}${src}`}
+          alt=""
+          draggable="false"
+          decoding="async"
+        />
+      ))}
+    </div>
+  );
+}
 
 function choose(items, previousKind) {
   const choices = items.filter((item) => item.kind !== previousKind);
@@ -143,7 +184,7 @@ export default function CoworkerWorld({ screen }) {
     const r = scene.rect;
 
     if (scene.kind === "edge-rappel") return { left: clamp(vw * .64, 145, vw - 120), top: 48 };
-    if (scene.kind === "side-peek") return { left: vw - 68, top: clamp(vh * .36, 150, vh - 250) };
+    if (scene.kind === "side-peek") return { left: vw - 210, top: clamp(vh * .32, 120, vh - 310) };
     if (scene.kind === "paper-toss") return { left: 8, top: clamp(vh * .26, 112, vh - 250) };
     if (!r) return { left: 8, top: 100 };
 
@@ -166,7 +207,9 @@ export default function CoworkerWorld({ screen }) {
       {scene.kind === "edge-rappel" && <div className="coworker-rope" />}
       {scene.kind === "paper-toss" && <div className="coworker-paper-plane">2593</div>}
       {scene.kind === "nav-walk" && <div className="coworker-step-dust"><i /><i /><i /></div>}
-      <div className="coworker-world__person"><Coworker variant="world" mood={scene.mood} transitionKey={scene.kind} /></div>
+      {scene.kind === "side-peek"
+        ? <PeekSequence />
+        : <div className="coworker-world__person"><Coworker variant="world" mood={scene.mood} transitionKey={scene.kind} /></div>}
     </div>
   );
 }
