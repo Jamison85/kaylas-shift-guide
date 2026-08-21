@@ -61,7 +61,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   return (
     <section className="task-card">
       <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
-      <header><span>Screen {index + 1} of {total}</span><em data-coworker-safe="task-category">{task.category}</em></header>
+      <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
 
       <div className="title-row">
         <div><small>{task.short}</small><h1>{task.title}</h1></div>
@@ -98,7 +98,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         </button>
       )}
 
-      {task.tip && mode === "learn" && <aside data-coworker-safe="shift-note"><small>Shift note</small><p>{task.tip}</p></aside>}
+      {task.tip && mode === "learn" && <aside><small>Shift note</small><p>{task.tip}</p></aside>}
       <Contacts ids={task.contacts} />
 
       {task.decision && !canComplete && <p className="completion-gate">Answer the Yes / No question above before moving on.</p>}

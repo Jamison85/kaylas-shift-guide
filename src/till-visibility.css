@@ -1,9 +1,0 @@
-/* Make the roaming character impossible to miss and keep the blonde treatment natural. */
-.coworker-world{z-index:70!important}.bottom-nav{z-index:45!important}.mini{z-index:45!important}
-/* Replace the neon-yellow look with a restrained dirty-blond tint until the final blonde pose files are swapped in. */
-.coworker__hair-tint{filter:sepia(.72) saturate(1.35) hue-rotate(348deg) brightness(1.18) contrast(.98)!important;opacity:.62!important;mix-blend-mode:screen}
-.coworker--pose-stand .coworker__hair-tint,.coworker--world .coworker__hair-tint{clip-path:polygon(29% 0,71% 0,73% 10%,65% 9%,56% 6%,47% 7%,38% 9%,28% 11%)!important}
-.coworker--pose-arms .coworker__hair-tint{clip-path:polygon(25% 0,75% 0,76% 16%,67% 14%,57% 11%,48% 11%,38% 14%,25% 17%)!important}
-.coworker--pose-panic .coworker__hair-tint{clip-path:polygon(24% 0,73% 0,73% 18%,64% 16%,54% 12%,44% 13%,34% 16%,24% 19%)!important}
-.coworker--pose-tired .coworker__hair-tint{clip-path:polygon(31% 0,69% 0,69% 22%,61% 19%,52% 16%,44% 16%,35% 20%,30% 23%)!important}
-.coworker--pose-think .coworker__hair-tint{clip-path:polygon(24% 0,76% 0,76% 17%,67% 15%,57% 12%,48% 12%,38% 15%,25% 18%)!important;transform:translateY(-5%) scale(1.01)!important}

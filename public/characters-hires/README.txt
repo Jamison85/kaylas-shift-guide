@@ -1,1 +1,0 @@
-High-resolution transparent coworker pose assets extracted from the approved reference sheet. Do not replace with low-resolution thumbnails.
