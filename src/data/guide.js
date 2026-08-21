@@ -107,33 +107,35 @@ export const guideTasks = [
     contacts:["jamo"], completeLabel:"Scratcher slots ready"
   },
   {
-    id:"health-dept", title:"Health Department Check", short:"Record whether there was a Health Department visit.", category:"2593 Login",
-    purpose:"Sign into 2593 on the back-office computer, then complete the daily Health Department entry correctly.",
-    location:"Back-office computer → 2593 login.",
+    id:"health-dept", title:"Health Inspection Task", short:"Open Health Inspection from the bottom-left Task List.", category:"2593 Task List",
+    purpose:"Sign into 2593 on the back-office computer, then complete the Health Inspection task from the landing page.",
+    location:"Back-office computer → 2593 landing page → Task List / Today at bottom left.",
     steps:[
       {title:"Go to the back-office computer",detail:"Start this work on the computer in the office after the scratcher slots are handled."},
       {title:"Find the username and password fields",detail:"The sign-in fields should appear on the screen automatically."},
       {title:"Use Log In if the fields are missing",detail:"If the username and password fields are not showing, select Log In at the bottom of the screen in the taskbar."},
       {title:"Enter the 2593 login",detail:"Enter 2593 in the username field, enter the store password, and sign in."},
-      {title:"Open Health Department",detail:"Find and open the Health Department check."},
-      {title:"Read the visit question",detail:"Confirm whether the question is asking if there was an actual Health Department visit."},
+      {title:"Find Task List at the bottom left",detail:"On the 2593 landing page, look under Task List and Today in the lower-left area of the screen."},
+      {title:"Open Health Inspection",detail:"Select the task labeled Health Inspection."},
+      {title:"Read the inspection question",detail:"The task window asks, ‘Did you have an Inspection?’ The dropdown contains Yes, No, and N/A."},
       {title:"Choose No or Yes below",detail:"Use the decision buttons in this guide, then follow the matching directions before you mark this task complete."}
     ],
-    decision:{question:"Was there a Health Department visit?",noTitle:"No visit",noText:"Select Not Applicable in the 2593 entry, enter your initials, then save.",noSteps:["Select Not Applicable.","Initial the entry.","Save it before leaving the screen."],yesTitle:"Yes, there was a visit",yesText:"Complete the applicable Health Department visit entry, initial it, save it, and note anything that needs management follow-up.",yesSteps:["Complete the visit information that applies.","Initial the entry.","Save it.","Document or escalate anything that needs follow-up."]},
-    check:"The Health Department entry is saved with either Not Applicable or the actual visit information, and it has been initialed.",
+    decision:{question:"Was there a Health Department visit?",noTitle:"No visit: choose N/A",noText:"Open the Yes / No / N/A dropdown and choose N/A. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose N/A.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was a visit",yesText:"Use the Yes or No option that matches the actual inspection result, enter your initials, check Complete, save, and note anything needing management follow-up.",yesSteps:["Choose the applicable Yes or No option in the dropdown.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
+    check:"Health Inspection is saved with N/A when there was no visit, or the actual Yes/No result when there was one, plus initials and Complete checked.",
     contacts:["jamo","loretta"], completeLabel:"Health check saved"
   },
   {
-    id:"gas-inspection", title:"Gas Inspection Check", short:"Record whether there was a gas inspection.", category:"2593 Login",
-    purpose:"Complete the daily Gas Inspection entry while you are already in the 2593 login.", location:"2593 login.",
+    id:"gas-inspection", title:"Gas Dispenser Inspection Task", short:"Open State Inspection of Gas Dispensers from Task List.", category:"2593 Task List",
+    purpose:"Complete the second inspection task while you are still signed into the 2593 landing page.", location:"2593 landing page → Task List / Today at bottom left.",
     steps:[
-      {title:"Stay in the 2593 login",detail:"Do not close out of the system after the Health Department check."},
-      {title:"Open Gas Inspection",detail:"Find and open the Gas Inspection check."},
-      {title:"Read the inspection question",detail:"Confirm whether there was an actual gas inspection to report."},
+      {title:"Stay signed into 2593",detail:"Do not log out after saving Health Inspection."},
+      {title:"Return to the bottom-left Task List",detail:"Under Today, find the remaining inspection task."},
+      {title:"Open State Inspection of Gas Dispensers",detail:"Select the task using the exact label shown in the Task List."},
+      {title:"Read the inspection question",detail:"Confirm whether there was an actual state inspection of the gas dispensers. The dropdown contains Yes, No, and N/A."},
       {title:"Choose No or Yes below",detail:"Use the matching directions before moving on."}
     ],
-    decision:{question:"Was there a gas inspection?",noTitle:"No inspection",noText:"Select Not Applicable, enter your initials, and save the Gas Inspection entry.",noSteps:["Select Not Applicable.","Initial the entry.","Save it before leaving the screen."],yesTitle:"Yes, there was an inspection",yesText:"Complete the applicable gas-inspection entry, initial it, save it, and document anything needing management follow-up.",yesSteps:["Complete the inspection information that applies.","Initial the entry.","Save it.","Document or escalate anything that needs follow-up."]},
-    check:"The Gas Inspection entry is saved and initialed, with Not Applicable used only when there was no visit.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
+    decision:{question:"Was there a state inspection of the gas dispensers?",noTitle:"No inspection: choose N/A",noText:"Open the Yes / No / N/A dropdown and choose N/A. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose N/A.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was an inspection",yesText:"Use the Yes or No option that matches the actual inspection result, enter your initials, check Complete, save, and document anything needing management follow-up.",yesSteps:["Choose the applicable Yes or No option in the dropdown.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
+    check:"State Inspection of Gas Dispensers is saved with N/A when there was no inspection, or the actual Yes/No result when there was one, plus initials and Complete checked.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
   },
   {
     id:"price-server", title:"Price Server Editor", short:"Approve each item group, then auto-post the batch.", category:"Bookwork",
