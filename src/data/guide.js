@@ -1,8 +1,7 @@
 export const contacts = {
-  jamo:{name:"Jamo",role:"Center Store Manager",text:"First manager contact for normal bookwork questions and small variances."},
+  jamo:{name:"Jamo",role:"Center Store Manager · lottery support",text:"First contact for normal bookwork questions, small variances, and lottery-system or chain issues."},
   loretta:{name:"Loretta",role:"General Manager",text:"Escalate when the issue is larger, unresolved, or needs GM review."},
-  richard:{name:"Richard",role:"District Manager",text:"Use when district-level support is actually needed."},
-  jamison:{name:"Jamison",role:"Lottery chain support",text:"First chain call for lottery-system issues."}
+  richard:{name:"Richard",role:"District Manager",text:"Use when district-level support is actually needed."}
 };
 
 export const wisdomLines = [
@@ -143,7 +142,7 @@ export const guideTasks = [
       {title:"Identify the current-morning numbers",detail:"Use the current morning readings for the fields that ask for the current reading."},
       {title:"Enter the numbers in the matching fields",detail:"Take your time and make sure each number is being entered in the field it belongs to before moving to the next page."}
     ],
-    check:"A new lottery audit is open and the prior-night/current-morning numbers are entered in the correct fields.", contacts:["jamison","jamo","loretta"], completeLabel:"Lottery audit started"
+    check:"A new lottery audit is open and the prior-night/current-morning numbers are entered in the correct fields.", contacts:["jamo","loretta"], completeLabel:"Lottery audit started"
   },
   {
     id:"lottery-books", title:"Enter Lottery Book Counts", short:"Use the locked black box counts on page two.", category:"Lottery",
@@ -155,7 +154,7 @@ export const guideTasks = [
       {title:"Compare the screen to the physical box",detail:"Before moving on, scan the entered values against what is physically in the box."},
       {title:"Correct anything that was mistyped",detail:"If a count is wrong, fix the entry now. Do not carry a known bad count into the variance review."}
     ],
-    check:"The page-2 book counts match what is physically in the locked black lottery box.", contacts:["jamison","jamo"], completeLabel:"Book counts entered"
+    check:"The page-2 book counts match what is physically in the locked black lottery box.", contacts:["jamo"], completeLabel:"Book counts entered"
   },
   {
     id:"lottery-received-returns", title:"Received / Returns", short:"Only enter books when matching paperwork exists.", category:"Lottery",
@@ -168,7 +167,7 @@ export const guideTasks = [
       {title:"Leave Returns alone without a slip",detail:"No matching return slip means do not enter a return just because something looks odd."},
       {title:"Keep the paperwork with the audit process",detail:"Make sure the invoice/return information you entered can be traced back to the paperwork on the lottery clipboard."}
     ],
-    check:"Received and Returns contain only entries supported by matching paperwork.", contacts:["jamison","jamo"], completeLabel:"Received/Returns checked"
+    check:"Received and Returns contain only entries supported by matching paperwork.", contacts:["jamo"], completeLabel:"Received/Returns checked"
   },
   {
     id:"lottery-variance", title:"Review the Lottery Variance", short:"Normal is 0 tickets over/under and $0 variance.", category:"Lottery",
@@ -185,9 +184,9 @@ export const guideTasks = [
       yesSteps:["Make one last scan of the entered numbers.","Finalize the audit.","Enter your initials."],
       noTitle:"Do not finalize it yet",
       noText:"Treat this as an entry check first, then an escalation if the numbers still do not make sense.",
-      noSteps:["Re-check the prior-night and current-morning numbers.","Re-check the page-2 counts against the locked black box.","Use delete/reset if an entry is wrong, then correct it.","Call Jamison first for a lottery-system or chain issue.","If it is still more than a couple tickets or more than $20, stop and contact Jamo or Loretta before finalizing."]
+      noSteps:["Re-check the prior-night and current-morning numbers.","Re-check the page-2 counts against the locked black box.","Use delete/reset if an entry is wrong, then correct it.","Call Jamo first for a lottery-system or chain issue.","If it is still more than a couple tickets or more than $20, stop and contact Jamo or Loretta before finalizing."]
     },
-    check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamison","jamo","loretta"], completeLabel:"Lottery audit finalized"
+    check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamo","loretta"], completeLabel:"Lottery audit finalized"
   },
   {
     id:"safe-deposit", title:"Reconcile Safe Report to End of Day", short:"Match Kayla’s Paid Ins and the deposit across both.", category:"Cash / Safe",
