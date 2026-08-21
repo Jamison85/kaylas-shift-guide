@@ -28,6 +28,14 @@ export default function App() {
   const completedCount = completed.size;
   const mode = progress.mode === "quick" ? "quick" : "learn";
   const answers = progress.answers || {};
+  const skippedTaskIds = useMemo(() => {
+    const skipped = new Set();
+    guideTasks.forEach((item) => {
+      const answer = answers[item.id];
+      (item.decision?.[`${answer}Skip`] || []).forEach((id) => skipped.add(id));
+    });
+    return skipped;
+  }, [answers]);
   const firstIncomplete = guideTasks.findIndex((item) => !completed.has(item.id));
   const resumeIndex = firstIncomplete === -1 ? guideTasks.length - 1 : firstIncomplete;
   const index = Math.max(0, Math.min(progress.currentIndex ?? resumeIndex, guideTasks.length - 1));
@@ -53,20 +61,44 @@ export default function App() {
   };
   const startOrResume = () => go(resumeIndex);
   const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
-  const setDecision = (taskId, answer) => setProgress((current) => ({ ...current, answers: { ...(current.answers || {}), [taskId]: answer } }));
+  const setDecision = (taskId, answer) => setProgress((current) => {
+    const taskDefinition = guideTasks.find((item) => item.id === taskId);
+    const possibleSkips = new Set([
+      ...(taskDefinition?.decision?.yesSkip || []),
+      ...(taskDefinition?.decision?.noSkip || []),
+    ]);
+    const taskWasDone = (current.completed || []).includes(taskId);
+    const answerSkips = taskWasDone ? (taskDefinition?.decision?.[`${answer}Skip`] || []) : [];
+    const nextCompleted = (current.completed || []).filter((id) => !possibleSkips.has(id));
+    answerSkips.forEach((id) => nextCompleted.push(id));
+    return {
+      ...current,
+      completed: [...new Set(nextCompleted)],
+      answers: { ...(current.answers || {}), [taskId]: answer },
+    };
+  });
 
   const doneAndNext = () => {
     if (!canComplete) return;
+    const answerSkips = task.decision?.[`${decisionAnswer}Skip`] || [];
     const nextCompleted = completed.has(task.id) ? [...(progress.completed || [])] : [...(progress.completed || []), task.id];
+    answerSkips.forEach((id) => nextCompleted.push(id));
     const nextCount = new Set(nextCompleted).size;
     if (nextCount === guideTasks.length) {
       setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: index }));
       window.setTimeout(() => setScreen("complete"), 380);
       return;
     }
-    const nextIndex = Math.min(index + 1, guideTasks.length - 1);
-    setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: nextIndex }));
+    let nextIndex = Math.min(index + 1, guideTasks.length - 1);
+    while (nextIndex < guideTasks.length - 1 && answerSkips.includes(guideTasks[nextIndex].id)) nextIndex += 1;
+    setProgress((current) => ({ ...current, completed: [...new Set(nextCompleted)], currentIndex: nextIndex }));
     setScreen("task");
+  };
+
+  const goBack = () => {
+    let previousIndex = Math.max(0, index - 1);
+    while (previousIndex > 0 && skippedTaskIds.has(guideTasks[previousIndex].id)) previousIndex -= 1;
+    go(previousIndex);
   };
 
   const reset = () => {
@@ -128,7 +160,7 @@ export default function App() {
         )}
 
         {screen === "task" && (
-          <TaskFocus task={task} index={index} total={guideTasks.length} done={completed.has(task.id)} mode={mode} decisionAnswer={decisionAnswer} canComplete={canComplete} onDecisionChange={(answer) => setDecision(task.id, answer)} onDoneNext={doneAndNext} onBack={() => go(index - 1)} />
+          <TaskFocus task={task} index={index} total={guideTasks.length} done={completed.has(task.id)} mode={mode} decisionAnswer={decisionAnswer} canComplete={canComplete} onDecisionChange={(answer) => setDecision(task.id, answer)} onDoneNext={doneAndNext} onBack={goBack} />
         )}
 
         {screen === "complete" && (

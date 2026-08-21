@@ -1,5 +1,24 @@
 import { useState } from "react";
+import CharacterProp from "./CharacterProp";
 import { contacts } from "../data/guide";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+
+const taskCharacterPoses = {
+  "store-walk": "wave",
+  "cashier-break": "hold",
+  "yesterday-sources": "hold",
+  "register-two": "wave",
+  "lottery-refill": "hold",
+  "gas-inspection": "hold",
+  "price-server": "wave",
+  "paperwork-packet": "hold",
+  "lottery-audit-start": "wave",
+  "lottery-variance": "celebrate",
+  "safe-deposit": "hold",
+  "tender-totals": "wave",
+  "finalize-eod": "celebrate",
+  "power-inventory": "celebrate",
+};
 
 function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
@@ -29,8 +48,38 @@ function Decision({ decision, answer, onChange }) {
   );
 }
 
+const callableContactIds = new Set(["jamo", "loretta"]);
+const phoneDigits = (value = "") => value.replace(/\D/g, "");
+const phoneHref = (value = "") => `${value.trim().startsWith("+") ? "+" : ""}${phoneDigits(value)}`;
+
 function Contacts({ ids = [] }) {
+  const [phoneNumbers, setPhoneNumbers] = useLocalStorage("kayla-guide-contact-numbers", {});
+  const [editingId, setEditingId] = useState(null);
+  const [draftNumber, setDraftNumber] = useState("");
   const unique = [...new Set(ids)].map((id) => [id, contacts[id]]).filter(([, contact]) => contact);
+
+  const startEditing = (id) => {
+    setDraftNumber(phoneNumbers?.[id] || "");
+    setEditingId(id);
+  };
+
+  const saveNumber = (event, id) => {
+    event.preventDefault();
+    if (phoneDigits(draftNumber).length < 7) return;
+    setPhoneNumbers((current) => ({ ...(current || {}), [id]: draftNumber.trim() }));
+    setEditingId(null);
+  };
+
+  const removeNumber = (id) => {
+    setPhoneNumbers((current) => {
+      const next = { ...(current || {}) };
+      delete next[id];
+      return next;
+    });
+    setEditingId(null);
+    setDraftNumber("");
+  };
+
   if (!unique.length) return null;
   return (
     <section className="contacts">
@@ -39,7 +88,38 @@ function Contacts({ ids = [] }) {
         {unique.map(([id, contact]) => (
           <details key={id}>
             <summary>{contact.name}</summary>
-            <section><b>{contact.role}</b><p>{contact.text}</p></section>
+            <section>
+              <b>{contact.role}</b><p>{contact.text}</p>
+              {callableContactIds.has(id) && (
+                <div className="contact-phone">
+                  {phoneNumbers?.[id] && editingId !== id && (
+                    <>
+                      <a className="contact-call" href={`tel:${phoneHref(phoneNumbers[id])}`} aria-label={`Call ${contact.name} at ${phoneNumbers[id]}`}>
+                        <span>Call {contact.name}</span><small>{phoneNumbers[id]}</small>
+                      </a>
+                      <button type="button" className="contact-edit" onClick={() => startEditing(id)}>Change number</button>
+                    </>
+                  )}
+
+                  {!phoneNumbers?.[id] && editingId !== id && (
+                    <button type="button" className="contact-add" onClick={() => startEditing(id)}>Add {contact.name}&apos;s number</button>
+                  )}
+
+                  {editingId === id && (
+                    <form onSubmit={(event) => saveNumber(event, id)}>
+                      <label htmlFor={`contact-number-${id}`}>{phoneNumbers?.[id] ? `Change ${contact.name}’s number` : `Add ${contact.name}’s number`}</label>
+                      <input id={`contact-number-${id}`} type="tel" inputMode="tel" autoComplete="tel" placeholder="(555) 555-0123" value={draftNumber} onChange={(event) => setDraftNumber(event.target.value)} autoFocus />
+                      <div>
+                        <button type="submit" disabled={phoneDigits(draftNumber).length < 7}>Save number</button>
+                        <button type="button" onClick={() => setEditingId(null)}>Cancel</button>
+                        {phoneNumbers?.[id] && <button type="button" className="contact-remove" onClick={() => removeNumber(id)}>Remove</button>}
+                      </div>
+                      <small>Saved only on this device. It is not added to the public app code.</small>
+                    </form>
+                  )}
+                </div>
+              )}
+            </section>
           </details>
         ))}
       </div>
@@ -49,13 +129,14 @@ function Contacts({ ids = [] }) {
 
 function normalizedStep(step, index) {
   const isDetailed = typeof step === "object" && step !== null;
-  return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step };
+  return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step, more: isDetailed ? step.more : null };
 }
 
 export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
   const [zoom, setZoom] = useState(null);
   const steps = task.steps.map(normalizedStep);
+  const characterPose = taskCharacterPoses[task.id] || null;
   const openZoom = (label, title, body) => setZoom({ label, title, body });
 
   return (
@@ -71,9 +152,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       {mode === "learn" && <p className="purpose">{task.purpose}</p>}
 
       {task.location && mode === "learn" && (
-        <button type="button" className="task-location zoomable-panel" onClick={() => openZoom("Where you are", task.title, task.location)}>
-          <small>Where you are</small><p>{task.location}</p><span>Tap to enlarge</span>
-        </button>
+        <section className="task-location">
+          <small>Where you are</small><p>{task.location}</p>
+        </section>
       )}
 
       <div className="steps-heading">
@@ -83,19 +164,34 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
       <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
         {steps.map((step, stepIndex) => (
-          <li key={`${task.id}-${stepIndex}`} className="zoomable-panel" onClick={() => mode === "learn" && openZoom(`Step ${stepIndex + 1}`, step.title, step.detail)}>
+          <li key={`${task.id}-${stepIndex}`}>
             <b>{stepIndex + 1}</b>
-            <div><strong>{step.title}</strong>{mode === "learn" && <p>{step.detail}</p>}</div>
+            <div>
+              <strong>{step.title}</strong>
+              {mode === "learn" && <p>{step.detail}</p>}
+              {mode === "learn" && step.more && (
+                <button type="button" className="step-more" onClick={() => openZoom(`Extra context · Step ${stepIndex + 1}`, step.title, step.more)}>
+                  More context <span>↗</span>
+                </button>
+              )}
+            </div>
           </li>
         ))}
       </ol>
 
+      {characterPose && (
+        <div className={`task-cameo task-cameo--${characterPose}`}>
+          <span aria-hidden="true" />
+          <CharacterProp pose={characterPose} />
+        </div>
+      )}
+
       {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
       {task.check && mode === "learn" && (
-        <button type="button" className="move-on-check zoomable-panel" onClick={() => openZoom("Before you move on", task.title, task.check)}>
-          <small>Before you move on</small><p>{task.check}</p><span>Tap to enlarge</span>
-        </button>
+        <section className="move-on-check">
+          <small>Before you move on</small><p>{task.check}</p>
+        </section>
       )}
 
       {task.tip && mode === "learn" && <aside><small>Shift note</small><p>{task.tip}</p></aside>}

@@ -38,6 +38,8 @@ button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
 button:focus-visible,
+input:focus-visible,
+a:focus-visible,
 summary:focus-visible {
   outline: 3px solid rgba(34, 85, 199, 0.38);
   outline-offset: 3px;
@@ -447,6 +449,7 @@ summary:focus-visible {
 .task-card > .task-location,
 .task-card > .steps-heading,
 .task-card > .steps,
+.task-card > .task-cameo,
 .task-card > .decision,
 .task-card > .move-on-check,
 .task-card > aside,
@@ -513,22 +516,18 @@ summary:focus-visible {
 
 .task-location,
 .move-on-check {
-  display: grid;
+  display: block;
   width: calc(100% - 48px);
-  grid-template-columns: 1fr auto;
   margin-top: 24px;
   padding: 18px;
   border: 1px solid rgba(34, 85, 199, 0.13);
   border-radius: 18px 7px 18px 18px;
   color: var(--ink);
   background: rgba(34, 85, 199, 0.055);
-  cursor: zoom-in;
-  text-align: left;
 }
 
 .task-location small,
 .move-on-check small {
-  grid-column: 1 / -1;
   color: var(--cobalt);
   font-size: 0.64rem;
   font-weight: 800;
@@ -537,9 +536,7 @@ summary:focus-visible {
 }
 
 .task-location p,
-.move-on-check p { margin: 6px 12px 0 0; line-height: 1.48; }
-.task-location span,
-.move-on-check span { align-self: end; color: var(--ink-soft); font-size: 0.59rem; font-weight: 700; white-space: nowrap; }
+.move-on-check p { margin: 6px 0 0; line-height: 1.48; }
 
 .steps-heading {
   display: flex;
@@ -560,7 +557,7 @@ summary:focus-visible {
   gap: 12px;
   padding: 17px 0;
   border-top: 1px solid var(--line);
-  cursor: zoom-in;
+  cursor: default;
 }
 .steps > li:first-child { border-top-color: rgba(24, 32, 48, 0.2); }
 .steps > li > b {
@@ -576,7 +573,49 @@ summary:focus-visible {
 }
 .steps strong { font-size: 0.9rem; line-height: 1.35; }
 .steps p { margin: 5px 0 0; color: var(--ink-soft); font-size: 0.82rem; line-height: 1.55; }
-.steps--quick > li { cursor: default; }
+
+.step-more {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 7px 9px;
+  border: 1px solid rgba(34, 85, 199, 0.16);
+  border-radius: 10px;
+  color: var(--cobalt);
+  background: rgba(34, 85, 199, 0.055);
+  font-size: 0.66rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.step-more span { font-size: 0.72rem; }
+
+.task-cameo {
+  height: 112px;
+  overflow: hidden;
+}
+.task-cameo > span {
+  position: absolute;
+  top: 56px;
+  right: 78px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(23, 33, 56, 0.2));
+}
+.task-cameo > span::after {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+  content: "";
+}
+.task-cameo .character-prop { top: 0; right: 5px; }
+.task-cameo .character-prop--hold { width: 55px; }
+.task-cameo .character-prop--wave { width: 93px; }
+.task-cameo .character-prop--celebrate { width: 101px; }
 
 .decision {
   margin-top: 24px;
@@ -628,6 +667,44 @@ summary:focus-visible {
 .contacts details section { padding: 0 16px 15px; }
 .contacts details b { font-size: 0.7rem; }
 .contacts details p { margin: 5px 0 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
+.contact-phone { display: grid; gap: 8px; margin-top: 14px; }
+.contact-call {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  color: white;
+  background: #19704a;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(25, 112, 74, 0.18);
+}
+.contact-call span { font-size: 0.8rem; font-weight: 800; }
+.contact-call small { color: rgba(255, 255, 255, 0.76); font-size: 0.69rem; font-weight: 700; }
+.contact-add,
+.contact-edit {
+  min-height: 42px;
+  border: 1px solid rgba(34, 85, 199, 0.16);
+  border-radius: 11px;
+  color: var(--cobalt);
+  background: rgba(34, 85, 199, 0.055);
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.contact-edit { min-height: 34px; border: 0; background: transparent; }
+.contact-phone form { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(34, 85, 199, 0.055); }
+.contact-phone form label { color: var(--ink); font-size: 0.72rem; font-weight: 800; }
+.contact-phone form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid rgba(23, 33, 56, 0.2); border-radius: 10px; color: var(--ink); background: rgba(255, 255, 255, 0.8); }
+.contact-phone form input:focus { border-color: var(--cobalt); outline: 3px solid rgba(34, 85, 199, 0.14); }
+.contact-phone form > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.contact-phone form button { min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: rgba(255, 255, 255, 0.72); font-size: 0.67rem; font-weight: 800; cursor: pointer; }
+.contact-phone form button[type="submit"] { border-color: transparent; color: white; background: var(--cobalt); }
+.contact-phone form button:disabled { cursor: not-allowed; opacity: 0.42; }
+.contact-phone form button.contact-remove { color: var(--red); }
+.contact-phone form > small { color: var(--ink-soft); font-size: 0.63rem; line-height: 1.4; }
 
 .completion-gate { margin-top: 20px; padding: 13px 15px; border-radius: 12px; color: var(--red); background: rgba(189, 45, 52, 0.08); font-size: 0.76rem; font-weight: 800; }
 
@@ -731,6 +808,7 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
+  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,
@@ -756,8 +834,6 @@ summary:focus-visible {
   .splash-prop { right: -12px; width: 160px; }
   .title-row { gap: 10px; }
   .task-card h1 { font-size: clamp(2rem, 10vw, 2.9rem); }
-  .task-location, .move-on-check { grid-template-columns: 1fr; }
-  .task-location span, .move-on-check span { margin-top: 8px; }
   .finish__copy { width: 70%; padding: 30px 5px 24px 24px; }
   .finish__copy h1 { font-size: 2.55rem; }
   .finish-prop { right: -19px; width: 168px; }
@@ -778,6 +854,7 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
+  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,
