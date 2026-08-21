@@ -23,15 +23,15 @@ export const guideTasks = [
   {
     id:"store-walk", title:"Start with the Store Walk", short:"Get a fast read on the store before office bookwork.", category:"Start Here",
     purpose:"Catch anything urgent before you settle into the office, and make sure the morning starts from what is actually happening in the store.",
-    location:"Guest-facing store areas first, then the lottery box above the office desk.",
+    location:"Guest-facing store areas, including the scratcher display up front.",
     steps:[
       {title:"Do a quick guest-area pass",detail:"Walk the guest-facing areas and look for anything urgent, unsafe, empty, messy, or obviously wrong. This is a scan, not a deep recovery project."},
       {title:"Separate urgent from cosmetic",detail:"Handle real safety, guest, spill, access, or operational problems now. Notice cosmetic problems, but do not let them steal the whole morning."},
-      {title:"Check the lottery box",detail:"At the office, look in the locked black lottery box above the desk and note any scratcher books that need to be added."},
+      {title:"Check the scratcher display",detail:"Look for any empty scratcher slots up front and note which books the cashier is out of. Those are the books you will pull from the lottery box before starting the computer work."},
       {title:"Check front-end coverage",detail:"Make sure the opening cashier can step away for their first break as soon as Register 2 is ready."},
       {title:"Know what you are walking into",detail:"Before starting bookwork, make a mental note of anything you will need to come back to after the urgent morning work is stable."}
     ],
-    check:"You know the store’s immediate problems, the lottery box has been checked, and nothing urgent is being ignored.",
+    check:"You know the store’s immediate problems, any empty scratcher slots have been identified, and nothing urgent is being ignored.",
     tip:"This is a scan, not a remodeling project.", contacts:[], completeLabel:"Store walk done"
   },
   {
@@ -87,11 +87,34 @@ export const guideTasks = [
     contacts:["jamo"], completeLabel:"Yesterday’s sources collected"
   },
   {
-    id:"health-dept", title:"Health Department Check", short:"Record whether there was a Health Department visit.", category:"2593 Login",
-    purpose:"Complete the daily Health Department entry correctly instead of leaving an inspection question hanging around for later.",
-    location:"2593 login.",
+    id:"lottery-refill", title:"Fill Empty Scratcher Slots", short:"Pull only the books the front display needs.", category:"Lottery",
+    purpose:"Use the empty slots identified during the store walk to pull the correct scratcher books before settling into the back-office computer work.",
+    location:"Office lottery box → scratcher display up front → office.",
     steps:[
-      {title:"Open the 2593 login",detail:"Get into the store’s 2593 login before doing anything with the inspection entry."},
+      {title:"Review the scratcher display check",detail:"Use what you saw up front to identify the empty slots and the exact books the cashier is out of."},
+      {title:"Choose Yes or No below",detail:"If there are empty slots, pull those books from the lottery box and fill them before starting the 2593 work."}
+    ],
+    decision:{
+      question:"Did you find any empty scratcher slots?",
+      noTitle:"The display is full",
+      noText:"Do not pull extra books just to have them sitting up front.",
+      noSteps:["Leave the lottery books in the locked box.","Continue to the back-office computer."],
+      yesTitle:"Pull the missing books",
+      yesText:"Use the locked black lottery box in the office to replace only the books missing from the front display.",
+      yesSteps:["Open the locked black lottery box above the office desk.","Find the books that match the empty scratcher slots you saw up front.","Pull only the books the cashier is out of.","Take those books to the front.","Fill the matching empty scratcher slots.","Return to the office to begin the computer work."]
+    },
+    check:"Every empty scratcher slot has been refilled with the matching book, or the display was already full, and you are ready to use the back-office computer.",
+    contacts:["jamo"], completeLabel:"Scratcher slots ready"
+  },
+  {
+    id:"health-dept", title:"Health Department Check", short:"Record whether there was a Health Department visit.", category:"2593 Login",
+    purpose:"Sign into 2593 on the back-office computer, then complete the daily Health Department entry correctly.",
+    location:"Back-office computer → 2593 login.",
+    steps:[
+      {title:"Go to the back-office computer",detail:"Start this work on the computer in the office after the scratcher slots are handled."},
+      {title:"Find the username and password fields",detail:"The sign-in fields should appear on the screen automatically."},
+      {title:"Use Log In if the fields are missing",detail:"If the username and password fields are not showing, select Log In at the bottom of the screen in the taskbar."},
+      {title:"Enter the 2593 login",detail:"Enter 2593 in the username field, enter the store password, and sign in."},
       {title:"Open Health Department",detail:"Find and open the Health Department check."},
       {title:"Read the visit question",detail:"Confirm whether the question is asking if there was an actual Health Department visit."},
       {title:"Choose No or Yes below",detail:"Use the decision buttons in this guide, then follow the matching directions before you mark this task complete."}

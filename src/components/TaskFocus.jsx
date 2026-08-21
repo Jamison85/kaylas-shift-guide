@@ -8,6 +8,7 @@ const taskCharacterPoses = {
   "cashier-break": "hold",
   "yesterday-sources": "hold",
   "register-two": "wave",
+  "lottery-refill": "hold",
   "gas-inspection": "hold",
   "price-server": "wave",
   "paperwork-packet": "hold",
