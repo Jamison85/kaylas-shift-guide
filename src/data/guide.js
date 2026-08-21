@@ -166,10 +166,11 @@ export const guideTasks = [
       {title:"Find yesterday’s row",detail:"Use the Date column to locate the previous business day yourself."},
       {title:"Confirm yesterday says Pending",detail:"Yesterday is the day you are preparing to close, so its status should be Pending."},
       {title:"Check the days before yesterday",detail:"Older business days should show Closed."},
-      {title:"Double-click yesterday’s Pending row",detail:"Once you have confirmed the correct date and Pending status, double-click that row to open it."},
+      {title:"Double-click yesterday’s Pending row",detail:"Once you have confirmed the correct date and Pending status, double-click that row. The End Of Day Dialog opens directly on the Cashiers tab."},
+      {title:"Confirm the Cashiers tab opened",detail:"You should see the cashier rows along with Balance, Finalize, and Search controls. Do not finalize anything yet."},
       {title:"Stop if the pattern is wrong",detail:"If yesterday is not Pending, or an older day is unexpectedly open, do not force anything closed just to get past the screen."}
     ],
-    check:"Yesterday showed Pending, older days showed Closed, and the correct row was opened by double-clicking it.", contacts:["jamo","loretta"], completeLabel:"Pending day opened"
+    check:"Yesterday showed Pending, older days showed Closed, and double-clicking the correct row opened the Cashiers tab without anything being finalized.", contacts:["jamo","loretta"], completeLabel:"Pending day opened"
   },
   {
     id:"paperwork-packet", title:"Build the Paperwork Packet", short:"Put yesterday’s reports and receipts in the correct order.", category:"Paperwork",
