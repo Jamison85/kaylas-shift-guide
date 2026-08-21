@@ -100,8 +100,8 @@ export const guideTasks = [
       noText:"Do not pull extra books just to have them sitting up front.",
       noSteps:["Leave the lottery books in the locked box.","Continue to the back-office computer."],
       yesTitle:"Pull the missing books",
-      yesText:"Use the locked black lottery box in the office to replace only the books missing from the front display.",
-      yesSteps:["Open the locked black lottery box above the office desk.","Find the books that match the empty scratcher slots you saw up front.","Pull only the books the cashier is out of.","Take those books to the front.","Fill the matching empty scratcher slots.","Return to the office to begin the computer work."]
+      yesText:"Use the locked black lottery box in the office to replace only the books missing from the front display. The stored books were activated when received, so do not activate them again.",
+      yesSteps:["Open the locked black lottery box above the office desk.","Find the books that match the empty scratcher slots you saw up front.","Pull only the books the cashier is out of.","Do not activate them again; books in the lottery box are already activated.","Remember that the tickets in each book start at 0 and count upward.","Take those books to the front.","Fill the matching empty scratcher slots.","Return to the office to begin the computer work."]
     },
     check:"Every empty scratcher slot has been refilled with the matching book, or the display was already full, and you are ready to use the back-office computer.",
     contacts:["jamo"], completeLabel:"Scratcher slots ready"
@@ -201,7 +201,7 @@ export const guideTasks = [
       {title:"Start a new audit",detail:"Select New. Do not open an old audit and start changing it.",more:"New creates today’s working audit. Opening an older audit risks changing a record that belongs to a different business day."},
       {title:"Use yesterday’s beginning numbers",detail:"Enter the lottery beginning numbers you collected from yesterday into the matching beginning fields."},
       {title:"Use yesterday’s ending numbers",detail:"Enter yesterday’s matching lottery ending numbers into the ending fields."},
-      {title:"Check each beginning/ending pair",detail:"Make sure every beginning number is paired with the correct ending number before moving to the next page."}
+      {title:"Check each beginning/ending pair",detail:"Make sure every beginning number is paired with the correct ending number before moving to the next page. Scratcher tickets start at 0 and count upward through the book, so do not read the sequence backward."}
     ],
     check:"A new lottery audit is open and yesterday’s beginning and ending lottery numbers are entered in the correct matching fields.", contacts:["jamo","loretta"], completeLabel:"Lottery audit started"
   },
