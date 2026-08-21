@@ -139,10 +139,12 @@ export const guideTasks = [
   },
   {
     id:"price-server", title:"Price Server Editor", short:"Approve each item group, then auto-post the batch.", category:"Bookwork",
-    purpose:"Clear Price Server Editor correctly before you move deeper into End of Day.", location:"Office computer → Programs → Back Office → Price Server Editor.",
+    purpose:"Clear Price Server Editor correctly before you move deeper into End of Day.", location:"Office computer → bottom-left Start menu → Programs → StorePoint Office → Price Server Editor.",
     steps:[
-      {title:"Go to the office computer",detail:"From Windows, open Programs, then Back Office."},
-      {title:"Open Price Server Editor",detail:"Choose Price Server Editor from the Back Office area."},
+      {title:"Click the Start menu",detail:"On the office computer, select Start in the bottom-left corner of the Windows taskbar."},
+      {title:"Open Programs",detail:"Choose Programs from the Start menu."},
+      {title:"Open StorePoint Office",detail:"Select StorePoint Office from the Programs list."},
+      {title:"Open Price Server Editor",detail:"Choose Price Server Editor inside StorePoint Office."},
       {title:"Sign in",detail:"Use your first and last name plus your register sign-in number."},
       {title:"Look for item groups",detail:"Check how many item groups are waiting. If there are zero groups, you do not have anything to approve."},
       {title:"Open the first item group",detail:"Review the group that is waiting for approval instead of trying to approve everything blindly at once."},
@@ -156,9 +158,9 @@ export const guideTasks = [
   },
   {
     id:"eod-status", title:"Check End of Day Status", short:"Yesterday should be Pending; older days should be Closed.", category:"Bookwork",
-    purpose:"Make sure you are working the correct business day before you finalize anything.", location:"Office computer, same Windows / Back Office area.",
+    purpose:"Make sure you are working the correct business day before you finalize anything.", location:"Office computer, same StorePoint Office area.",
     steps:[
-      {title:"Open End of Day",detail:"From the same Windows area you used for Price Server Editor, open End of Day."},
+      {title:"Open End of Day",detail:"From the same StorePoint Office area you used for Price Server Editor, open End of Day."},
       {title:"Find yesterday",detail:"Look at the business-day list and locate yesterday’s date."},
       {title:"Confirm yesterday says Pending",detail:"Yesterday is the day you are preparing to close, so its status should be Pending."},
       {title:"Check the days before yesterday",detail:"Older business days should show Closed."},
