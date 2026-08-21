@@ -158,16 +158,18 @@ export const guideTasks = [
     tip:"One highlighted row at a time. The prices deserve slightly more precision than a game of Whac-A-Mole.", contacts:["jamo"], completeLabel:"Price changes applied"
   },
   {
-    id:"eod-status", title:"Check End of Day Status", short:"Yesterday should be Pending; older days should be Closed.", category:"Bookwork",
-    purpose:"Move directly from the completed price changes into the correct business day before finalizing anything.", location:"Programs window returned after closing Price Server Editor.",
+    id:"eod-status", title:"Open Yesterday’s Pending Day", short:"Find yesterday yourself, verify Pending, then double-click it.", category:"Bookwork",
+    purpose:"Use the Store Business Days list to open the correct business day instead of assuming the right row is already selected.", location:"Programs window → End of Day → Store Business Days.",
     steps:[
       {title:"Click End of Day",detail:"After Price Server Editor closes, use the Programs window it returns you to and select End of Day beside the Price Server Editor option."},
-      {title:"Find yesterday",detail:"Look at the business-day list and locate yesterday’s date."},
+      {title:"Use the Store Business Days list",detail:"The End of Day window opens a dated list of business-day rows. The row you need is not automatically highlighted."},
+      {title:"Find yesterday’s row",detail:"Use the Date column to locate the previous business day yourself."},
       {title:"Confirm yesterday says Pending",detail:"Yesterday is the day you are preparing to close, so its status should be Pending."},
       {title:"Check the days before yesterday",detail:"Older business days should show Closed."},
+      {title:"Double-click yesterday’s Pending row",detail:"Once you have confirmed the correct date and Pending status, double-click that row to open it."},
       {title:"Stop if the pattern is wrong",detail:"If yesterday is not Pending, or an older day is unexpectedly open, do not force anything closed just to get past the screen."}
     ],
-    check:"Yesterday shows Pending and the prior days show Closed.", contacts:["jamo","loretta"], completeLabel:"EOD status verified"
+    check:"Yesterday showed Pending, older days showed Closed, and the correct row was opened by double-clicking it.", contacts:["jamo","loretta"], completeLabel:"Pending day opened"
   },
   {
     id:"paperwork-packet", title:"Build the Paperwork Packet", short:"Put yesterday’s reports and receipts in the correct order.", category:"Paperwork",
