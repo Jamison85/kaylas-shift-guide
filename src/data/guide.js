@@ -70,19 +70,20 @@ export const guideTasks = [
     tip:"Human first, spreadsheet second. A revolutionary retail concept.", contacts:[], completeLabel:"Opening cashier relieved"
   },
   {
-    id:"yesterday-sources", title:"Collect Yesterday’s Bookwork Sources", short:"Grab the Safe Report and lottery beginning/ending numbers.", category:"Set Up",
-    purpose:"Get the previous business day’s source information together now so the later audit and reconciliation are based on the actual records.",
-    location:"Smart Safe area + office desk.",
+    id:"yesterday-sources", title:"Collect Yesterday’s Bookwork Sources", short:"Get the Safe Report up front, then locate the lottery pages.", category:"Set Up",
+    purpose:"Collect yesterday’s printed source paperwork before starting office work so the later lottery audit and Safe Report reconciliation use the actual records.",
+    location:"Front end first, then the office.",
     steps:[
       {title:"Confirm yesterday’s business date",detail:"Make sure every report or number you collect belongs to the previous business day, not today."},
-      {title:"Grab yesterday’s Safe Report",detail:"There will almost always already be a Safe Report available for the previous day."},
-      {title:"Reprint it if it is missing",detail:"If the report is not there, open the Reports section of the Smart Safe and reprint the Safe Report for yesterday.",more:"Choose the previous business date before printing. The report will later be compared with that same day’s End of Day batch, so today’s Safe Report is not a substitute."},
-      {title:"Find yesterday’s lottery page",detail:"Check the usual lottery-paperwork spot and the prior-day paperwork pouches on the office desk until you find yesterday’s page.",more:"The lottery page is often tucked into the pouch holding paperwork for whoever closed the night before, but it is not always in the same place. Check both likely locations instead of assuming it is missing."},
-      {title:"Grab yesterday’s lottery beginning numbers",detail:"Use yesterday’s lottery page to collect the beginning numbers for today’s lottery audit."},
-      {title:"Grab yesterday’s lottery ending numbers",detail:"Collect the matching ending numbers from the same page."},
-      {title:"Keep the sources together",detail:"Keep the Safe Report and the beginning/ending lottery numbers available while you move into the morning bookwork."}
+      {title:"Look for yesterday’s Safe Report up front",detail:"The report prints at closing and is usually on top of the Smart Safe or sitting on one of the registers."},
+      {title:"Ask the opening employee if needed",detail:"If the Safe Report is not in either usual spot, ask the opening employee to help locate it before assuming it is missing."},
+      {title:"Reprint it only if it is actually missing",detail:"If no one can locate the printed report, open the Reports section of the Smart Safe and reprint the Safe Report for yesterday.",more:"Choose the previous business date before printing. The report will later be compared with that same day’s End of Day batch, so today’s Safe Report is not a substitute."},
+      {title:"Check for yesterday’s lottery pages up front",detail:"If the lottery pages are up front, grab them now. It does not matter whether you pick them up immediately before or after the Safe Report."},
+      {title:"Head to the office",detail:"Once the Safe Report and any lottery pages that were up front are collected, take them with you to the office."},
+      {title:"Find the lottery pages if they were not up front",detail:"Check the usual lottery-paperwork spot and the prior-day paperwork pouches on the office desk until you find yesterday’s pages.",more:"The lottery pages are often tucked into the pouch holding paperwork for whoever closed the night before, but they are not always in the same place. Check both likely locations instead of assuming they are missing."},
+      {title:"Use yesterday’s beginning and ending numbers",detail:"Keep the beginning and ending lottery numbers with the Safe Report for today’s lottery audit and later reconciliation."}
     ],
-    check:"You have yesterday’s Safe Report plus yesterday’s lottery beginning and ending numbers, all for the correct business date.",
+    check:"You are in the office with yesterday’s Safe Report and yesterday’s lottery beginning and ending numbers, all for the correct business date.",
     contacts:["jamo"], completeLabel:"Yesterday’s sources collected"
   },
   {
