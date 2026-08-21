@@ -28,25 +28,62 @@ export const guideTasks = [
       {title:"Do a quick guest-area pass",detail:"Walk the guest-facing areas and look for anything urgent, unsafe, empty, messy, or obviously wrong. This is a scan, not a deep recovery project."},
       {title:"Separate urgent from cosmetic",detail:"Handle real safety, guest, spill, access, or operational problems now. Notice cosmetic problems, but do not let them steal the whole morning."},
       {title:"Check the lottery box",detail:"At the office, look in the locked black lottery box above the desk and note any scratcher books that need to be added."},
-      {title:"Check front-end coverage",detail:"Make sure the opening cashier is covered well enough to step away for the first bathroom break as soon as possible."},
+      {title:"Check front-end coverage",detail:"Make sure the opening cashier can step away for their first break as soon as Register 2 is ready."},
       {title:"Know what you are walking into",detail:"Before starting bookwork, make a mental note of anything you will need to come back to after the urgent morning work is stable."}
     ],
     check:"You know the store’s immediate problems, the lottery box has been checked, and nothing urgent is being ignored.",
     tip:"This is a scan, not a remodeling project.", contacts:[], completeLabel:"Store walk done"
   },
   {
-    id:"cashier-break", title:"Relieve the Opening Cashier", short:"Get the opener their first bathroom break.", category:"People",
-    purpose:"The opening cashier has already been holding the front alone for a while. Get them a break before office work turns into a black hole.",
-    location:"Front register / front end.",
+    id:"register-two", title:"Open and Fund Register 2", short:"Put money in it before covering the opener’s break.", category:"Front End",
+    purpose:"Have Register 2 open and ready before the opening cashier steps away so Kayla can use it to ring customers during the break.",
+    location:"Register 2 + Smart Safe.",
     steps:[
-      {title:"Make sure the front is stable",detail:"Check that there is no immediate guest issue or register problem that would make stepping in unsafe or confusing."},
-      {title:"Tell the opener you have the front",detail:"Be clear that they can go take their bathroom break now, not ‘sometime after one more thing.’"},
-      {title:"Cover the register area",detail:"Stay available at the front while they are away so they are not being called back mid-break."},
-      {title:"Let them actually finish the break",detail:"Do not start an office task that leaves the front uncovered before they return."},
-      {title:"Hand the front back cleanly",detail:"Once they are back, quickly pass along anything that happened while they were away and then continue the guide."}
+      {title:"Open Register 2",detail:"Get Register 2 open before the opening cashier goes on break."},
+      {title:"Check the money already inside",detail:"Decide whether Register 2 needs funding before Kayla uses it to ring customers.",more:"Register 2 will usually need money because no one has used it yet. Check first anyway; adding cash it does not need only creates more reconciliation work later."},
+      {title:"Choose Yes or No below",detail:"If it needs money, follow the Smart Safe and Paid In directions. If it already has enough, keep it open and ready for break coverage."}
     ],
-    check:"The opening cashier has actually had the first bathroom break and the front is covered again.",
+    decision:{
+      question:"Does Register 2 need money?",
+      noTitle:"Register 2 already has enough money",
+      noText:"Do not remove extra money from the safe and do not enter a Paid In.",
+      noSteps:["Leave the existing cash alone.","Keep Register 2 open and ready to ring customers during the break."],
+      yesTitle:"Fund Register 2",
+      yesText:"Use the Smart Safe menu option, then record the exact same amount as a Paid In on Register 2.",
+      yesSteps:["Decide the bill mix needed, usually tens, fives, and ones.","Add coins only if the register actually needs change.","Use the Smart Safe menu option to get the money.","Count the total amount received from the safe.","Put that money into Register 2.","Enter a Paid In on Register 2 for that exact total.","Confirm the physical cash added and the Paid In amount match exactly.","Keep Register 2 open and ready to ring customers during the break."]
+    },
+    check:"Register 2 is open and ready for break coverage; if money was added, the Smart Safe amount, physical cash, and Register 2 Paid In all match.",
+    contacts:["jamo"], completeLabel:"Register 2 ready"
+  },
+  {
+    id:"cashier-break", title:"Relieve the Opening Cashier", short:"Use Register 2 to cover the opener’s first break.", category:"People",
+    purpose:"Give the opening cashier their break while Kayla stays at the front and rings customers from the newly opened Register 2.",
+    location:"Register 2 / front end.",
+    steps:[
+      {title:"Confirm Register 2 is ready",detail:"Make sure Register 2 is open and has enough money before the opening cashier leaves the front."},
+      {title:"Tell the opener you have the front",detail:"Let the opening cashier know they can take their break now."},
+      {title:"Ring customers on Register 2",detail:"Use Register 2 for customer transactions while the opening cashier is away."},
+      {title:"Stay at the front",detail:"Do not start an office task or leave the register area until the opening cashier returns."},
+      {title:"Hand the front back cleanly",detail:"When they return, quickly pass along anything that happened during the break, then continue the guide."}
+    ],
+    check:"The opening cashier has returned from break, and Kayla covered the front by ringing customers on Register 2.",
     tip:"Human first, spreadsheet second. A revolutionary retail concept.", contacts:[], completeLabel:"Opening cashier relieved"
+  },
+  {
+    id:"yesterday-sources", title:"Collect Yesterday’s Bookwork Sources", short:"Grab the Safe Report and lottery beginning/ending numbers.", category:"Set Up",
+    purpose:"Get the previous business day’s source information together now so the later audit and reconciliation are based on the actual records.",
+    location:"Smart Safe area + office desk.",
+    steps:[
+      {title:"Confirm yesterday’s business date",detail:"Make sure every report or number you collect belongs to the previous business day, not today."},
+      {title:"Grab yesterday’s Safe Report",detail:"There will almost always already be a Safe Report available for the previous day."},
+      {title:"Reprint it if it is missing",detail:"If the report is not there, open the Reports section of the Smart Safe and reprint the Safe Report for yesterday.",more:"Choose the previous business date before printing. The report will later be compared with that same day’s End of Day batch, so today’s Safe Report is not a substitute."},
+      {title:"Find yesterday’s lottery page",detail:"Check the usual lottery-paperwork spot and the prior-day paperwork pouches on the office desk until you find yesterday’s page.",more:"The lottery page is often tucked into the pouch holding paperwork for whoever closed the night before, but it is not always in the same place. Check both likely locations instead of assuming it is missing."},
+      {title:"Grab yesterday’s lottery beginning numbers",detail:"Use yesterday’s lottery page to collect the beginning numbers for today’s lottery audit."},
+      {title:"Grab yesterday’s lottery ending numbers",detail:"Collect the matching ending numbers from the same page."},
+      {title:"Keep the sources together",detail:"Keep the Safe Report and the beginning/ending lottery numbers available while you move into the morning bookwork."}
+    ],
+    check:"You have yesterday’s Safe Report plus yesterday’s lottery beginning and ending numbers, all for the correct business date.",
+    contacts:["jamo"], completeLabel:"Yesterday’s sources collected"
   },
   {
     id:"health-dept", title:"Health Department Check", short:"Record whether there was a Health Department visit.", category:"2593 Login",
@@ -132,17 +169,17 @@ export const guideTasks = [
     check:"Yesterday’s date, any required safe corrections, the page-3 customer count, and initials/signature are on the packet, and the packet is filed below the desk.", contacts:["jamo"], completeLabel:"Paperwork details complete"
   },
   {
-    id:"lottery-audit-start", title:"Start the Lottery Audit", short:"Open a new audit and enter the morning lottery numbers.", category:"Lottery",
-    purpose:"Start the morning lottery audit using the correct screen and the actual prior-night/current-morning numbers.", location:"Screen 3 of the 2593 login.",
+    id:"lottery-audit-start", title:"Start the Lottery Audit", short:"Open a new audit and enter yesterday’s beginning/ending numbers.", category:"Lottery",
+    purpose:"Start today’s lottery audit using the correct screen and the beginning and ending lottery numbers collected from yesterday.", location:"Screen 3 of the 2593 login.",
     steps:[
       {title:"Go to screen 3",detail:"In the 2593 login, move to screen 3."},
       {title:"Open Lottery Audits",detail:"Choose Lottery Audits from screen 3."},
       {title:"Start a new audit",detail:"Select New. Do not open an old audit and start changing it.",more:"New creates today’s working audit. Opening an older audit risks changing a record that belongs to a different business day."},
-      {title:"Identify the prior-night numbers",detail:"Use the numbers from the prior night for the fields that ask for the previous reading."},
-      {title:"Identify the current-morning numbers",detail:"Use the current morning readings for the fields that ask for the current reading."},
-      {title:"Enter the numbers in the matching fields",detail:"Take your time and make sure each number is being entered in the field it belongs to before moving to the next page."}
+      {title:"Use yesterday’s beginning numbers",detail:"Enter the lottery beginning numbers you collected from yesterday into the matching beginning fields."},
+      {title:"Use yesterday’s ending numbers",detail:"Enter yesterday’s matching lottery ending numbers into the ending fields."},
+      {title:"Check each beginning/ending pair",detail:"Make sure every beginning number is paired with the correct ending number before moving to the next page."}
     ],
-    check:"A new lottery audit is open and the prior-night/current-morning numbers are entered in the correct fields.", contacts:["jamo","loretta"], completeLabel:"Lottery audit started"
+    check:"A new lottery audit is open and yesterday’s beginning and ending lottery numbers are entered in the correct matching fields.", contacts:["jamo","loretta"], completeLabel:"Lottery audit started"
   },
   {
     id:"lottery-books", title:"Enter Lottery Book Counts", short:"Use the locked black box counts on page two.", category:"Lottery",
@@ -184,7 +221,7 @@ export const guideTasks = [
       yesSteps:["Make one last scan of the entered numbers.","Finalize the audit.","Enter your initials."],
       noTitle:"Do not finalize it yet",
       noText:"Treat this as an entry check first, then an escalation if the numbers still do not make sense.",
-      noSteps:["Re-check the prior-night and current-morning numbers.","Re-check the page-2 counts against the locked black box.","Use delete/reset if an entry is wrong, then correct it.","Call Jamo first for a lottery-system or chain issue.","If it is still more than a couple tickets or more than $20, stop and contact Jamo or Loretta before finalizing."]
+      noSteps:["Re-check yesterday’s beginning and ending numbers.","Re-check the page-2 counts against the locked black box.","Use delete/reset if an entry is wrong, then correct it.","Call Jamo first for a lottery-system or chain issue.","If it is still more than a couple tickets or more than $20, stop and contact Jamo or Loretta before finalizing."]
     },
     check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamo","loretta"], completeLabel:"Lottery audit finalized"
   },

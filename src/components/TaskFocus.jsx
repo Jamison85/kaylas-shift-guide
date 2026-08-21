@@ -5,6 +5,8 @@ import { contacts } from "../data/guide";
 const taskCharacterPoses = {
   "store-walk": "wave",
   "cashier-break": "hold",
+  "yesterday-sources": "hold",
+  "register-two": "wave",
   "gas-inspection": "hold",
   "price-server": "wave",
   "paperwork-packet": "hold",
