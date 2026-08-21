@@ -138,6 +138,24 @@ export const guideTasks = [
     check:"State Inspection of Gas Dispensers is saved with Not Applicable when there was no inspection, Passed when it passed, or Failed when it failed, plus initials and Complete checked.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
   },
   {
+    id:"receipt-sort", title:"Sort Yesterday’s Receipt Bags", short:"Empty every cashier bag and group the receipts before End of Day.", category:"Paperwork",
+    purpose:"Create a calm, repeatable desk setup so the receipts needed during End of Day are already separated and easy to find.", location:"Office desk. The cashier receipt bags from yesterday should already be there.",
+    steps:[
+      {title:"Gather yesterday’s cashier bags",detail:"Collect every receipt bag the cashiers used during the previous business day. Make sure the bags belong to the day you are closing."},
+      {title:"Empty every bag completely",detail:"Physically remove all receipts and paperwork from each bag. Check the bottom, corners, and folds so one stubborn receipt does not become today’s unnecessary plot twist."},
+      {title:"Separate Paid Ins",detail:"Make one group for Paid In receipts so they are ready when you compare Paid Ins during End of Day."},
+      {title:"Separate Paid Outs",detail:"Make a separate group for Paid Out receipts. Do not mix them into the Paid In group."},
+      {title:"Group lottery and lotto",detail:"Put lottery and lotto receipts together in their own clearly recognizable spot."},
+      {title:"Group line-item voids",detail:"Keep all Line Item Void receipts together."},
+      {title:"Group employee discounts",detail:"Keep Employee Discount receipts together in their own group."},
+      {title:"Group waste paperwork",detail:"Keep waste receipts and related waste paperwork together."},
+      {title:"Set aside anything else for review",detail:"Use one small Other / Needs Review group for paperwork that does not clearly belong in the regular categories. Do not guess and bury it in the wrong pile."},
+      {title:"Use the same desk positions every morning",detail:"Put each category in its usual place on the desk. A consistent layout makes the needed receipt easier to find when End of Day asks a stupid question at an inconvenient time."},
+      {title:"Keep the groups available",detail:"Leave the sorted groups on the desk for the upcoming End of Day checks and final paperwork packet."}
+    ],
+    check:"Every cashier bag is empty, the receipts are separated into consistent desk groups, and the groups are ready before End of Day begins.", contacts:["jamo"], completeLabel:"Receipt bags sorted"
+  },
+  {
     id:"price-server", title:"Apply the Morning Price Changes", short:"Highlight each pending row and approve it with Auto Post Batch.", category:"Bookwork",
     purpose:"Price Server Editor is the simple morning tool used to apply the store’s price changes in the computer system before moving into End of Day.", location:"Office computer → bottom-left Start menu → Programs → StorePoint Office → Price Server Editor.",
     steps:[
@@ -174,9 +192,10 @@ export const guideTasks = [
   },
   {
     id:"paperwork-packet", title:"Build the Paperwork Packet", short:"Put yesterday’s reports and receipts in the correct order.", category:"Paperwork",
-    purpose:"Build one clean packet before you start adding the final verification details.", location:"Office desk. Receipts / paperwork are in the brown paper bag over the desk.",
+    purpose:"Use the receipt groups sorted earlier to build one clean packet before adding the final verification details.", location:"Office desk, using the sorted receipt groups and yesterday’s reports.",
     steps:[
-      {title:"Get yesterday’s paperwork together",detail:"Use the brown paper bag over the desk to gather the receipts and paperwork for the day you are closing."},
+      {title:"Bring the sorted groups beside you",detail:"Use the Paid In, Paid Out, lottery/lotto, line-item void, employee discount, waste, and review groups you organized before End of Day."},
+      {title:"Get yesterday’s reports together",detail:"Gather the reports and supporting paperwork for the business day you are closing."},
       {title:"Put the Deposit Report on the front",detail:"The Deposit Report should be the front report in the packet."},
       {title:"Place the Lottery Report under it",detail:"The Lottery Report goes directly underneath the Deposit Report."},
       {title:"Add waste and corrections",detail:"Place the waste/correction paperwork with the packet and staple it in front as required."},
