@@ -117,11 +117,11 @@ export const guideTasks = [
       {title:"Enter the 2593 login",detail:"Enter 2593 in the username field, enter the store password, and sign in."},
       {title:"Find Task List at the bottom left",detail:"On the 2593 landing page, look under Task List and Today in the lower-left area of the screen."},
       {title:"Open Health Inspection",detail:"Select the task labeled Health Inspection."},
-      {title:"Read the inspection question",detail:"The task window asks, ‘Did you have an Inspection?’ The dropdown contains Yes, No, and N/A."},
+      {title:"Read the inspection question",detail:"The task window asks, ‘Did you have an Inspection?’ The dropdown contains Passed, Failed, and Not Applicable."},
       {title:"Choose No or Yes below",detail:"Use the decision buttons in this guide, then follow the matching directions before you mark this task complete."}
     ],
-    decision:{question:"Was there a Health Department visit?",noTitle:"No visit: choose N/A",noText:"Open the Yes / No / N/A dropdown and choose N/A. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose N/A.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was a visit",yesText:"Use the Yes or No option that matches the actual inspection result, enter your initials, check Complete, save, and note anything needing management follow-up.",yesSteps:["Choose the applicable Yes or No option in the dropdown.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
-    check:"Health Inspection is saved with N/A when there was no visit, or the actual Yes/No result when there was one, plus initials and Complete checked.",
+    decision:{question:"Was there a Health Department visit?",noTitle:"No visit: choose Not Applicable",noText:"Open the dropdown and choose Not Applicable. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose Not Applicable.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was a visit",yesText:"Choose Passed if the inspection passed or Failed if it failed. Then enter your initials, check Complete, save, and note anything needing management follow-up.",yesSteps:["Choose Passed for a passed inspection or Failed for a failed inspection.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
+    check:"Health Inspection is saved with Not Applicable when there was no visit, Passed when it passed, or Failed when it failed, plus initials and Complete checked.",
     contacts:["jamo","loretta"], completeLabel:"Health check saved"
   },
   {
@@ -131,11 +131,11 @@ export const guideTasks = [
       {title:"Stay signed into 2593",detail:"Do not log out after saving Health Inspection."},
       {title:"Return to the bottom-left Task List",detail:"Under Today, find the remaining inspection task."},
       {title:"Open State Inspection of Gas Dispensers",detail:"Select the task using the exact label shown in the Task List."},
-      {title:"Read the inspection question",detail:"Confirm whether there was an actual state inspection of the gas dispensers. The dropdown contains Yes, No, and N/A."},
+      {title:"Read the inspection question",detail:"Confirm whether there was an actual state inspection of the gas dispensers. The dropdown contains Passed, Failed, and Not Applicable."},
       {title:"Choose No or Yes below",detail:"Use the matching directions before moving on."}
     ],
-    decision:{question:"Was there a state inspection of the gas dispensers?",noTitle:"No inspection: choose N/A",noText:"Open the Yes / No / N/A dropdown and choose N/A. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose N/A.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was an inspection",yesText:"Use the Yes or No option that matches the actual inspection result, enter your initials, check Complete, save, and document anything needing management follow-up.",yesSteps:["Choose the applicable Yes or No option in the dropdown.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
-    check:"State Inspection of Gas Dispensers is saved with N/A when there was no inspection, or the actual Yes/No result when there was one, plus initials and Complete checked.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
+    decision:{question:"Was there a state inspection of the gas dispensers?",noTitle:"No inspection: choose Not Applicable",noText:"Open the dropdown and choose Not Applicable. Then enter your initials, check Complete, and save.",noSteps:["Open the dropdown and choose Not Applicable.","Enter your initials.","Check Complete.","Select Save."],yesTitle:"Yes, there was an inspection",yesText:"Choose Passed if the inspection passed or Failed if it failed. Then enter your initials, check Complete, save, and document anything needing management follow-up.",yesSteps:["Choose Passed for a passed inspection or Failed for a failed inspection.","Enter your initials.","Check Complete.","Select Save.","Document or escalate anything that needs follow-up."]},
+    check:"State Inspection of Gas Dispensers is saved with Not Applicable when there was no inspection, Passed when it passed, or Failed when it failed, plus initials and Complete checked.", contacts:["jamo","loretta"], completeLabel:"Gas check saved"
   },
   {
     id:"price-server", title:"Price Server Editor", short:"Approve each item group, then auto-post the batch.", category:"Bookwork",
