@@ -190,39 +190,44 @@ export const guideTasks = [
     check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamison","jamo","loretta"], completeLabel:"Lottery audit finalized"
   },
   {
-    id:"safe-deposit", title:"Match the Safe Report Deposit", short:"Safe Report deposit should match the End of Day deposit tab.", category:"Cash / Safe",
-    purpose:"Verify the same deposit number appears in both places before you continue through End of Day.", location:"Safe Report + End of Day → Deposit tab.",
+    id:"safe-deposit", title:"Reconcile Safe Report to End of Day", short:"Match Kayla’s Paid Ins and the deposit across both.", category:"Cash / Safe",
+    purpose:"Compare the Safe Report with the actual End of Day fields instead of treating the deposit as the only number that matters.", location:"Safe Report beside you + StorePoint Back Office → End Of Day Dialog → correct Pending day.",
     steps:[
-      {title:"Find the deposit on the Safe Report",detail:"Locate the deposit number shown on the Safe Report."},
-      {title:"Open the End of Day deposit tab",detail:"Go to the Deposit area inside End of Day."},
-      {title:"Find the deposit there",detail:"Locate the deposit number End of Day is showing."},
-      {title:"Compare the two numbers",detail:"Read them digit by digit. They should match.",more:"Compare the exact deposit number shown on the Safe Report with the exact deposit number in the End of Day Deposit tab. Do not compare it to a drawer total or a tender total by mistake."},
-      {title:"Choose Yes or No below",detail:"If they match, Drawers / Full Till is skipped. If they do not, that becomes the next troubleshooting step."}
+      {title:"Keep the Safe Report beside the screen",detail:"You will compare the report against End of Day one field at a time."},
+      {title:"Open the Cashiers tab",detail:"In the correct Pending End of Day batch, start on Cashiers."},
+      {title:"Find every Kayla row",detail:"Kayla may appear on more than one row because each terminal can have its own cashier line.",more:"The photographed Cashiers table shows separate columns for Cashier, Status, Terminal, Variance, Sales, Drop, Open Bank, Pay In, Pay Out, PrePay, and Adjustments. Use Kayla’s name and terminal number to make sure you have all of her rows."},
+      {title:"Compare Kayla’s Paid Ins",detail:"Add Kayla’s Pay In amounts across all of her rows, then compare that total with her Paid Ins on the Safe Report.",more:"Do not compare only the first Kayla row if she used both terminals. Read each Pay In amount carefully and make sure the combined End of Day total equals the Safe Report total."},
+      {title:"Compare any matching Paid Outs",detail:"If the Safe Report shows Paid Outs for Kayla, compare them with the Pay Out amounts on her End of Day rows.",more:"Keep the signs intact. An amount shown in parentheses is negative; do not accidentally treat it as a positive amount while comparing reports."},
+      {title:"Open Drop Safe, then the Deposit area",detail:"Use the Drop Safe tab in End of Day and go to the deposit information used for the business day."},
+      {title:"Match the deposit on both reports",detail:"The deposit on the Safe Report must match the deposit shown in End of Day.",more:"Compare the actual deposit on the Safe Report with the End of Day Drop Safe / Deposit figure. Do not substitute the Cashiers-tab Sales, Drop, Variance, or tender total for the deposit comparison."},
+      {title:"Choose Yes or No below",detail:"Everything compared must agree. If any Paid In, applicable Paid Out, or deposit figure does not match, use the mismatch path."}
     ],
     decision:{
-      question:"Do the two deposit numbers match?",
-      yesTitle:"They match",
+      question:"Do Kayla’s Paid Ins, applicable Paid Outs, and the deposit agree on both sides?",
+      yesTitle:"The reports reconcile",
       yesText:"Good. Skip Drawers / Full Till and continue to the tender totals.",
-      yesSteps:["Leave the matching deposit numbers alone.","Continue to Verify Tender Totals."],
+      yesSteps:["Leave the matching entries alone.","Continue to Verify Tender Totals."],
       yesSkip:["drawer-mismatch"],
-      noTitle:"They do not match",
-      noText:"Do not finalize the deposit. Check Drawers / Full Till next.",
-      noSteps:["Leave the mismatched numbers visible if possible.","Open Drawers / Full Till next.","Look for an unfinalized drawer or an incorrect till entry before escalating."]
+      noTitle:"Something does not match",
+      noText:"Do not finalize anything yet. Identify the failed comparison, then check Drawers / Full Till.",
+      noSteps:["Note whether the mismatch is Paid In, Paid Out, or deposit.","Leave the Safe Report and End of Day available for comparison.","Check Kayla’s other terminal row before assuming money is missing.","Open Drawers / Full Till next.","Look for an unfinalized drawer or an incorrect till entry before escalating."]
     },
-    check:"The Safe Report deposit and End of Day deposit match, or you have identified that a mismatch needs the Drawers / Full Till check.", contacts:["jamo","loretta"], completeLabel:"Deposit matched"
+    check:"Kayla’s Paid Ins, any applicable Paid Outs, and the deposit agree between the Safe Report and End of Day, or the mismatch has been identified for the next check.", contacts:["jamo","loretta"], completeLabel:"Reports reconciled"
   },
   {
-    id:"drawer-mismatch", title:"Check Drawers / Full Till", short:"This is the first place to check when the deposit is off.", category:"Cash / Safe",
-    purpose:"Check the most likely drawer/till issue before escalating a safe or deposit mismatch.", location:"End of Day → Drawers / Full Till.",
+    id:"drawer-mismatch", title:"Fix a Safe / EOD Mismatch", short:"Check the failed comparison before escalating.", category:"Cash / Safe",
+    purpose:"Find the specific drawer or till issue behind a Paid In, Paid Out, or deposit mismatch.", location:"End of Day → Cashiers and Drawers / Full Till, with the Safe Report beside you.",
     steps:[
-      {title:"Open Drawers / Full Till",detail:"When the safe/deposit numbers do not match, this is the first place to look."},
-      {title:"Look for an unfinalized drawer",detail:"Check whether a cashier drawer or till is still open or not fully finalized."},
-      {title:"Look for an incorrect till entry",detail:"Check for an entry that does not match what should be there."},
-      {title:"Correct only the problem you can identify",detail:"If you find the cause, use the normal store process to correct that specific issue.",more:"Do not change an unrelated drawer, till, or deposit amount simply to make the total balance. A correction should have a specific cause you can explain."},
-      {title:"Re-check the deposit",detail:"After a correction, compare the Safe Report deposit and End of Day deposit again."},
+      {title:"Name the mismatch first",detail:"Be clear whether Paid In, Paid Out, or the deposit failed to match before changing anything."},
+      {title:"Re-check all of Kayla’s terminal rows",detail:"Make sure a second Kayla row is not holding the amount that seemed to be missing."},
+      {title:"Open Drawers / Full Till",detail:"This is the first place to look for an unfinalized or incorrect drawer/till entry."},
+      {title:"Look for an unfinalized drawer",detail:"Check whether a cashier drawer or till is still open, Pending, or not fully finalized."},
+      {title:"Look for the specific incorrect entry",detail:"Compare the related Paid In, Paid Out, and deposit information with the Safe Report."},
+      {title:"Correct only the problem you can identify",detail:"If you find the cause, use the normal store process to correct that specific issue.",more:"A physically completed Paid In that was never recorded is different from a made-up adjustment. Correct only a real, explainable transaction. Do not change an unrelated drawer, till, or deposit amount just to force a balance."},
+      {title:"Run the same comparison again",detail:"After a correction, re-check Kayla’s Paid Ins, any applicable Paid Outs, and the deposit on both sides."},
       {title:"Escalate if you still cannot explain it",detail:"Notify Jamo first, then Loretta. Richard is for district-level escalation when it is actually needed."}
     ],
-    check:"The mismatch is corrected and the deposit now agrees, or the unexplained issue has been escalated instead of guessed at.", contacts:["jamo","loretta","richard"], completeLabel:"Drawers checked"
+    check:"The failed comparison now agrees on both sides, or the unexplained mismatch has been escalated instead of guessed at.", contacts:["jamo","loretta","richard"], completeLabel:"Mismatch checked"
   },
   {
     id:"tender-totals", title:"Verify Tender Totals", short:"Lottery and lotto sales reports should reconcile to tender totals.", category:"Cash / Safe",
@@ -238,13 +243,15 @@ export const guideTasks = [
     check:"Lottery and lotto sales make sense against tender totals, including any normal Coupon-tender activity.", contacts:["jamo","loretta"], completeLabel:"Tender totals verified"
   },
   {
-    id:"finalize-eod", title:"Finalize Deposit and End of Day", short:"Drop → Deposit → finalize cashiers → End of Day.", category:"Bookwork",
+    id:"finalize-eod", title:"Finalize Deposit and End of Day", short:"Drop Safe → Deposit → cashiers → End of Day.", category:"Bookwork",
     purpose:"Close the business day only after the supporting numbers have been checked and reconciled.", location:"End of Day.",
     steps:[
-      {title:"Open the Drop tab",detail:"Go to Drop inside End of Day."},
-      {title:"Go to Deposit",detail:"Open the Deposit section from there."},
+      {title:"Open the Drop Safe tab",detail:"Go to Drop Safe inside End of Day."},
+      {title:"Go to the Deposit area",detail:"Open the deposit information from there."},
       {title:"Final-check the deposit",detail:"Make sure the deposit you are about to finalize still matches the Safe Report."},
-      {title:"Finalize the cashiers",detail:"Finalize the cashier drawers/tills that are required for the business day."},
+      {title:"Return to Cashiers",detail:"Go back to the Cashiers tab for the correct business-day batch."},
+      {title:"Finalize the required cashier rows",detail:"Finalize the cashier drawers/tills only after their reconciliation is complete.",more:"The photographed Cashiers screen uses the Status column along with the Finalize control. Work through the required cashier rows and confirm that the expected rows no longer remain Pending; do not finalize an unresolved mismatch simply to change the status."},
+      {title:"Read the warning list",detail:"Check for a real unresolved warning before closing the business day. Do not ignore a warning just because this software looks old enough to rent a car."},
       {title:"Complete End of Day",detail:"Once the cashiers and deposit are correct, complete End of Day."},
       {title:"Do one last sanity check",detail:"Before leaving the screen, make sure you closed the correct business day and nothing obvious is still showing unresolved."}
     ],
