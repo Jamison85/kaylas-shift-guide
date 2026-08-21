@@ -152,16 +152,16 @@ export const guideTasks = [
       {title:"Choose Auto Post Batch",detail:"The approval window opens with several options. Select Auto Post Batch in that window."},
       {title:"Confirm the approval",detail:"Click Approve in the options window to finish approving the highlighted price-change batch."},
       {title:"Repeat for another pending row",detail:"If another price-change row is still waiting, highlight that row and repeat the same Approve → Auto Post Batch process."},
-      {title:"Close Price Server Editor",detail:"When no pending price-change rows remain, close the editor and continue."}
+      {title:"Close Price Server Editor",detail:"When no pending price-change rows remain, close the editor. This returns you to the Programs window where both Price Server Editor and End of Day are available."}
     ],
-    check:"Every pending price-change row has been highlighted and approved with Auto Post Batch selected, or there were no rows waiting.",
+    check:"Every pending price-change row has been approved with Auto Post Batch selected, or there were no rows waiting, and you are back at the Programs window.",
     tip:"One highlighted row at a time. The prices deserve slightly more precision than a game of Whac-A-Mole.", contacts:["jamo"], completeLabel:"Price changes applied"
   },
   {
     id:"eod-status", title:"Check End of Day Status", short:"Yesterday should be Pending; older days should be Closed.", category:"Bookwork",
-    purpose:"Make sure you are working the correct business day before you finalize anything.", location:"Office computer, same StorePoint Office area.",
+    purpose:"Move directly from the completed price changes into the correct business day before finalizing anything.", location:"Programs window returned after closing Price Server Editor.",
     steps:[
-      {title:"Open End of Day",detail:"From the same StorePoint Office area you used for Price Server Editor, open End of Day."},
+      {title:"Click End of Day",detail:"After Price Server Editor closes, use the Programs window it returns you to and select End of Day beside the Price Server Editor option."},
       {title:"Find yesterday",detail:"Look at the business-day list and locate yesterday’s date."},
       {title:"Confirm yesterday says Pending",detail:"Yesterday is the day you are preparing to close, so its status should be Pending."},
       {title:"Check the days before yesterday",detail:"Older business days should show Closed."},
