@@ -1,10 +1,14 @@
-/* Approved 2.5D coworker proof: one real six-pose card-edge interaction. */
-.coworker-world--side-peek {
-  width: 300px !important;
-  height: 300px !important;
+/* The approved six-pose coworker is now the app's only character. */
+.coworker-world--approved-peek {
+  position: fixed;
+  z-index: 70;
+  top: clamp(88px, 32dvh, calc(100dvh - 300px));
+  right: -90px;
+  width: 300px;
+  height: 300px;
   overflow: visible;
-  filter: none !important;
-  animation: approvedPeekScene 5s cubic-bezier(.2,.8,.2,1) both !important;
+  pointer-events: none;
+  animation: approvedPeekScene 5s cubic-bezier(.2,.8,.2,1) both;
 }
 
 .approved-peek {
@@ -44,14 +48,15 @@
 }
 
 @media (max-width: 430px) {
-  .coworker-world--side-peek {
-    width: 276px !important;
-    height: 276px !important;
+  .coworker-world--approved-peek {
+    right: -84px;
+    width: 276px;
+    height: 276px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coworker-world--side-peek {
+  .coworker-world--approved-peek {
     animation-duration: .001ms !important;
   }
 
