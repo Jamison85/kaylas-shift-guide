@@ -1,5 +1,20 @@
 import { useState } from "react";
+import CharacterProp from "./CharacterProp";
 import { contacts } from "../data/guide";
+
+const taskCharacterPoses = {
+  "store-walk": "wave",
+  "cashier-break": "hold",
+  "gas-inspection": "hold",
+  "price-server": "wave",
+  "paperwork-packet": "hold",
+  "lottery-audit-start": "wave",
+  "lottery-variance": "celebrate",
+  "safe-deposit": "hold",
+  "tender-totals": "wave",
+  "finalize-eod": "celebrate",
+  "power-inventory": "celebrate",
+};
 
 function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
@@ -49,13 +64,14 @@ function Contacts({ ids = [] }) {
 
 function normalizedStep(step, index) {
   const isDetailed = typeof step === "object" && step !== null;
-  return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step };
+  return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step, more: isDetailed ? step.more : null };
 }
 
 export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
   const [zoom, setZoom] = useState(null);
   const steps = task.steps.map(normalizedStep);
+  const characterPose = taskCharacterPoses[task.id] || null;
   const openZoom = (label, title, body) => setZoom({ label, title, body });
 
   return (
@@ -71,9 +87,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       {mode === "learn" && <p className="purpose">{task.purpose}</p>}
 
       {task.location && mode === "learn" && (
-        <button type="button" className="task-location zoomable-panel" onClick={() => openZoom("Where you are", task.title, task.location)}>
-          <small>Where you are</small><p>{task.location}</p><span>Tap to enlarge</span>
-        </button>
+        <section className="task-location">
+          <small>Where you are</small><p>{task.location}</p>
+        </section>
       )}
 
       <div className="steps-heading">
@@ -83,19 +99,34 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
       <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
         {steps.map((step, stepIndex) => (
-          <li key={`${task.id}-${stepIndex}`} className="zoomable-panel" onClick={() => mode === "learn" && openZoom(`Step ${stepIndex + 1}`, step.title, step.detail)}>
+          <li key={`${task.id}-${stepIndex}`}>
             <b>{stepIndex + 1}</b>
-            <div><strong>{step.title}</strong>{mode === "learn" && <p>{step.detail}</p>}</div>
+            <div>
+              <strong>{step.title}</strong>
+              {mode === "learn" && <p>{step.detail}</p>}
+              {mode === "learn" && step.more && (
+                <button type="button" className="step-more" onClick={() => openZoom(`Extra context · Step ${stepIndex + 1}`, step.title, step.more)}>
+                  More context <span>↗</span>
+                </button>
+              )}
+            </div>
           </li>
         ))}
       </ol>
 
+      {characterPose && (
+        <div className={`task-cameo task-cameo--${characterPose}`}>
+          <span aria-hidden="true" />
+          <CharacterProp pose={characterPose} />
+        </div>
+      )}
+
       {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
       {task.check && mode === "learn" && (
-        <button type="button" className="move-on-check zoomable-panel" onClick={() => openZoom("Before you move on", task.title, task.check)}>
-          <small>Before you move on</small><p>{task.check}</p><span>Tap to enlarge</span>
-        </button>
+        <section className="move-on-check">
+          <small>Before you move on</small><p>{task.check}</p>
+        </section>
       )}
 
       {task.tip && mode === "learn" && <aside><small>Shift note</small><p>{task.tip}</p></aside>}

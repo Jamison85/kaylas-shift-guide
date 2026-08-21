@@ -447,6 +447,7 @@ summary:focus-visible {
 .task-card > .task-location,
 .task-card > .steps-heading,
 .task-card > .steps,
+.task-card > .task-cameo,
 .task-card > .decision,
 .task-card > .move-on-check,
 .task-card > aside,
@@ -513,22 +514,18 @@ summary:focus-visible {
 
 .task-location,
 .move-on-check {
-  display: grid;
+  display: block;
   width: calc(100% - 48px);
-  grid-template-columns: 1fr auto;
   margin-top: 24px;
   padding: 18px;
   border: 1px solid rgba(34, 85, 199, 0.13);
   border-radius: 18px 7px 18px 18px;
   color: var(--ink);
   background: rgba(34, 85, 199, 0.055);
-  cursor: zoom-in;
-  text-align: left;
 }
 
 .task-location small,
 .move-on-check small {
-  grid-column: 1 / -1;
   color: var(--cobalt);
   font-size: 0.64rem;
   font-weight: 800;
@@ -537,9 +534,7 @@ summary:focus-visible {
 }
 
 .task-location p,
-.move-on-check p { margin: 6px 12px 0 0; line-height: 1.48; }
-.task-location span,
-.move-on-check span { align-self: end; color: var(--ink-soft); font-size: 0.59rem; font-weight: 700; white-space: nowrap; }
+.move-on-check p { margin: 6px 0 0; line-height: 1.48; }
 
 .steps-heading {
   display: flex;
@@ -560,7 +555,7 @@ summary:focus-visible {
   gap: 12px;
   padding: 17px 0;
   border-top: 1px solid var(--line);
-  cursor: zoom-in;
+  cursor: default;
 }
 .steps > li:first-child { border-top-color: rgba(24, 32, 48, 0.2); }
 .steps > li > b {
@@ -576,7 +571,49 @@ summary:focus-visible {
 }
 .steps strong { font-size: 0.9rem; line-height: 1.35; }
 .steps p { margin: 5px 0 0; color: var(--ink-soft); font-size: 0.82rem; line-height: 1.55; }
-.steps--quick > li { cursor: default; }
+
+.step-more {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 7px 9px;
+  border: 1px solid rgba(34, 85, 199, 0.16);
+  border-radius: 10px;
+  color: var(--cobalt);
+  background: rgba(34, 85, 199, 0.055);
+  font-size: 0.66rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.step-more span { font-size: 0.72rem; }
+
+.task-cameo {
+  height: 112px;
+  overflow: hidden;
+}
+.task-cameo > span {
+  position: absolute;
+  top: 56px;
+  right: 78px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(23, 33, 56, 0.2));
+}
+.task-cameo > span::after {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+  content: "";
+}
+.task-cameo .character-prop { top: 0; right: 5px; }
+.task-cameo .character-prop--hold { width: 55px; }
+.task-cameo .character-prop--wave { width: 93px; }
+.task-cameo .character-prop--celebrate { width: 101px; }
 
 .decision {
   margin-top: 24px;
@@ -731,6 +768,7 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
+  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,
@@ -756,8 +794,6 @@ summary:focus-visible {
   .splash-prop { right: -12px; width: 160px; }
   .title-row { gap: 10px; }
   .task-card h1 { font-size: clamp(2rem, 10vw, 2.9rem); }
-  .task-location, .move-on-check { grid-template-columns: 1fr; }
-  .task-location span, .move-on-check span { margin-top: 8px; }
   .finish__copy { width: 70%; padding: 30px 5px 24px 24px; }
   .finish__copy h1 { font-size: 2.55rem; }
   .finish-prop { right: -19px; width: 168px; }
@@ -778,6 +814,7 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
+  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,

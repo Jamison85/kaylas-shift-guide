@@ -138,7 +138,7 @@ export const guideTasks = [
     steps:[
       {title:"Go to screen 3",detail:"In the 2593 login, move to screen 3."},
       {title:"Open Lottery Audits",detail:"Choose Lottery Audits from screen 3."},
-      {title:"Start a new audit",detail:"Select New. Do not open an old audit and start changing it."},
+      {title:"Start a new audit",detail:"Select New. Do not open an old audit and start changing it.",more:"New creates today’s working audit. Opening an older audit risks changing a record that belongs to a different business day."},
       {title:"Identify the prior-night numbers",detail:"Use the numbers from the prior night for the fields that ask for the previous reading."},
       {title:"Identify the current-morning numbers",detail:"Use the current morning readings for the fields that ask for the current reading."},
       {title:"Enter the numbers in the matching fields",detail:"Take your time and make sure each number is being entered in the field it belongs to before moving to the next page."}
@@ -161,7 +161,7 @@ export const guideTasks = [
     id:"lottery-received-returns", title:"Received / Returns", short:"Only enter books when matching paperwork exists.", category:"Lottery",
     purpose:"Keep received and returned lottery books tied to actual invoices and return slips.", location:"Lottery clipboard + Received / Returns sections of the audit.",
     steps:[
-      {title:"Check the lottery clipboard",detail:"Look for an invoice or a return slip before touching either section."},
+      {title:"Check the lottery clipboard",detail:"Look for an invoice or a return slip before touching either section.",more:"Received and Returns are paperwork-driven fields. An odd-looking count by itself is not permission to enter a received or returned book."},
       {title:"Look for a received-book invoice",detail:"If there is a matching invoice for received books, use it to enter the Received information."},
       {title:"Leave Received alone without an invoice",detail:"No matching invoice means do not invent a received entry."},
       {title:"Look for a return slip",detail:"If there is a matching return slip, use it to enter the Returns information."},
@@ -176,25 +176,39 @@ export const guideTasks = [
     steps:[
       {title:"Check ticket over/under",detail:"The normal result is 0 tickets over or under."},
       {title:"Check the dollar variance",detail:"The normal dollar result is $0 variance."},
-      {title:"If it is off, re-check your entries first",detail:"Look back at the numbers and book counts you entered before assuming the store has a larger issue."},
-      {title:"Use delete/reset when an entry is wrong",detail:"Before finalizing, you can delete/reset and correct the audit rather than locking in a known mistake."},
-      {title:"Remember Coupon tender",detail:"Regular lottery/lotto paid as part of a purchase can appear under Coupon tender."},
-      {title:"Interpret paid-out lines carefully",detail:"Separate paid-out lines are generally individual or a small number of paid-out transactions."},
-      {title:"Know when to stop",detail:"If the concern is more than a couple of tickets or more than $20, stop and get help rather than forcing the audit through."},
-      {title:"Finalize only when it makes sense",detail:"Once the numbers reconcile or the issue has been properly resolved, finalize the audit with your initials."}
+      {title:"Choose Yes or No below",detail:"Use the variance shown on the audit. The app will give you the correct normal or correction path."}
     ],
+    decision:{
+      question:"Does it show 0 tickets over/under and $0 variance?",
+      yesTitle:"The audit reconciles",
+      yesText:"Finalize the lottery audit with your initials, then continue.",
+      yesSteps:["Make one last scan of the entered numbers.","Finalize the audit.","Enter your initials."],
+      noTitle:"Do not finalize it yet",
+      noText:"Treat this as an entry check first, then an escalation if the numbers still do not make sense.",
+      noSteps:["Re-check the prior-night and current-morning numbers.","Re-check the page-2 counts against the locked black box.","Use delete/reset if an entry is wrong, then correct it.","Call Jamison first for a lottery-system or chain issue.","If it is still more than a couple tickets or more than $20, stop and contact Jamo or Loretta before finalizing."]
+    },
     check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamison","jamo","loretta"], completeLabel:"Lottery audit finalized"
   },
   {
     id:"safe-deposit", title:"Match the Safe Report Deposit", short:"Safe Report deposit should match the End of Day deposit tab.", category:"Cash / Safe",
-    purpose:"Verify the same deposit number appears in both places before you move into finalizing drawers and End of Day.", location:"Safe Report + End of Day → Deposit tab.",
+    purpose:"Verify the same deposit number appears in both places before you continue through End of Day.", location:"Safe Report + End of Day → Deposit tab.",
     steps:[
       {title:"Find the deposit on the Safe Report",detail:"Locate the deposit number shown on the Safe Report."},
       {title:"Open the End of Day deposit tab",detail:"Go to the Deposit area inside End of Day."},
       {title:"Find the deposit there",detail:"Locate the deposit number End of Day is showing."},
-      {title:"Compare the two numbers",detail:"Read them digit by digit. They should match."},
-      {title:"If they do not match, stop here",detail:"Do not change random numbers just to make the screen balance. The next guide step walks you through the first mismatch check."}
+      {title:"Compare the two numbers",detail:"Read them digit by digit. They should match.",more:"Compare the exact deposit number shown on the Safe Report with the exact deposit number in the End of Day Deposit tab. Do not compare it to a drawer total or a tender total by mistake."},
+      {title:"Choose Yes or No below",detail:"If they match, Drawers / Full Till is skipped. If they do not, that becomes the next troubleshooting step."}
     ],
+    decision:{
+      question:"Do the two deposit numbers match?",
+      yesTitle:"They match",
+      yesText:"Good. Skip Drawers / Full Till and continue to the tender totals.",
+      yesSteps:["Leave the matching deposit numbers alone.","Continue to Verify Tender Totals."],
+      yesSkip:["drawer-mismatch"],
+      noTitle:"They do not match",
+      noText:"Do not finalize the deposit. Check Drawers / Full Till next.",
+      noSteps:["Leave the mismatched numbers visible if possible.","Open Drawers / Full Till next.","Look for an unfinalized drawer or an incorrect till entry before escalating."]
+    },
     check:"The Safe Report deposit and End of Day deposit match, or you have identified that a mismatch needs the Drawers / Full Till check.", contacts:["jamo","loretta"], completeLabel:"Deposit matched"
   },
   {
@@ -204,7 +218,7 @@ export const guideTasks = [
       {title:"Open Drawers / Full Till",detail:"When the safe/deposit numbers do not match, this is the first place to look."},
       {title:"Look for an unfinalized drawer",detail:"Check whether a cashier drawer or till is still open or not fully finalized."},
       {title:"Look for an incorrect till entry",detail:"Check for an entry that does not match what should be there."},
-      {title:"Correct only the problem you can identify",detail:"If you find the cause, use the normal store process to correct that specific issue."},
+      {title:"Correct only the problem you can identify",detail:"If you find the cause, use the normal store process to correct that specific issue.",more:"Do not change an unrelated drawer, till, or deposit amount simply to make the total balance. A correction should have a specific cause you can explain."},
       {title:"Re-check the deposit",detail:"After a correction, compare the Safe Report deposit and End of Day deposit again."},
       {title:"Escalate if you still cannot explain it",detail:"Notify Jamo first, then Loretta. Richard is for district-level escalation when it is actually needed."}
     ],
@@ -217,7 +231,8 @@ export const guideTasks = [
       {title:"Pull up the tender totals",detail:"Have the tender totals available so you can compare them against the lottery reports."},
       {title:"Compare lottery sales",detail:"Compare the lottery sales report to the corresponding tender totals."},
       {title:"Compare lotto sales",detail:"Compare the lotto sales report to the corresponding tender totals."},
-      {title:"Remember Coupon tender",detail:"Regular lottery/lotto purchased together with other items may appear under Coupon tender."},
+      {title:"Account for Coupon tender",detail:"Regular lottery/lotto purchased together with other items may appear under Coupon tender.",more:"Coupon tender is where regular lottery or lotto paid as part of a purchase can appear. This belongs in the tender comparison, not in the scratcher audit variance."},
+      {title:"Read paid-out lines separately",detail:"Separate paid-out lines usually represent one or a small number of individual paid-out transactions."},
       {title:"Investigate before finalizing",detail:"If the numbers do not agree, do not finalize End of Day until you understand the mismatch or have escalated it."}
     ],
     check:"Lottery and lotto sales make sense against tender totals, including any normal Coupon-tender activity.", contacts:["jamo","loretta"], completeLabel:"Tender totals verified"
