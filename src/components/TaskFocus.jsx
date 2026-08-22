@@ -4,20 +4,21 @@ import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const taskCharacterPoses = {
-  "store-walk": "wave",
-  "cashier-break": "hold",
-  "yesterday-sources": "hold",
-  "register-two": "wave",
-  "lottery-refill": "hold",
-  "gas-inspection": "hold",
-  "price-server": "wave",
-  "paperwork-packet": "hold",
-  "lottery-audit-start": "wave",
-  "lottery-variance": "celebrate",
-  "safe-deposit": "hold",
-  "tender-totals": "wave",
-  "finalize-eod": "celebrate",
-  "power-inventory": "celebrate",
+  "store-walk": "carry",
+  "cashier-break": "sit",
+  "yesterday-sources": "compare",
+  "register-two": "push",
+  "lottery-refill": "climb",
+  "gas-inspection": "point",
+  "price-server": "point",
+  "paperwork-packet": "peek",
+  "lottery-audit-start": "compare",
+  "lottery-variance": "compare",
+  "safe-deposit": "compare",
+  "drawer-mismatch": "peek",
+  "tender-totals": "compare",
+  "finalize-eod": "push",
+  "power-inventory": "climb",
 };
 
 function Decision({ decision, answer, onChange }) {
@@ -140,7 +141,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const openZoom = (label, title, body) => setZoom({ label, title, body });
 
   return (
-    <section className="task-card">
+    <section className={`task-card task-card--${task.id}`}>
       <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
       <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
 
@@ -181,7 +182,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
       {characterPose && (
         <div className={`task-cameo task-cameo--${characterPose}`}>
-          <span aria-hidden="true" />
+          <span className="task-cameo__prop" aria-hidden="true" />
           <CharacterProp pose={characterPose} />
         </div>
       )}
