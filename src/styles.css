@@ -165,22 +165,18 @@ summary:focus-visible {
   max-width: 720px;
   min-height: calc(100dvh - 68px);
   margin: 0 auto;
-  padding: 26px 16px 116px;
+  padding: 20px 16px 106px;
 }
 
 .home {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   animation: rise-in 520ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
 }
 
 .home-head {
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 112px;
-  padding: 2px 4px;
+  min-height: 104px;
+  padding: 0 4px 3px;
   color: white;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
 }
@@ -210,30 +206,34 @@ summary:focus-visible {
   line-height: 1.02;
 }
 
-.home-head h1 { max-width: 470px; font-size: clamp(2rem, 8vw, 3.6rem); }
-.home-head p { margin: 8px 0 0; color: rgba(255, 255, 255, 0.7); font-size: 0.86rem; }
+.home-head h1 { max-width: 470px; font-size: clamp(1.95rem, 7.5vw, 3.3rem); }
+.home-head__meta { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-top: 8px; }
+.home-head p { margin: 0; color: rgba(255, 255, 255, 0.68); font-size: 0.8rem; }
 
-.progress-ring {
-  display: grid;
-  width: 72px;
-  height: 72px;
+.progress-status {
+  display: flex;
   flex: 0 0 auto;
-  place-content: center;
-  border-radius: 50%;
+  gap: 7px;
+  align-items: baseline;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 15px;
   color: white;
-  background: conic-gradient(var(--orange) var(--p), rgba(255, 255, 255, 0.17) 0);
-  box-shadow: inset 0 0 0 7px rgba(7, 16, 29, 0.82), 0 8px 28px rgba(0, 0, 0, 0.24);
+  background: rgba(7, 16, 29, 0.68);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
   text-align: center;
+  text-shadow: none;
+  backdrop-filter: blur(14px);
 }
-
-.progress-ring span { font-family: "Fraunces", Georgia, serif; font-size: 1.32rem; line-height: 1; }
-.progress-ring small { margin-top: 3px; color: rgba(255, 255, 255, 0.62); font-size: 0.58rem; }
+.progress-status span { font-family: "Fraunces", Georgia, serif; font-size: 1rem; line-height: 1; }
+.progress-status span small { margin-left: 2px; color: rgba(255, 255, 255, 0.55); font-family: "DM Sans", sans-serif; font-size: 0.62rem; }
+.progress-status em { color: #f6aa77; font-size: 0.54rem; font-style: normal; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .start {
   position: relative;
   display: block;
   width: 100%;
-  min-height: 350px;
+  min-height: 310px;
   padding: 0;
   overflow: visible;
   border: 0;
@@ -241,7 +241,7 @@ summary:focus-visible {
   background: none;
   cursor: pointer;
   text-align: left;
-  filter: drop-shadow(0 28px 36px rgba(2, 8, 18, 0.25));
+  filter: drop-shadow(0 22px 30px rgba(2, 8, 18, 0.23));
 }
 
 .start-sheet,
@@ -258,9 +258,9 @@ summary:focus-visible {
 
 .start-sheet {
   position: absolute;
-  inset: 0 32px 0 0;
+  inset: 0 42px 0 0;
   overflow: hidden;
-  border-radius: 31px 15px 31px 31px;
+  border-radius: 27px 11px 27px 27px;
 }
 
 .start-sheet::before,
@@ -278,14 +278,20 @@ summary:focus-visible {
   position: relative;
   z-index: 1;
   display: flex;
-  width: 72%;
-  min-height: 350px;
+  width: 76%;
+  min-height: 310px;
   flex-direction: column;
-  padding: 34px 20px 25px 28px;
+  padding: 24px 11px 19px 23px;
 }
 
-.start-copy > small {
-  align-self: flex-start;
+.start-kicker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.start-kicker small {
   padding: 6px 10px;
   border-radius: 999px;
   color: #fff;
@@ -296,21 +302,23 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
+.start-kicker span { color: var(--ink-soft); font-size: 0.56rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+
 .start-copy > strong {
   max-width: 390px;
-  margin-top: 25px;
+  margin-top: 20px;
   font-family: "Fraunces", Georgia, serif;
-  font-size: clamp(2.1rem, 8vw, 3.85rem);
-  letter-spacing: -0.055em;
-  line-height: 0.98;
+  font-size: clamp(1.9rem, 7.5vw, 3.35rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
 .start-copy > p {
   max-width: 340px;
-  margin: 15px 0 30px;
+  margin: 12px 0 20px;
   color: var(--ink-soft);
-  font-size: clamp(0.84rem, 3vw, 1rem);
-  line-height: 1.55;
+  font-size: clamp(0.8rem, 2.8vw, 0.94rem);
+  line-height: 1.48;
 }
 
 .start-meta {
@@ -319,13 +327,16 @@ summary:focus-visible {
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 
 .start-meta > span { color: var(--ink-soft); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-.start-meta b { color: var(--cobalt); font-size: 0.84rem; }
+.start-meta b { padding: 9px 12px; border-radius: 11px; color: white; background: var(--cobalt); box-shadow: 0 8px 16px rgba(34, 85, 199, 0.2); font-size: 0.72rem; }
 .start-meta i { font-style: normal; }
+
+.start-progress { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 4px; background: rgba(24, 32, 48, 0.08); }
+.start-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: linear-gradient(90deg, var(--orange), #ff9b59); }
 
 .character-prop {
   position: absolute;
@@ -342,35 +353,27 @@ summary:focus-visible {
 }
 
 .start-prop {
-  right: 0;
+  right: 2px;
   bottom: -1px;
-  width: clamp(104px, 28vw, 150px);
+  width: clamp(76px, 18vw, 98px);
 }
 
 .coach-bubble {
   position: relative;
-  max-width: 82%;
-  margin-left: auto;
-  padding: 16px 20px;
+  width: calc(100% - 8px);
+  margin: 2px 4px 0;
+  padding: 13px 15px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 22px 22px 7px 22px;
+  border-left: 3px solid var(--orange);
+  border-radius: 15px;
   color: white;
-  background: rgba(7, 16, 29, 0.8);
-  box-shadow: 0 14px 30px rgba(1, 8, 18, 0.2);
+  background: rgba(7, 16, 29, 0.7);
+  box-shadow: 0 12px 26px rgba(1, 8, 18, 0.18);
   backdrop-filter: blur(16px);
 }
 
-.coach-bubble::after {
-  position: absolute;
-  right: 0;
-  bottom: -9px;
-  border-top: 12px solid rgba(7, 16, 29, 0.8);
-  border-left: 12px solid transparent;
-  content: "";
-}
-
 .coach-bubble span { color: #f6aa77; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
-.coach-bubble p { margin: 5px 0 0; font-family: "Fraunces", Georgia, serif; font-size: 1rem; line-height: 1.4; }
+.coach-bubble p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.84); font-size: 0.8rem; line-height: 1.48; }
 
 .splash {
   display: grid;
@@ -773,23 +776,23 @@ summary:focus-visible {
 .bottom-nav {
   position: fixed;
   z-index: 30;
-  right: 12px;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  left: 12px;
+  right: 16px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 16px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  width: min(calc(100% - 24px), 430px);
+  width: min(calc(100% - 32px), 400px);
   margin: 0 auto;
-  padding: 7px;
+  padding: 5px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 21px;
-  background: rgba(7, 16, 29, 0.88);
+  border-radius: 19px;
+  background: rgba(7, 16, 29, 0.9);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(20px) saturate(120%);
 }
-.bottom-nav button { display: grid; gap: 2px; min-height: 49px; place-items: center; align-content: center; border: 0; border-radius: 15px; color: rgba(255, 255, 255, 0.52); background: transparent; cursor: pointer; }
+.bottom-nav button { display: grid; gap: 3px; min-height: 46px; place-items: center; align-content: center; border: 0; border-radius: 14px; color: rgba(255, 255, 255, 0.52); background: transparent; cursor: pointer; }
 .bottom-nav button.active { color: white; background: rgba(255, 255, 255, 0.11); }
-.bottom-nav span { font-size: 1.05rem; line-height: 1; }
+.bottom-nav svg { width: 17px; height: 17px; }
 .bottom-nav small { font-size: 0.59rem; font-weight: 800; }
 
 @keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
@@ -801,7 +804,8 @@ summary:focus-visible {
 @media (min-width: 640px) {
   .content { padding-top: 38px; }
   .start { min-height: 400px; }
-  .start-copy { min-height: 400px; padding: 42px 30px 30px 38px; }
+  .start-sheet { right: 56px; }
+  .start-copy { width: 74%; min-height: 400px; padding: 36px 26px 28px 36px; }
   .task-card > header,
   .title-row,
   .task-card > .purpose,
@@ -819,15 +823,15 @@ summary:focus-visible {
 }
 
 @media (max-width: 430px) {
-  .home-head { min-height: 100px; }
-  .home-head h1 { font-size: 2.25rem; }
-  .progress-ring { width: 64px; height: 64px; }
-  .start { min-height: 340px; }
-  .start-sheet { right: 24px; }
-  .start-copy { width: 74%; min-height: 340px; padding: 28px 12px 21px 22px; }
-  .start-copy > strong { font-size: clamp(1.86rem, 9vw, 2.45rem); }
-  .start-prop { right: -6px; width: 108px; }
-  .coach-bubble { max-width: 91%; }
+  .home-head { min-height: 102px; }
+  .home-head h1 { font-size: 2.05rem; }
+  .progress-status { padding: 6px 8px; }
+  .start { min-height: 310px; }
+  .start-sheet { right: 36px; }
+  .start-copy { width: 76%; min-height: 310px; padding: 22px 8px 18px 20px; }
+  .start-copy > strong { font-size: clamp(1.82rem, 8.3vw, 2.18rem); }
+  .start-prop { right: 1px; width: 76px; }
+  .coach-bubble { max-width: none; }
   .splash-sheet { min-height: 420px; }
   .splash-copy { width: 70%; min-height: 420px; padding: 33px 8px 28px 25px; }
   .splash-copy h1 { font-size: 2.85rem; }
