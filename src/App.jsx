@@ -28,6 +28,7 @@ export default function App() {
   const day = dateKey();
   const [progress, setProgress] = useLocalStorage(`kayla-guide-${day}`, { completed: [], currentIndex: 0, mode: "learn", answers: {} });
   const [screen, setScreen] = useState(() => (openingAlreadyPlayed() ? "home" : "splash"));
+  const [isLaunching, setIsLaunching] = useState(false);
 
   const wisdom = useMemo(() => pick(wisdomLines, day), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
@@ -67,6 +68,18 @@ export default function App() {
     setScreen("task");
   };
   const startOrResume = () => go(resumeIndex);
+  const startFromHome = () => {
+    if (isLaunching) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      startOrResume();
+      return;
+    }
+    setIsLaunching(true);
+    window.setTimeout(() => {
+      setIsLaunching(false);
+      startOrResume();
+    }, 420);
+  };
   const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
   const setDecision = (taskId, answer) => setProgress((current) => {
     const taskDefinition = guideTasks.find((item) => item.id === taskId);
@@ -157,18 +170,22 @@ export default function App() {
               </div>
             </div>
 
-            <button type="button" className="start" onClick={startOrResume}>
-              <div className="start-sheet">
-                <div className="start-copy">
-                  <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Screen {resumeIndex + 1} of {guideTasks.length}</span></div>
-                  <strong>{nextTask.title}</strong>
-                  <p>{nextTask.short}</p>
-                  <div className="start-meta"><span>{nextTask.category}</span><b>Open task <i>→</i></b></div>
+            <div className={`home-stage ${isLaunching ? "is-launching" : ""}`}>
+              <CharacterProp pose="carry" className="home-action home-action--carry" />
+              <button type="button" className="start" onClick={startFromHome}>
+                <div className="start-sheet">
+                  <div className="start-copy">
+                    <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Screen {resumeIndex + 1} of {guideTasks.length}</span></div>
+                    <strong>{nextTask.title}</strong>
+                    <p>{nextTask.short}</p>
+                    <div className="start-meta"><span>{nextTask.category}</span><b>Open task <i>→</i></b></div>
+                  </div>
+                  <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
                 </div>
-                <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
-              </div>
-              <CharacterProp pose="hold" className="start-prop" />
-            </button>
+              </button>
+              <CharacterProp pose="push" className="home-action home-action--push" />
+              <CharacterProp pose="point" className="home-action home-action--point" />
+            </div>
 
             <div className="coach-bubble"><span>Shift note</span><p>{wisdom}</p></div>
           </section>
