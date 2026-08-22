@@ -12,6 +12,13 @@ const dateKey = () => {
 const pick = (items, seed) =>
   items[[...seed].reduce((total, char, index) => total + char.charCodeAt(0) * (index + 1), 0) % items.length];
 
+function NavIcon({ name }) {
+  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
+  if (name === "home") return <svg {...common}><path d="M3.5 10.7 12 3.5l8.5 7.2v9a1 1 0 0 1-1 1h-5.2v-6H9.7v6H4.5a1 1 0 0 1-1-1z" /></svg>;
+  if (name === "guide") return <svg {...common}><rect x="4.5" y="3.5" width="15" height="17" rx="2.2" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>;
+  return <svg {...common}><path d="M20 11a8 8 0 1 1-2.3-5.7L20 7.6" /><path d="M20 3.5v4.1h-4.1" /></svg>;
+}
+
 function openingAlreadyPlayed() {
   try { return window.sessionStorage.getItem("kayla-guide-opening-played") === "yes"; }
   catch { return false; }
@@ -139,18 +146,26 @@ export default function App() {
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
-              <div><small>Good morning, Kayla</small><h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1><p>{completedCount ? `${completedCount} of ${guideTasks.length} screens finished.` : "One important thing at a time."}</p></div>
-              <div className="progress-ring" style={{ "--p": `${percent * 3.6}deg` }} aria-label={`${percent}% complete`}><span>{completedCount}</span><small>of {guideTasks.length}</small></div>
+              <small>Good morning, Kayla</small>
+              <h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
+              <div className="home-head__meta">
+                <p>{completedCount ? `${completedCount} screens finished. Pick up where you left off.` : "One important thing at a time."}</p>
+                <div className="progress-status" aria-label={`${percent}% complete`}>
+                  <span>{completedCount}<small>/{guideTasks.length}</small></span>
+                  <em>{percent}% done</em>
+                </div>
+              </div>
             </div>
 
             <button type="button" className="start" onClick={startOrResume}>
               <div className="start-sheet">
                 <div className="start-copy">
-                  <small>Start here</small>
+                  <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Screen {resumeIndex + 1} of {guideTasks.length}</span></div>
                   <strong>{nextTask.title}</strong>
                   <p>{nextTask.short}</p>
-                  <div className="start-meta"><span>{completedCount} of {guideTasks.length}</span><b>{completedCount ? "Continue" : "Begin"} <i>→</i></b></div>
+                  <div className="start-meta"><span>{nextTask.category}</span><b>Open task <i>→</i></b></div>
                 </div>
+                <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
               </div>
               <CharacterProp pose="hold" className="start-prop" />
             </button>
@@ -175,9 +190,9 @@ export default function App() {
 
       {screen !== "complete" && (
         <nav className="bottom-nav" aria-label="Primary navigation">
-          <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><span>⌂</span><small>Home</small></button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><span>▣</span><small>Guide</small></button>
-          <button type="button" onClick={reset}><span>↻</span><small>Reset</small></button>
+          <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
+          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
+          <button type="button" onClick={reset}><NavIcon name="reset" /><small>Reset</small></button>
         </nav>
       )}
     </div>
