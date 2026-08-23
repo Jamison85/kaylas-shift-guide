@@ -1053,7 +1053,7 @@ summary:focus-visible {
 .name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
 .name-card__actions button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 .name-card__copy > em { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 0.63rem; font-style: normal; }
-.name-prop { right: -2px; bottom: -3px; width: clamp(150px, 39vw, 235px); }
+.name-prop { right: 4px; bottom: -3px; width: clamp(150px, 36vw, 210px); }
 
 .profile-overlay {
   position: fixed;
@@ -1282,8 +1282,8 @@ summary:focus-visible {
   box-shadow: var(--shadow-deep);
 }
 .explanation-head { position: relative; min-height: 112px; padding-right: 102px; }
-.explanation-head > div { position: relative; z-index: 2; }
-.explanation-head .character-prop { right: -4px; bottom: -9px; width: 94px; }
+.explanation-head > div:first-child { position: relative; z-index: 2; }
+.explanation-head .character-prop { position: absolute; z-index: 1; right: -4px; bottom: -9px; width: 94px; }
 .panel-zoom .explanation-head h2 { margin-top: 7px; font-size: clamp(1.7rem, 7vw, 2.35rem); }
 .panel-zoom article.explanation-card > p { margin: 12px 0 0; font-size: 0.88rem; line-height: 1.62; }
 .panel-zoom article.explanation-card > button { min-height: var(--control-height); margin-top: 18px; border-radius: 13px; }
