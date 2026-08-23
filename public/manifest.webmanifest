@@ -1,0 +1,35 @@
+{
+  "id": "/kaylas-shift-guide/",
+  "name": "Before the Rush",
+  "short_name": "Before Rush",
+  "description": "A calm, step-by-step opening guide for Casey's Store 2593.",
+  "lang": "en-US",
+  "start_url": "/kaylas-shift-guide/",
+  "scope": "/kaylas-shift-guide/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08111d",
+  "theme_color": "#07101d",
+  "categories": ["productivity", "education"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
