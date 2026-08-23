@@ -71,7 +71,7 @@ function NameCard({ initialName = "", onSave, onCancel }) {
         </form>
         <em>Saved only on this device.</em>
       </div>
-      <CharacterProp pose={isEditor ? "point" : "hold"} className="name-prop" />
+      <CharacterProp pose={isEditor ? "point" : "wave"} className="name-prop" />
     </section>
   );
 }
