@@ -1,4 +1,4 @@
-name: Deploy Kayla's Shift Guide to GitHub Pages
+name: Deploy Before the Rush to GitHub Pages
 
 # Publishes the Vite production build whenever main changes.
 on:

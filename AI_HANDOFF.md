@@ -22,6 +22,7 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 16. Do **not** reintroduce older Store Pilot features such as generic manager sign-in or short-staffed mode.
 17. Do **not** reintroduce the old Recovery Photos workflow.
 18. LTO reporting day is no longer a current task.
+19. Keep the app installable as a PWA. Preserve the manifest, generated offline service worker, Android icons, and the unobtrusive header install control.
 
 ## Character behavior philosophy
 The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a helpful coworker who lives inside the interface. Use him in existing negative space and in contextual explanation dialogs. The humor should happen around the work, never at the expense of the work.
@@ -87,6 +88,12 @@ The coworker is not a sticker, mascot costume, or permanent header decoration. H
 `src/data/guide.js` is the operational source of truth. Visual redesign is welcome. Silent business-rule rewrites are not.
 
 Character behavior is implemented separately from operational content. Keep it that way. Ambient visual behavior should not be encoded into `src/data/guide.js`.
+
+## PWA behavior
+- `public/manifest.webmanifest` defines the Android install experience.
+- `npm run build` generates a revisioned `dist/sw.js` after Vite finishes.
+- The service worker precaches the complete production build and replaces old app caches on the next published version.
+- The install button only appears when the browser reports that installation is available. Do not leave a dead install button visible on unsupported or already-installed devices.
 
 ## Provenance
 This project is a reconstruction of the latest settled requirements because the ChatGPT Sites source tree could not be directly exported. Do not describe it as the original byte-for-byte Sites source.

@@ -3,6 +3,7 @@ import CharacterProp from "./components/CharacterProp";
 import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
@@ -83,6 +84,10 @@ function NavIcon({ name }) {
   return <svg {...common}><path d="M20 11a8 8 0 1 1-2.3-5.7L20 7.6" /><path d="M20 3.5v4.1h-4.1" /></svg>;
 }
 
+function InstallIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v11" /><path d="m7.5 10 4.5 4.5 4.5-4.5" /><path d="M5 18.5h14" /></svg>;
+}
+
 export default function App() {
   const day = dateKey();
   const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
@@ -91,6 +96,8 @@ export default function App() {
   const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() ? "home" : "splash") : "setup");
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [installMessage, setInstallMessage] = useState("");
+  const { canInstall, install } = usePwaInstall();
 
   const wisdom = useMemo(() => pick(wisdomLines, day), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
@@ -196,6 +203,13 @@ export default function App() {
     setScreen("home");
   };
 
+  const installApp = async () => {
+    const outcome = await install();
+    if (outcome !== "accepted") return;
+    setInstallMessage("Before the Rush is being added to your phone.");
+    window.setTimeout(() => setInstallMessage(""), 3200);
+  };
+
   if (!displayName || screen === "setup") {
     return (
       <main className="name-gate scene-surface">
@@ -228,6 +242,11 @@ export default function App() {
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
         </button>
         <div className="mini__actions">
+          {canInstall && (
+            <button type="button" className="install-button" onClick={installApp} aria-label="Install Before the Rush on this phone">
+              <InstallIcon /><span>Install</span>
+            </button>
+          )}
           <button type="button" className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Change profile name, currently ${displayName}`}>
             <b>{displayName.charAt(0).toUpperCase()}</b><span>{displayName}</span>
           </button>
@@ -299,6 +318,8 @@ export default function App() {
           <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} />
         </div>
       )}
+
+      {installMessage && <div className="install-toast" role="status">{installMessage}</div>}
     </div>
   );
 }

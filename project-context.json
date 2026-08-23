@@ -3,6 +3,7 @@
   "store": "Casey's Store 2593",
   "profile": "First-run employee name saved on the device",
   "task_count": 21,
+  "delivery": "Installable offline-capable Progressive Web App on GitHub Pages",
   "status": "portable reconstruction of latest settled requirements",
   "source_of_truth": ["src/data/guide.js", "AI_HANDOFF.md"],
   "do_not_reintroduce": ["LTO reporting day", "old Recovery Photos workflow", "short-staffed mode", "old generic manager sign-in"]

@@ -39,6 +39,9 @@ This separation is deliberate. A different AI can redesign the UI without silent
 - One-task-at-a-time morning guide.
 - 21 operational tasks.
 - Progress saved by date in browser local storage.
+- Installable on Android as a Progressive Web App, with a compact in-app install button when supported.
+- The full guide and its local visual assets are cached for offline use after the first visit.
+- New published versions replace the offline cache automatically.
 - Learn mode uses one expanded instruction at a time to reduce scrolling.
 - Quick mode keeps the same workflow as a compact list.
 - Character-led **Why?** explanations use the existing context instead of adding permanent page rows.
@@ -64,3 +67,9 @@ A redesign should not change:
 - Power Inventory 30-for-30 order.
 
 Visual experimentation is welcome. Operational improvisation is not.
+
+## Android installation
+
+Open the published site in Chrome and tap the **Install** button in the app header. If Chrome has not yet offered the in-app prompt, use Chrome's menu and choose **Install app** or **Add to Home screen**.
+
+The installed app opens in its own window. Names, daily progress, and saved contact numbers remain on that device. They are not synced to another phone.
