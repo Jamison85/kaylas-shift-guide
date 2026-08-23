@@ -4,6 +4,11 @@ import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 
+const APP_NAME = "Before the Rush";
+const PROFILE_KEY = "before-rush-profile";
+const OPENING_KEY = "before-rush-opening-played";
+const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
+
 const dateKey = () => {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -12,6 +17,65 @@ const dateKey = () => {
 const pick = (items, seed) =>
   items[[...seed].reduce((total, char, index) => total + char.charCodeAt(0) * (index + 1), 0) % items.length];
 
+function legacyProgress(day) {
+  try {
+    const saved = window.localStorage.getItem(`kayla-guide-${day}`);
+    return saved ? JSON.parse(saved) : emptyProgress;
+  } catch {
+    return emptyProgress;
+  }
+}
+
+function openingAlreadyPlayed() {
+  try { return window.sessionStorage.getItem(OPENING_KEY) === "yes"; }
+  catch { return false; }
+}
+
+function markOpeningPlayed() {
+  try { window.sessionStorage.setItem(OPENING_KEY, "yes"); } catch {}
+}
+
+function NameCard({ initialName = "", onSave, onCancel }) {
+  const [draft, setDraft] = useState(initialName);
+  const cleanName = draft.trim().replace(/\s+/g, " ");
+  const isEditor = Boolean(onCancel);
+
+  const submit = (event) => {
+    event.preventDefault();
+    if (!cleanName) return;
+    onSave(cleanName);
+  };
+
+  return (
+    <section className={`name-card ${isEditor ? "name-card--editor" : ""}`} onClick={(event) => event.stopPropagation()}>
+      <div className="name-card__copy">
+        <small>{APP_NAME} · Store 2593</small>
+        <h1>{isEditor ? "Make it yours." : "Who’s opening today?"}</h1>
+        <p>{isEditor ? "Change the name used in greetings and milestones." : "Your guide will remember you on this device and make the morning feel a little less generic."}</p>
+        <form onSubmit={submit}>
+          <label htmlFor={isEditor ? "profile-name-edit" : "profile-name"}>What should I call you?</label>
+          <input
+            id={isEditor ? "profile-name-edit" : "profile-name"}
+            type="text"
+            autoComplete="given-name"
+            maxLength="24"
+            placeholder="Your name"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            autoFocus
+          />
+          <div className="name-card__actions">
+            <button type="submit" className="primary" disabled={!cleanName}>{isEditor ? "Save name" : "Make it mine"}</button>
+            {isEditor && <button type="button" onClick={onCancel}>Cancel</button>}
+          </div>
+        </form>
+        <em>Saved only on this device.</em>
+      </div>
+      <CharacterProp pose={isEditor ? "point" : "hold"} className="name-prop" />
+    </section>
+  );
+}
+
 function NavIcon({ name }) {
   const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
   if (name === "home") return <svg {...common}><path d="M3.5 10.7 12 3.5l8.5 7.2v9a1 1 0 0 1-1 1h-5.2v-6H9.7v6H4.5a1 1 0 0 1-1-1z" /></svg>;
@@ -19,16 +83,14 @@ function NavIcon({ name }) {
   return <svg {...common}><path d="M20 11a8 8 0 1 1-2.3-5.7L20 7.6" /><path d="M20 3.5v4.1h-4.1" /></svg>;
 }
 
-function openingAlreadyPlayed() {
-  try { return window.sessionStorage.getItem("kayla-guide-opening-played") === "yes"; }
-  catch { return false; }
-}
-
 export default function App() {
   const day = dateKey();
-  const [progress, setProgress] = useLocalStorage(`kayla-guide-${day}`, { completed: [], currentIndex: 0, mode: "learn", answers: {} });
-  const [screen, setScreen] = useState(() => (openingAlreadyPlayed() ? "home" : "splash"));
+  const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
+  const displayName = typeof profile?.name === "string" ? profile.name.trim() : "";
+  const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, legacyProgress(day));
+  const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() ? "home" : "splash") : "setup");
   const [isLaunching, setIsLaunching] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const wisdom = useMemo(() => pick(wisdomLines, day), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
@@ -53,14 +115,22 @@ export default function App() {
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
 
+  useEffect(() => { document.title = APP_NAME; }, []);
+
   useEffect(() => {
     if (screen !== "splash") return undefined;
     const timer = window.setTimeout(() => {
-      try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {}
+      markOpeningPlayed();
       setScreen("home");
-    }, 4300);
+    }, 3900);
     return () => window.clearTimeout(timer);
   }, [screen]);
+
+  const saveName = (name) => {
+    setProfile({ name });
+    setShowProfile(false);
+    if (screen === "setup") setScreen("splash");
+  };
 
   const go = (nextIndex) => {
     const safeIndex = Math.max(0, Math.min(nextIndex, guideTasks.length - 1));
@@ -122,19 +192,27 @@ export default function App() {
   };
 
   const reset = () => {
-    setProgress({ completed: [], currentIndex: 0, mode: "learn", answers: {} });
+    setProgress({ ...emptyProgress });
     setScreen("home");
   };
+
+  if (!displayName || screen === "setup") {
+    return (
+      <main className="name-gate scene-surface">
+        <NameCard onSave={saveName} />
+      </main>
+    );
+  }
 
   if (screen === "splash") {
     return (
       <main className="splash scene-surface">
         <section className="splash-sheet">
           <div className="splash-copy">
-            <small>KAYLA&apos;S SHIFT GUIDE · 2593</small>
-            <h1>Good morning, Kayla.</h1>
+            <small>{APP_NAME} · Store 2593</small>
+            <h1>Good morning, {displayName}.</h1>
             <p>{wisdom}</p>
-            <button type="button" onClick={() => { try { window.sessionStorage.setItem("kayla-guide-opening-played", "yes"); } catch {} setScreen("home"); }}>Start shift <span>→</span></button>
+            <button type="button" onClick={() => { markOpeningPlayed(); setScreen("home"); }}>Start shift <span>→</span></button>
           </div>
           <CharacterProp pose="wave" className="splash-prop" />
         </section>
@@ -147,11 +225,16 @@ export default function App() {
       <header className="mini">
         <button type="button" onClick={() => setScreen("home")} className="mini__brand">
           <i />
-          <span><b>Kayla&apos;s Shift Guide</b><small>2593</small></span>
+          <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
         </button>
-        <div className="mode-toggle" aria-label="Guide detail mode">
-          <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
-          <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
+        <div className="mini__actions">
+          <button type="button" className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Change profile name, currently ${displayName}`}>
+            <b>{displayName.charAt(0).toUpperCase()}</b><span>{displayName}</span>
+          </button>
+          <div className="mode-toggle" aria-label="Guide detail mode">
+            <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
+            <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
+          </div>
         </div>
       </header>
 
@@ -159,7 +242,7 @@ export default function App() {
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
-              <small>Good morning, Kayla</small>
+              <small>Good morning, {displayName}</small>
               <h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
               <div className="home-head__meta">
                 <p>{completedCount ? `${completedCount} screens finished. Pick up where you left off.` : "One important thing at a time."}</p>
@@ -186,8 +269,6 @@ export default function App() {
                 <CharacterProp pose="push" className="home-action home-action--anchor" />
               </div>
             </div>
-
-            <div className="coach-bubble"><span>Shift note</span><p>{wisdom}</p></div>
           </section>
         )}
 
@@ -198,7 +279,7 @@ export default function App() {
         {screen === "complete" && (
           <section className="finish">
             <div className="finish__card">
-              <div className="finish__copy"><small>Morning guide complete</small><h1>Kayla, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
+              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
               <CharacterProp pose="celebrate" className="finish-prop" />
             </div>
           </section>
@@ -211,6 +292,12 @@ export default function App() {
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
           <button type="button" onClick={reset}><NavIcon name="reset" /><small>Reset</small></button>
         </nav>
+      )}
+
+      {showProfile && (
+        <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Change your name" onClick={() => setShowProfile(false)}>
+          <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} />
+        </div>
       )}
     </div>
   );

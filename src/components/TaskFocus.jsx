@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CharacterProp from "./CharacterProp";
 import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -25,7 +25,7 @@ function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
 
   return (
-    <section className="decision zoomable-panel" aria-label={decision.question}>
+    <section className="decision" aria-label={decision.question}>
       <div className="decision-kicker">Decision point</div>
       <strong>{decision.question}</strong>
       <div className="decision-buttons">
@@ -53,8 +53,17 @@ const callableContactIds = new Set(["jamo", "loretta"]);
 const phoneDigits = (value = "") => value.replace(/\D/g, "");
 const phoneHref = (value = "") => `${value.trim().startsWith("+") ? "+" : ""}${phoneDigits(value)}`;
 
+function legacyPhoneNumbers() {
+  try {
+    const saved = window.localStorage.getItem("kayla-guide-contact-numbers");
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
 function Contacts({ ids = [] }) {
-  const [phoneNumbers, setPhoneNumbers] = useLocalStorage("kayla-guide-contact-numbers", {});
+  const [phoneNumbers, setPhoneNumbers] = useLocalStorage("before-rush-contact-numbers", legacyPhoneNumbers());
   const [editingId, setEditingId] = useState(null);
   const [draftNumber, setDraftNumber] = useState("");
   const unique = [...new Set(ids)].map((id) => [id, contacts[id]]).filter(([, contact]) => contact);
@@ -135,64 +144,115 @@ function normalizedStep(step, index) {
 
 export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
-  const [zoom, setZoom] = useState(null);
+  const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
+  const [explanation, setExplanation] = useState(null);
   const steps = task.steps.map(normalizedStep);
   const characterPose = taskCharacterPoses[task.id] || null;
-  const openZoom = (label, title, body) => setZoom({ label, title, body });
+
+  useEffect(() => {
+    setExpandedStep(mode === "learn" ? 0 : null);
+    setExplanation(null);
+  }, [task.id, mode]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [task.id]);
+
+  useEffect(() => {
+    if (!explanation) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setExplanation(null);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [explanation]);
+
+  const openExplanation = (label, title, body) => setExplanation({ label, title, body });
 
   return (
-    <section className="task-card">
-      <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
-      <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
+    <section className="task-focus">
+      <article className="task-card">
+        <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
+        <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
 
-      <div className="title-row">
-        <div><small>{task.short}</small><h1>{task.title}</h1></div>
-        <b className={done ? "status done" : "status"}>{done ? "Done" : "Current"}</b>
-      </div>
+        <div className="title-row">
+          <div><small>{task.short}</small><h1>{task.title}</h1></div>
+          <div className="title-tools">
+            <b className={done ? "status done" : "status"}>{done ? "Done" : "Current"}</b>
+            {mode === "learn" && (
+              <button type="button" className="why-chip" onClick={() => openExplanation("Why this matters", task.title, task.purpose)}>Why?</button>
+            )}
+          </div>
+        </div>
 
-      {mode === "learn" && <p className="purpose">{task.purpose}</p>}
+        {task.location && mode === "learn" && (
+          <section className={`task-location ${characterPose ? `task-location--with-character task-location--${characterPose}` : ""}`}>
+            <small>Where you are</small><p>{task.location}</p>
+            {characterPose && <CharacterProp pose={characterPose} />}
+          </section>
+        )}
 
-      {task.location && mode === "learn" && (
-        <section className={`task-location ${characterPose ? `task-location--with-character task-location--${characterPose}` : ""}`}>
-          <small>Where you are</small><p>{task.location}</p>
-          {characterPose && <CharacterProp pose={characterPose} />}
-        </section>
-      )}
+        <div className="steps-heading">
+          <div><small>{mode === "learn" ? "Step by step" : "Quick steps"}</small><strong>Do these in order</strong></div>
+          <span>{steps.length} steps</span>
+        </div>
 
-      <div className="steps-heading">
-        <div><small>{mode === "learn" ? "Step by step" : "Quick steps"}</small><strong>Do these in order</strong></div>
-        <span>{steps.length} steps</span>
-      </div>
+        <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
+          {steps.map((step, stepIndex) => {
+            const isExpanded = mode === "learn" && expandedStep === stepIndex;
+            const detailsId = `step-${task.id}-${stepIndex}`;
+            return (
+              <li key={`${task.id}-${stepIndex}`} className={isExpanded ? "is-expanded" : ""}>
+                {mode === "learn" ? (
+                  <>
+                    <button
+                      type="button"
+                      className="step-toggle"
+                      aria-expanded={isExpanded}
+                      aria-controls={detailsId}
+                      onClick={() => setExpandedStep(isExpanded ? null : stepIndex)}
+                    >
+                      <b>{stepIndex + 1}</b>
+                      <span><strong>{step.title}</strong><small>{isExpanded ? "Hide detail" : "Show detail"}</small></span>
+                      <i aria-hidden="true">{isExpanded ? "−" : "+"}</i>
+                    </button>
+                    {isExpanded && (
+                      <div className="step-detail" id={detailsId}>
+                        <p>{step.detail}</p>
+                        {step.more && (
+                          <button type="button" className="step-more" onClick={() => openExplanation(`Step ${stepIndex + 1} · Why this matters`, step.title, step.more)}>
+                            Ask why <span>→</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="quick-step-row"><b>{stepIndex + 1}</b><strong>{step.title}</strong></div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
 
-      <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
-        {steps.map((step, stepIndex) => (
-          <li key={`${task.id}-${stepIndex}`}>
-            <b>{stepIndex + 1}</b>
-            <div>
-              <strong>{step.title}</strong>
-              {mode === "learn" && <p>{step.detail}</p>}
-              {mode === "learn" && step.more && (
-                <button type="button" className="step-more" onClick={() => openZoom(`Extra context · Step ${stepIndex + 1}`, step.title, step.more)}>
-                  More context <span>↗</span>
-                </button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
+        {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
-      {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
+        {task.check && mode === "learn" && (
+          <section className="move-on-check">
+            <small>Before you move on</small><p>{task.check}</p>
+          </section>
+        )}
 
-      {task.check && mode === "learn" && (
-        <section className="move-on-check">
-          <small>Before you move on</small><p>{task.check}</p>
-        </section>
-      )}
+        {task.tip && mode === "learn" && <aside><small>Shift note</small><p>{task.tip}</p></aside>}
+        <Contacts ids={task.contacts} />
 
-      {task.tip && mode === "learn" && <aside><small>Shift note</small><p>{task.tip}</p></aside>}
-      <Contacts ids={task.contacts} />
-
-      {task.decision && !canComplete && <p className="completion-gate">Answer the Yes / No question above before moving on.</p>}
+        {task.decision && !canComplete && <p className="completion-gate">Answer the Yes / No question above before moving on.</p>}
+      </article>
 
       <footer className="guided-footer">
         <button type="button" disabled={index === 0} onClick={onBack}>Back</button>
@@ -201,11 +261,15 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         </button>
       </footer>
 
-      {zoom && (
-        <div className="panel-zoom" role="dialog" aria-modal="true" onClick={() => setZoom(null)}>
-          <article onClick={(event) => event.stopPropagation()}>
-            <small>{zoom.label}</small><h2>{zoom.title}</h2><p>{zoom.body}</p>
-            <button type="button" onClick={() => setZoom(null)}>Got it</button>
+      {explanation && (
+        <div className="panel-zoom" role="dialog" aria-modal="true" aria-label={explanation.label} onClick={() => setExplanation(null)}>
+          <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
+            <div className="explanation-head">
+              <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
+              <CharacterProp pose={characterPose || "point"} />
+            </div>
+            <p>{explanation.body}</p>
+            <button type="button" onClick={() => setExplanation(null)} autoFocus>That makes sense</button>
           </article>
         </div>
       )}
