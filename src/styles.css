@@ -1289,6 +1289,8 @@ summary:focus-visible {
 .panel-zoom article.explanation-card > button { min-height: var(--control-height); margin-top: 18px; border-radius: 13px; }
 
 .finish__card { box-shadow: var(--shadow-deep); }
+.finish__copy > p,
+.finish__actions { width: 78%; }
 .bottom-nav { border-color: rgba(255, 255, 255, 0.18); background: rgba(7, 16, 29, 0.93); box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35); }
 
 @media (min-width: 640px) {
@@ -1325,6 +1327,8 @@ summary:focus-visible {
   .step-detail { padding-left: 56px; }
   .explanation-head { min-height: 98px; padding-right: 84px; }
   .explanation-head .character-prop { width: 78px; }
+  .finish__copy > p,
+  .finish__actions { width: 70%; }
 }
 
 @media (max-width: 350px) {
