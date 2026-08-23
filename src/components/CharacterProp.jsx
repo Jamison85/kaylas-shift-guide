@@ -4,6 +4,26 @@ const poseFiles = {
   celebrate: "characters-approved/prop-celebrate.webp",
 };
 
+const actionFiles = {
+  walk: "characters-approved/till-action-walk-v1.webp",
+  register: "characters-approved/till-action-register-v1.webp",
+  paperwork: "characters-approved/till-action-paperwork-v1.webp",
+  computer: "characters-approved/till-action-computer-v1.webp",
+  lottery: "characters-approved/till-action-lottery-v1.webp",
+  reconcile: "characters-approved/till-action-reconcile-v1.webp",
+  inventory: "characters-approved/till-action-inventory-v1.webp",
+};
+
+const actionDurations = {
+  walk: "3.2s",
+  register: "3.6s",
+  paperwork: "4.2s",
+  computer: "3.8s",
+  lottery: "4.1s",
+  reconcile: "4.4s",
+  inventory: "4s",
+};
+
 const spritePoses = {
   carry: "0% 0%",
   push: "33.333% 0%",
@@ -16,7 +36,22 @@ const spritePoses = {
 
 export default function CharacterProp({ pose = "hold", className = "" }) {
   const base = import.meta.env.BASE_URL;
+  const actionFile = actionFiles[pose];
   const spritePosition = spritePoses[pose];
+
+  if (actionFile) {
+    return (
+      <div className={`character-prop character-prop--action character-prop--${pose} ${className}`.trim()} aria-hidden="true">
+        <span
+          className="character-prop__action"
+          style={{
+            backgroundImage: `url("${base}${actionFile}")`,
+            "--till-action-duration": actionDurations[pose],
+          }}
+        />
+      </div>
+    );
+  }
 
   if (spritePosition) {
     return (

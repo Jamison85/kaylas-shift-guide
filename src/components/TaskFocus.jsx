@@ -3,22 +3,28 @@ import CharacterProp from "./CharacterProp";
 import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
-const taskCharacterPoses = {
-  "store-walk": "carry",
-  "cashier-break": "point",
-  "yesterday-sources": "compare",
-  "register-two": "point",
-  "lottery-refill": "carry",
-  "gas-inspection": "point",
-  "price-server": "point",
-  "paperwork-packet": "compare",
-  "lottery-audit-start": "compare",
-  "lottery-variance": "compare",
-  "safe-deposit": "compare",
-  "drawer-mismatch": "point",
-  "tender-totals": "compare",
-  "finalize-eod": "carry",
-  "power-inventory": "carry",
+const taskCharacterActions = {
+  "store-walk": "walk",
+  "register-two": "register",
+  "cashier-break": "register",
+  "yesterday-sources": "paperwork",
+  "lottery-refill": "lottery",
+  "health-dept": "computer",
+  "gas-inspection": "computer",
+  "receipt-sort": "paperwork",
+  "price-server": "computer",
+  "eod-status": "computer",
+  "paperwork-packet": "paperwork",
+  "paperwork-details": "paperwork",
+  "lottery-audit-start": "lottery",
+  "lottery-books": "lottery",
+  "lottery-received-returns": "lottery",
+  "lottery-variance": "lottery",
+  "safe-deposit": "reconcile",
+  "drawer-mismatch": "reconcile",
+  "tender-totals": "reconcile",
+  "finalize-eod": "computer",
+  "power-inventory": "inventory",
 };
 
 function Decision({ decision, answer, onChange }) {
@@ -66,7 +72,10 @@ function Contacts({ ids = [] }) {
   const [phoneNumbers, setPhoneNumbers] = useLocalStorage("before-rush-contact-numbers", legacyPhoneNumbers());
   const [editingId, setEditingId] = useState(null);
   const [draftNumber, setDraftNumber] = useState("");
-  const unique = [...new Set(ids)].map((id) => [id, contacts[id]]).filter(([, contact]) => contact);
+  const pairedIds = [...new Set(ids)];
+  const jamoIndex = pairedIds.indexOf("jamo");
+  if (jamoIndex !== -1 && !pairedIds.includes("loretta")) pairedIds.splice(jamoIndex + 1, 0, "loretta");
+  const unique = pairedIds.map((id) => [id, contacts[id]]).filter(([, contact]) => contact);
 
   const startEditing = (id) => {
     setDraftNumber(phoneNumbers?.[id] || "");
@@ -147,7 +156,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
   const [explanation, setExplanation] = useState(null);
   const steps = task.steps.map(normalizedStep);
-  const characterPose = taskCharacterPoses[task.id] || null;
+  const characterAction = taskCharacterActions[task.id] || null;
 
   useEffect(() => {
     setExpandedStep(mode === "learn" ? 0 : null);
@@ -191,9 +200,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         </div>
 
         {task.location && mode === "learn" && (
-          <section className={`task-location ${characterPose ? `task-location--with-character task-location--${characterPose}` : ""}`}>
+          <section className={`task-location ${characterAction ? `task-location--with-character task-location--${characterAction}` : ""}`}>
             <small>Where you are</small><p>{task.location}</p>
-            {characterPose && <CharacterProp pose={characterPose} />}
+            {characterAction && <CharacterProp key={`${task.id}-location`} pose={characterAction} />}
           </section>
         )}
 
@@ -266,7 +275,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
             <div className="explanation-head">
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
-              <CharacterProp pose={characterPose || "point"} />
+              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} />
             </div>
             <p>{explanation.body}</p>
             <button type="button" onClick={() => setExplanation(null)} autoFocus>That makes sense</button>
