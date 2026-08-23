@@ -496,7 +496,6 @@ summary:focus-visible {
 .task-card > .task-location,
 .task-card > .steps-heading,
 .task-card > .steps,
-.task-card > .task-cameo,
 .task-card > .decision,
 .task-card > .move-on-check,
 .task-card > aside,
@@ -585,6 +584,28 @@ summary:focus-visible {
 .task-location p,
 .move-on-check p { margin: 6px 0 0; line-height: 1.48; }
 
+.task-location--with-character {
+  min-height: 102px;
+  overflow: hidden;
+  padding-right: 92px;
+}
+
+.task-location--with-character > small,
+.task-location--with-character > p {
+  position: relative;
+  z-index: 2;
+}
+
+.task-location--with-character .character-prop {
+  z-index: 1;
+  right: 7px;
+  bottom: -11px;
+  width: 76px;
+}
+
+.task-location--compare .character-prop { right: 5px; bottom: -9px; width: 73px; }
+.task-location--point .character-prop { right: 3px; bottom: -10px; width: 79px; }
+
 .steps-heading {
   display: flex;
   align-items: flex-end;
@@ -636,114 +657,6 @@ summary:focus-visible {
   cursor: pointer;
 }
 .step-more span { font-size: 0.72rem; }
-
-.task-cameo {
-  height: 136px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-
-.task-cameo__prop {
-  position: absolute;
-  z-index: 1;
-  top: 74px;
-  right: 86px;
-  left: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(23, 33, 56, 0.2));
-}
-.task-cameo__prop::after {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--orange);
-  content: "";
-}
-
-.task-cameo .character-prop {
-  z-index: 3;
-  top: -2px;
-  right: 4px;
-  width: 102px;
-  animation: cameo-arrive 540ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.task-cameo--carry .character-prop { right: 5px; width: 105px; }
-.task-cameo--sit .character-prop { top: -8px; right: 3px; width: 108px; }
-.task-cameo--sit .task-cameo__prop { top: 82px; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(23, 33, 56, 0.28) 40%, rgba(23, 33, 56, 0.28)); }
-.task-cameo--compare .character-prop { top: -4px; width: 99px; }
-
-.task-cameo--push .character-prop { right: 60px; width: 111px; }
-.task-cameo--push .task-cameo__prop {
-  top: 22px;
-  right: -8px;
-  left: auto;
-  width: 76px;
-  height: 96px;
-  border: 1px solid rgba(34, 85, 199, 0.16);
-  border-radius: 17px 4px 17px 17px;
-  background: linear-gradient(150deg, rgba(34, 85, 199, 0.1), rgba(255, 255, 255, 0.42));
-  box-shadow: -8px 8px 0 rgba(243, 111, 44, 0.07);
-}
-.task-cameo--push .task-cameo__prop::after { display: none; }
-
-.task-cameo--point .character-prop { top: -5px; right: 2px; width: 105px; }
-.task-cameo--point .task-cameo__prop {
-  top: 78px;
-  right: 99px;
-  left: auto;
-  width: 74px;
-  height: 27px;
-  border-radius: 10px;
-  background: var(--cobalt);
-  box-shadow: 0 8px 18px rgba(34, 85, 199, 0.18);
-}
-.task-cameo--point .task-cameo__prop::after { top: 8px; right: 12px; width: 28px; height: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.72); }
-
-.task-cameo--climb .character-prop { top: -3px; right: 17px; width: 101px; }
-.task-cameo--climb .task-cameo__prop {
-  top: 8px;
-  right: 85px;
-  left: auto;
-  width: 28px;
-  height: 117px;
-  border-right: 3px solid rgba(23, 33, 56, 0.22);
-  border-left: 3px solid rgba(23, 33, 56, 0.22);
-  background: repeating-linear-gradient(180deg, transparent 0 12px, rgba(23, 33, 56, 0.22) 12px 15px);
-}
-.task-cameo--climb .task-cameo__prop::after { display: none; }
-
-.task-cameo--peek .character-prop { top: -4px; right: 1px; width: 96px; }
-.task-cameo--peek .task-cameo__prop {
-  z-index: 4;
-  top: 4px;
-  right: -10px;
-  left: auto;
-  width: 36px;
-  height: 126px;
-  border-radius: 6px 0 0 6px;
-  background: linear-gradient(180deg, rgba(23, 33, 56, 0.84), rgba(9, 18, 33, 0.96));
-  box-shadow: -10px 0 26px rgba(3, 8, 16, 0.18);
-}
-.task-cameo--peek .task-cameo__prop::after { display: none; }
-
-.task-card--paperwork-packet .task-cameo::after {
-  position: absolute;
-  z-index: 2;
-  top: 17px;
-  right: 102px;
-  width: 17px;
-  height: 24px;
-  border: 1px solid rgba(23, 33, 56, 0.13);
-  border-radius: 2px;
-  background: rgba(255, 250, 240, 0.94);
-  box-shadow: -42px 18px 0 -1px rgba(255, 250, 240, 0.9), -82px -5px 0 -2px rgba(255, 250, 240, 0.86);
-  content: "";
-  animation: receipt-flurry 1.6s 460ms ease-out both;
-}
 
 .decision {
   margin-top: 24px;
@@ -933,16 +846,6 @@ summary:focus-visible {
   from { opacity: 1; transform: translateX(0) scale(1); }
   to { opacity: 0; transform: translateX(-18px) scale(1.025); }
 }
-@keyframes cameo-arrive {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes receipt-flurry {
-  0% { opacity: 0; transform: translate(42px, -15px) rotate(14deg); }
-  20%, 72% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-34px, 82px) rotate(-28deg); }
-}
-
 @media (min-width: 640px) {
   .content { padding-top: 38px; }
   .home-stage { min-height: 430px; padding-top: 130px; }
@@ -957,7 +860,6 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
-  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,
@@ -965,6 +867,10 @@ summary:focus-visible {
   .task-card > .completion-gate,
   .guided-footer { margin-right: 34px; margin-left: 34px; }
   .task-location, .move-on-check { width: calc(100% - 68px); }
+  .task-location--with-character { padding-right: 108px; }
+  .task-location--with-character .character-prop { right: 12px; bottom: -14px; width: 88px; }
+  .task-location--compare .character-prop { width: 84px; }
+  .task-location--point .character-prop { width: 91px; }
 }
 
 @media (max-width: 430px) {
@@ -1006,7 +912,6 @@ summary:focus-visible {
   .task-card > .task-location,
   .task-card > .steps-heading,
   .task-card > .steps,
-  .task-card > .task-cameo,
   .task-card > .decision,
   .task-card > .move-on-check,
   .task-card > aside,
@@ -1014,6 +919,10 @@ summary:focus-visible {
   .task-card > .completion-gate,
   .guided-footer { margin-right: 18px; margin-left: 18px; }
   .task-location, .move-on-check { width: calc(100% - 36px); }
+  .task-location--with-character { min-height: 96px; padding-right: 76px; }
+  .task-location--with-character .character-prop { right: 2px; bottom: -8px; width: 64px; }
+  .task-location--compare .character-prop { width: 62px; }
+  .task-location--point .character-prop { width: 66px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

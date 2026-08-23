@@ -5,20 +5,20 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const taskCharacterPoses = {
   "store-walk": "carry",
-  "cashier-break": "sit",
+  "cashier-break": "point",
   "yesterday-sources": "compare",
-  "register-two": "push",
-  "lottery-refill": "climb",
+  "register-two": "point",
+  "lottery-refill": "carry",
   "gas-inspection": "point",
   "price-server": "point",
-  "paperwork-packet": "peek",
+  "paperwork-packet": "compare",
   "lottery-audit-start": "compare",
   "lottery-variance": "compare",
   "safe-deposit": "compare",
-  "drawer-mismatch": "peek",
+  "drawer-mismatch": "point",
   "tender-totals": "compare",
-  "finalize-eod": "push",
-  "power-inventory": "climb",
+  "finalize-eod": "carry",
+  "power-inventory": "carry",
 };
 
 function Decision({ decision, answer, onChange }) {
@@ -141,7 +141,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const openZoom = (label, title, body) => setZoom({ label, title, body });
 
   return (
-    <section className={`task-card task-card--${task.id}`}>
+    <section className="task-card">
       <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
       <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
 
@@ -153,8 +153,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       {mode === "learn" && <p className="purpose">{task.purpose}</p>}
 
       {task.location && mode === "learn" && (
-        <section className="task-location">
+        <section className={`task-location ${characterPose ? `task-location--with-character task-location--${characterPose}` : ""}`}>
           <small>Where you are</small><p>{task.location}</p>
+          {characterPose && <CharacterProp pose={characterPose} />}
         </section>
       )}
 
@@ -179,13 +180,6 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           </li>
         ))}
       </ol>
-
-      {characterPose && (
-        <div className={`task-cameo task-cameo--${characterPose}`}>
-          <span className="task-cameo__prop" aria-hidden="true" />
-          <CharacterProp pose={characterPose} />
-        </div>
-      )}
 
       {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
