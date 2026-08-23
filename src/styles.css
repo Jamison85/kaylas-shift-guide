@@ -393,6 +393,27 @@ summary:focus-visible {
   filter: drop-shadow(0 16px 13px rgba(3, 8, 16, 0.28));
 }
 
+.character-prop--action { aspect-ratio: 1; }
+
+.character-prop__action {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 200% 200%;
+  filter: drop-shadow(0 9px 8px rgba(1, 8, 18, 0.18));
+  will-change: background-position;
+  animation: till-action-cycle var(--till-action-duration, 4s) step-end infinite;
+}
+
+@keyframes till-action-cycle {
+  0%, 24.99% { background-position: 0 0; }
+  25%, 49.99% { background-position: 100% 0; }
+  50%, 74.99% { background-position: 0 100%; }
+  75%, 100% { background-position: 100% 100%; }
+}
+
 .home-action { opacity: 1; }
 .home-action--anchor { z-index: 5; right: 28px; bottom: 7px; width: 112px; }
 
@@ -927,6 +948,7 @@ summary:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .character-prop__action { animation: none !important; background-position: 0 0 !important; will-change: auto; }
 }
 
 /* Before the Rush — final system polish */
@@ -1209,6 +1231,7 @@ summary:focus-visible {
 .task-location p,
 .move-on-check p { font-size: 0.84rem; }
 .task-location--with-character { min-height: 94px; padding-right: 90px; }
+.task-location--with-character .character-prop--action { right: 2px; bottom: 1px; width: 88px; }
 .steps-heading { margin-top: 23px; margin-bottom: 10px; }
 .steps-heading strong { font-size: 1.2rem; }
 
@@ -1343,6 +1366,7 @@ summary:focus-visible {
   .start { min-height: 282px; }
   .start-copy { min-height: 282px; }
   .task-location--with-character { padding-right: 106px; }
+  .task-location--with-character .character-prop--action { right: 5px; width: 98px; }
 }
 
 @keyframes install-arrive {
@@ -1370,6 +1394,8 @@ summary:focus-visible {
   .start { min-height: 238px; }
   .start-copy { min-height: 238px; }
   .task-card h1 { font-size: clamp(1.9rem, 9.3vw, 2.72rem); }
+  .task-location--with-character { padding-right: 82px; }
+  .task-location--with-character .character-prop--action { right: 1px; bottom: 2px; width: 76px; }
   .step-detail { padding-left: 56px; }
   .explanation-head { min-height: 98px; padding-right: 84px; }
   .explanation-head .character-prop { width: 78px; }
@@ -1389,6 +1415,8 @@ summary:focus-visible {
   .profile-button { width: 31px; height: 31px; }
   .mode-toggle button { padding-right: 7px; padding-left: 7px; font-size: 0.66rem; }
   .task-card { --panel-x: 16px; }
+  .task-location--with-character { padding-right: 72px; }
+  .task-location--with-character .character-prop--action { width: 68px; }
   .step-toggle { gap: 9px; padding: 11px 9px; }
   .step-detail { padding-right: 11px; padding-left: 50px; }
 }
