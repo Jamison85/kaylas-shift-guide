@@ -1,6 +1,6 @@
-# Kayla's Shift Guide
+# Before the Rush
 
-Portable React/Vite version of the latest agreed **Kayla morning shift guide** for Casey's Store 2593.
+Portable React/Vite version of the opening workflow guide for Casey's Store 2593.
 
 ## Important provenance note
 
@@ -32,17 +32,20 @@ This separation is deliberate. A different AI can redesign the UI without silent
 
 ## Current app behavior
 
-- Large Good Morning splash with dry wisdom.
+- First-run name setup, saved only on the device.
+- Personalized Good Morning splash with dry wisdom.
 - Splash automatically transitions into the working home screen.
 - Small home header plus a much larger **Start here** area.
 - One-task-at-a-time morning guide.
-- 17 operational tasks.
+- 21 operational tasks.
 - Progress saved by date in browser local storage.
+- Learn mode uses one expanded instruction at a time to reduce scrolling.
+- Quick mode keeps the same workflow as a compact list.
+- Character-led **Why?** explanations use the existing context instead of adding permanent page rows.
 - Yes/No pop-up instruction bubble for Health Department and Gas Inspection.
 - Contact help chips that do not duplicate a person's name within the same bubble.
-- Tall skinny blond/blue-eyed coworker in a red 2593 polo, implemented in CSS so the project has no external image dependency.
-- Random-feeling idle reactions and stronger animation changes on task transitions.
-- Coworker is kept out of critical instruction areas.
+- Tall skinny blond/blue-eyed coworker in a red 2593 polo, using approved local image assets.
+- Coworker uses available panel space and never blocks critical instruction areas.
 - Dry opening and closing wisdom.
 - Bottom navigation.
 - Serious red is used sparingly.

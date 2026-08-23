@@ -1,21 +1,21 @@
-# AI HANDOFF — Kayla's Shift Guide
+# AI HANDOFF — Before the Rush
 
 ## Mission
-Mobile-first working/training guide for **Kayla** at **Casey's Store 2593**. It should feel like a premium internal app, not a generic retail checklist.
+Mobile-first working/training guide for any opening employee at **Casey's Store 2593**. It should feel personal and premium, not like a generic retail checklist.
 
 ## Non-negotiable product behavior
 1. Keep the morning workflow sequential and easy to follow.
 2. Prefer one important thing on one screen.
 3. Do not turn Home into a long scrolling dashboard.
-4. Opening experience includes "Good morning, Kayla" + dry/funny/helpful wisdom.
+4. First-run setup asks for the employee's name; the opening experience uses that saved name with dry/funny/helpful wisdom.
 5. Opening should visually transition into the compact working experience.
 6. **Start here** dominates Home.
 7. Health Department and Gas Inspection use Yes/No decisions revealing corresponding directions.
 8. If Jamo or Loretta is clickable in an info area, each person's name appears only once in that bubble/panel.
-9. Coworker character: tall, skinny, a little older, blond hair, blue eyes, red Casey's-style polo, highly expressive, integrated with screen/card edges, stronger reactions between tasks, random-feeling idle actions, never blocks critical text.
-10. The coworker should sometimes do silly little *work* things on his own: clipboard scribbling, coffee sipping, receipt inspection, carrying a stock box, wiping a surface, jingling keys, etc.
-11. He should also occasionally treat harmless pieces of the app as physical scenery: sit or lean on edges, hang from harmless labels, peek around panels, balance on decorative chips, and even use noncritical words as ladder rungs.
-12. Only explicitly marked coworker-safe elements may be used for those antics. Important numbers, percentages, counts, money/variance values, task instructions, Yes/No controls, escalation information, and task navigation/completion controls are never props and must remain fully readable.
+9. Coworker character: tall, skinny, a little older, blond hair, blue eyes, red Casey's-style polo, expressive, and integrated into existing empty space.
+10. Do not add a dedicated character row or make the character cover instructions, values, decisions, or navigation.
+11. In Learn mode, the coworker can explain the task's purpose or deeper step context through the **Why?** dialog.
+12. Avoid ambient motion that does not clearly fit the work. Character behavior should feel intentional, calm, and helpful.
 13. Beginning/end wisdom is dry, relatable and useful, not motivational-poster sludge.
 14. Red is reserved for genuine urgency/escalation.
 15. Mobile-first, polished, premium and fast.
@@ -24,19 +24,13 @@ Mobile-first working/training guide for **Kayla** at **Casey's Store 2593**. It 
 18. LTO reporting day is no longer a current task.
 
 ## Character behavior philosophy
-The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a weird but lovable coworker who happens to live inside the interface.
-
-Use two behavior layers:
-- **Task reactions:** more noticeable actions when Kayla advances/completes tasks.
-- **Ambient behavior:** shorter, rarer, random-feeling work antics and interface mischief while the user is reading or working.
-
-The humor should happen around the work, never at the expense of the work. If an animation could cause a real instruction, number, decision, or control to be missed, it is the wrong animation.
+The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a helpful coworker who lives inside the interface. Use him in existing negative space and in contextual explanation dialogs. The humor should happen around the work, never at the expense of the work.
 
 ## Protected operational facts
 ### Store Walk
 - Start with the store walk.
 - Check lottery box and note books that need adding.
-- Opening cashier gets the first bathroom break as coverage allows.
+- Opening cashier gets the first break as soon as Register 2 is ready for coverage.
 
 ### Health Department / Gas Inspection
 - In the 2593 login.
@@ -44,7 +38,7 @@ The humor should happen around the work, never at the expense of the work. If an
 - Visit/inspection occurred: complete applicable entry → initial → save → document needed follow-up.
 
 ### Price Server Editor
-- Office computer → Programs → Back Office → Price Server Editor.
+- Office computer → Start → Programs → StorePoint Office → Price Server Editor.
 - Sign in with first/last name + register sign-in number.
 - Approve item groups separately.
 - Auto Post Batch.

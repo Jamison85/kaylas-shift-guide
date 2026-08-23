@@ -36,11 +36,11 @@ export const guideTasks = [
   },
   {
     id:"register-two", title:"Open and Fund Register 2", short:"Put money in it before covering the opener’s break.", category:"Front End",
-    purpose:"Have Register 2 open and ready before the opening cashier steps away so Kayla can use it to ring customers during the break.",
+    purpose:"Have Register 2 open and ready before the opening cashier steps away so you can use it to ring customers during the break.",
     location:"Register 2 + Smart Safe.",
     steps:[
       {title:"Open Register 2",detail:"Get Register 2 open before the opening cashier goes on break."},
-      {title:"Check the money already inside",detail:"Decide whether Register 2 needs funding before Kayla uses it to ring customers.",more:"Register 2 will usually need money because no one has used it yet. Check first anyway; adding cash it does not need only creates more reconciliation work later."},
+      {title:"Check the money already inside",detail:"Decide whether Register 2 needs funding before you use it to ring customers.",more:"Register 2 will usually need money because no one has used it yet. Check first anyway; adding cash it does not need only creates more reconciliation work later."},
       {title:"Choose Yes or No below",detail:"If it needs money, follow the Smart Safe and Paid In directions. If it already has enough, keep it open and ready for break coverage."}
     ],
     decision:{
@@ -57,7 +57,7 @@ export const guideTasks = [
   },
   {
     id:"cashier-break", title:"Relieve the Opening Cashier", short:"Use Register 2 to cover the opener’s first break.", category:"People",
-    purpose:"Give the opening cashier their break while Kayla stays at the front and rings customers from the newly opened Register 2.",
+    purpose:"Give the opening cashier their break while you stay at the front and ring customers from the newly opened Register 2.",
     location:"Register 2 / front end.",
     steps:[
       {title:"Confirm Register 2 is ready",detail:"Make sure Register 2 is open and has enough money before the opening cashier leaves the front."},
@@ -66,7 +66,7 @@ export const guideTasks = [
       {title:"Stay at the front",detail:"Do not start an office task or leave the register area until the opening cashier returns."},
       {title:"Hand the front back cleanly",detail:"When they return, quickly pass along anything that happened during the break, then continue the guide."}
     ],
-    check:"The opening cashier has returned from break, and Kayla covered the front by ringing customers on Register 2.",
+    check:"The opening cashier has returned from break, and you covered the front by ringing customers on Register 2.",
     tip:"Human first, spreadsheet second. A revolutionary retail concept.", contacts:[], completeLabel:"Opening cashier relieved"
   },
   {
@@ -278,41 +278,41 @@ export const guideTasks = [
     check:"The audit is at 0 tickets and $0 variance, or any exception has been understood/escalated before finalizing.", contacts:["jamo","loretta"], completeLabel:"Lottery audit finalized"
   },
   {
-    id:"safe-deposit", title:"Reconcile Safe Report to End of Day", short:"Match Kayla’s Paid Ins and the deposit across both.", category:"Cash / Safe",
+    id:"safe-deposit", title:"Reconcile Safe Report to End of Day", short:"Match your Paid Ins and the deposit across both.", category:"Cash / Safe",
     purpose:"Compare the Safe Report with the actual End of Day fields instead of treating the deposit as the only number that matters.", location:"Safe Report beside you + StorePoint Back Office → End Of Day Dialog → correct Pending day.",
     steps:[
       {title:"Keep the Safe Report beside the screen",detail:"You will compare the report against End of Day one field at a time."},
       {title:"Open the Cashiers tab",detail:"In the correct Pending End of Day batch, start on Cashiers."},
-      {title:"Find every Kayla row",detail:"Kayla may appear on more than one row because each terminal can have its own cashier line.",more:"The photographed Cashiers table shows separate columns for Cashier, Status, Terminal, Variance, Sales, Drop, Open Bank, Pay In, Pay Out, PrePay, and Adjustments. Use Kayla’s name and terminal number to make sure you have all of her rows."},
-      {title:"Compare Kayla’s Paid Ins",detail:"Add Kayla’s Pay In amounts across all of her rows, then compare that total with her Paid Ins on the Safe Report.",more:"Do not compare only the first Kayla row if she used both terminals. Read each Pay In amount carefully and make sure the combined End of Day total equals the Safe Report total."},
-      {title:"Compare any matching Paid Outs",detail:"If the Safe Report shows Paid Outs for Kayla, compare them with the Pay Out amounts on her End of Day rows.",more:"Keep the signs intact. An amount shown in parentheses is negative; do not accidentally treat it as a positive amount while comparing reports."},
+      {title:"Find every row under your name",detail:"Your name may appear on more than one row because each terminal can have its own cashier line.",more:"The photographed Cashiers table shows separate columns for Cashier, Status, Terminal, Variance, Sales, Drop, Open Bank, Pay In, Pay Out, PrePay, and Adjustments. Use your name and the terminal number to make sure you have every row that belongs to you."},
+      {title:"Compare your Paid Ins",detail:"Add the Pay In amounts across every row under your name, then compare that total with your Paid Ins on the Safe Report.",more:"Do not compare only the first row under your name if you used both terminals. Read each Pay In amount carefully and make sure the combined End of Day total equals the Safe Report total."},
+      {title:"Compare any matching Paid Outs",detail:"If the Safe Report shows Paid Outs under your name, compare them with the Pay Out amounts on your End of Day rows.",more:"Keep the signs intact. An amount shown in parentheses is negative; do not accidentally treat it as a positive amount while comparing reports."},
       {title:"Open Drop Safe, then the Deposit area",detail:"Use the Drop Safe tab in End of Day and go to the deposit information used for the business day."},
       {title:"Match the deposit on both reports",detail:"The deposit on the Safe Report must match the deposit shown in End of Day.",more:"Compare the actual deposit on the Safe Report with the End of Day Drop Safe / Deposit figure. Do not substitute the Cashiers-tab Sales, Drop, Variance, or tender total for the deposit comparison."},
       {title:"Choose Yes or No below",detail:"Everything compared must agree. If any Paid In, applicable Paid Out, or deposit figure does not match, use the mismatch path."}
     ],
     decision:{
-      question:"Do Kayla’s Paid Ins, applicable Paid Outs, and the deposit agree on both sides?",
+      question:"Do your Paid Ins, applicable Paid Outs, and the deposit agree on both sides?",
       yesTitle:"The reports reconcile",
       yesText:"Good. Skip Drawers / Full Till and continue to the tender totals.",
       yesSteps:["Leave the matching entries alone.","Continue to Verify Tender Totals."],
       yesSkip:["drawer-mismatch"],
       noTitle:"Something does not match",
       noText:"Do not finalize anything yet. Identify the failed comparison, then check Drawers / Full Till.",
-      noSteps:["Note whether the mismatch is Paid In, Paid Out, or deposit.","Leave the Safe Report and End of Day available for comparison.","Check Kayla’s other terminal row before assuming money is missing.","Open Drawers / Full Till next.","Look for an unfinalized drawer or an incorrect till entry before escalating."]
+      noSteps:["Note whether the mismatch is Paid In, Paid Out, or deposit.","Leave the Safe Report and End of Day available for comparison.","Check your other terminal row before assuming money is missing.","Open Drawers / Full Till next.","Look for an unfinalized drawer or an incorrect till entry before escalating."]
     },
-    check:"Kayla’s Paid Ins, any applicable Paid Outs, and the deposit agree between the Safe Report and End of Day, or the mismatch has been identified for the next check.", contacts:["jamo","loretta"], completeLabel:"Reports reconciled"
+    check:"Your Paid Ins, any applicable Paid Outs, and the deposit agree between the Safe Report and End of Day, or the mismatch has been identified for the next check.", contacts:["jamo","loretta"], completeLabel:"Reports reconciled"
   },
   {
     id:"drawer-mismatch", title:"Fix a Safe / EOD Mismatch", short:"Check the failed comparison before escalating.", category:"Cash / Safe",
     purpose:"Find the specific drawer or till issue behind a Paid In, Paid Out, or deposit mismatch.", location:"End of Day → Cashiers and Drawers / Full Till, with the Safe Report beside you.",
     steps:[
       {title:"Name the mismatch first",detail:"Be clear whether Paid In, Paid Out, or the deposit failed to match before changing anything."},
-      {title:"Re-check all of Kayla’s terminal rows",detail:"Make sure a second Kayla row is not holding the amount that seemed to be missing."},
+      {title:"Re-check every row under your name",detail:"Make sure a second terminal row under your name is not holding the amount that seemed to be missing."},
       {title:"Open Drawers / Full Till",detail:"This is the first place to look for an unfinalized or incorrect drawer/till entry."},
       {title:"Look for an unfinalized drawer",detail:"Check whether a cashier drawer or till is still open, Pending, or not fully finalized."},
       {title:"Look for the specific incorrect entry",detail:"Compare the related Paid In, Paid Out, and deposit information with the Safe Report."},
       {title:"Correct only the problem you can identify",detail:"If you find the cause, use the normal store process to correct that specific issue.",more:"A physically completed Paid In that was never recorded is different from a made-up adjustment. Correct only a real, explainable transaction. Do not change an unrelated drawer, till, or deposit amount just to force a balance."},
-      {title:"Run the same comparison again",detail:"After a correction, re-check Kayla’s Paid Ins, any applicable Paid Outs, and the deposit on both sides."},
+      {title:"Run the same comparison again",detail:"After a correction, re-check your Paid Ins, any applicable Paid Outs, and the deposit on both sides."},
       {title:"Escalate if you still cannot explain it",detail:"Notify Jamo first, then Loretta. Richard is for district-level escalation when it is actually needed."}
     ],
     check:"The failed comparison now agrees on both sides, or the unexplained mismatch has been escalated instead of guessed at.", contacts:["jamo","loretta","richard"], completeLabel:"Mismatch checked"
