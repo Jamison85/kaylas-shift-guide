@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import CharacterProp from "./components/CharacterProp";
 import TaskFocus from "./components/TaskFocus";
-import { closingLines, guideTasks, wisdomLines } from "./data/guide";
+import { closingLines, guideTasks } from "./data/guide";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 
@@ -99,7 +99,6 @@ export default function App() {
   const [installMessage, setInstallMessage] = useState("");
   const { canInstall, install } = usePwaInstall();
 
-  const wisdom = useMemo(() => pick(wisdomLines, day), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
   const completed = useMemo(() => new Set(progress.completed || []), [progress.completed]);
   const completedCount = completed.size;
@@ -126,10 +125,11 @@ export default function App() {
 
   useEffect(() => {
     if (screen !== "splash") return undefined;
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => {
       markOpeningPlayed();
       setScreen("home");
-    }, 3900);
+    }, prefersReducedMotion ? 1400 : 6000);
     return () => window.clearTimeout(timer);
   }, [screen]);
 
@@ -220,16 +220,20 @@ export default function App() {
 
   if (screen === "splash") {
     return (
-      <main className="splash scene-surface">
-        <section className="splash-sheet">
-          <div className="splash-copy">
-            <small>{APP_NAME} · Store 2593</small>
-            <h1>Good morning, {displayName}.</h1>
-            <p>{wisdom}</p>
-            <button type="button" onClick={() => { markOpeningPlayed(); setScreen("home"); }}>Start shift <span>→</span></button>
-          </div>
-          <CharacterProp pose="wave" className="splash-prop" />
-        </section>
+      <main className="opening-cinematic scene-surface" aria-label={`Good morning, ${displayName}.`}>
+        <div className="opening-cinematic__greeting" role="status" aria-live="polite">
+          <span>Morning,</span>
+          <strong>{displayName}.</strong>
+          <small>I’ll go first.</small>
+        </div>
+        <CharacterProp pose="aisleIntro" className="opening-cinematic__till" />
+        <button
+          type="button"
+          className="opening-cinematic__skip"
+          onClick={() => { markOpeningPlayed(); setScreen("home"); }}
+        >
+          Skip opening
+        </button>
       </main>
     );
   }

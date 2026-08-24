@@ -1420,3 +1420,186 @@ summary:focus-visible {
   .step-toggle { gap: 9px; padding: 11px 9px; }
   .step-detail { padding-right: 11px; padding-left: 50px; }
 }
+
+/* Till's once-per-session opening walk */
+.opening-cinematic {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--navy);
+}
+
+.opening-cinematic.scene-surface::before {
+  background:
+    linear-gradient(180deg, rgba(3, 9, 17, 0.02) 0%, rgba(3, 9, 17, 0.1) 38%, rgba(3, 9, 17, 0.34) 78%, rgba(3, 9, 17, 0.62) 100%),
+    url("/kaylas-shift-guide/scenes/store-dawn.webp") center 55% / cover no-repeat;
+  transform: scale(1.005);
+}
+
+.opening-cinematic.scene-surface::after {
+  background:
+    radial-gradient(circle at 52% 34%, transparent 0 27%, rgba(3, 9, 17, 0.08) 72%, rgba(3, 9, 17, 0.34) 100%),
+    linear-gradient(180deg, rgba(5, 13, 25, 0.01), rgba(5, 13, 25, 0.2));
+}
+
+.character-prop--intro { aspect-ratio: 1; }
+
+.character-prop__intro {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+  filter: drop-shadow(0 22px 18px rgba(1, 6, 14, 0.36));
+  will-change: background-position;
+  animation: till-aisle-frames 6s step-end both;
+}
+
+.opening-cinematic__till {
+  z-index: 4;
+  bottom: -6dvh;
+  left: 50%;
+  width: min(88dvh, 172vw, 1120px);
+  opacity: 0;
+  transform: translate3d(10%, 2dvh, 0) scale(0.98);
+  transform-origin: 58% 92%;
+  will-change: opacity, transform;
+  animation: till-aisle-path 6s cubic-bezier(0.24, 0.72, 0.2, 1) both;
+}
+
+.opening-cinematic__greeting {
+  position: absolute;
+  z-index: 6;
+  top: max(58px, 8dvh);
+  left: clamp(20px, 7vw, 64px);
+  max-width: min(84vw, 430px);
+  color: white;
+  opacity: 0;
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.72);
+  transform: translateY(12px);
+  animation: till-greeting 6s ease both;
+}
+
+.opening-cinematic__greeting > span,
+.opening-cinematic__greeting > strong,
+.opening-cinematic__greeting > small {
+  display: block;
+}
+
+.opening-cinematic__greeting > span {
+  color: #f6aa77;
+  font-size: clamp(0.76rem, 2.7vw, 0.98rem);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.opening-cinematic__greeting > strong {
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(3rem, 14vw, 6.2rem);
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+}
+
+.opening-cinematic__greeting > small {
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(0.82rem, 3.2vw, 1rem);
+  font-weight: 700;
+}
+
+.opening-cinematic__skip {
+  position: absolute;
+  z-index: 12;
+  top: 14px;
+  right: 14px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+.opening-cinematic__skip:focus-visible {
+  width: auto;
+  height: auto;
+  padding: 9px 13px;
+  overflow: visible;
+  clip-path: none;
+  border-radius: 999px;
+  color: white;
+  background: rgba(7, 16, 29, 0.88);
+}
+
+@keyframes till-aisle-frames {
+  0%, 21.99% { background-position: 0 0; }
+  22%, 35.99% { background-position: 50% 0; }
+  36%, 51.99% { background-position: 100% 0; }
+  52%, 61.99% { background-position: 0 100%; }
+  62%, 69.99% { background-position: 50% 100%; }
+  70%, 77.99% { background-position: 0 100%; }
+  78%, 85.99% { background-position: 50% 100%; }
+  86%, 93.99% { background-position: 0 100%; }
+  94%, 100% { background-position: 100% 100%; }
+}
+
+@keyframes till-aisle-path {
+  0%, 8% {
+    opacity: 0;
+    transform: translate3d(10%, 2dvh, 0) scale(0.98);
+  }
+  15%, 45% {
+    opacity: 1;
+    transform: translate3d(-56%, 0, 0) scale(1);
+  }
+  52% {
+    opacity: 1;
+    transform: translate3d(-56%, -2dvh, 0) scale(0.96);
+  }
+  64% {
+    opacity: 1;
+    transform: translate3d(-57%, -16dvh, 0) scale(0.7);
+  }
+  78% {
+    opacity: 1;
+    transform: translate3d(-58%, -35dvh, 0) scale(0.42);
+  }
+  92% {
+    opacity: 1;
+    transform: translate3d(-58%, -55dvh, 0) scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-58%, -59dvh, 0) scale(0.14);
+  }
+}
+
+@keyframes till-greeting {
+  0%, 11% { opacity: 0; transform: translateY(12px); }
+  17%, 42% { opacity: 1; transform: translateY(0); }
+  50%, 100% { opacity: 0; transform: translateY(-7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-cinematic__till {
+    opacity: 1 !important;
+    transform: translate3d(-56%, 0, 0) scale(1) !important;
+    animation: none !important;
+  }
+
+  .character-prop__intro {
+    background-position: 0 0 !important;
+    animation: none !important;
+  }
+
+  .opening-cinematic__greeting {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
