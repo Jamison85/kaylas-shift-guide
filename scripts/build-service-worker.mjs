@@ -28,7 +28,9 @@ for (const file of files) {
 const cacheName = `before-rush-${revision.digest("hex").slice(0, 12)}`;
 const precacheUrls = [
   basePath,
-  ...files.map((file) => `${basePath}${relative(outputDirectory, file).split(sep).join("/")}`),
+  ...files
+    .filter((file) => !file.endsWith(".mp4"))
+    .map((file) => `${basePath}${relative(outputDirectory, file).split(sep).join("/")}`),
 ];
 
 const worker = `const CACHE_NAME = ${JSON.stringify(cacheName)};
@@ -84,6 +86,13 @@ self.addEventListener("fetch", (event) => {
   const isAppRequest = url.origin === self.location.origin && url.pathname.startsWith(BASE_PATH);
   const isFontRequest = FONT_HOSTS.has(url.hostname);
   if (!isAppRequest && !isFontRequest) return;
+
+  // Let the browser talk directly to the server for video byte ranges. Returning
+  // a full cached MP4 to Android's Range request can prevent playback entirely.
+  if (isAppRequest && (url.pathname.endsWith(".mp4") || event.request.headers.has("range"))) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   if (event.request.mode === "navigate") {
     event.respondWith(networkFirst(event.request));

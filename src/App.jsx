@@ -7,7 +7,7 @@ import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
-const OPENING_KEY = "before-rush-video-opening-played-v2";
+const OPENING_KEY = "before-rush-video-opening-played-v3";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
 const dateKey = () => {
@@ -38,6 +38,11 @@ function markOpeningPlayed() {
 
 function clearOpeningPlayed() {
   try { window.sessionStorage.removeItem(OPENING_KEY); } catch {}
+}
+
+function openingIsForced() {
+  try { return new URLSearchParams(window.location.search).get("intro") === "1"; }
+  catch { return false; }
 }
 
 function NameCard({ initialName = "", onSave, onCancel, onReplay }) {
@@ -98,11 +103,11 @@ export default function App() {
   const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
   const displayName = typeof profile?.name === "string" ? profile.name.trim() : "";
   const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, legacyProgress(day));
-  const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() ? "home" : "splash") : "setup");
+  const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() && !openingIsForced() ? "home" : "splash") : "setup");
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [installMessage, setInstallMessage] = useState("");
-  const [openingFallback, setOpeningFallback] = useState(false);
+  const [openingState, setOpeningState] = useState("loading");
   const openingVideoRef = useRef(null);
   const openingStartedRef = useRef(false);
   const { canInstall, install } = usePwaInstall();
@@ -134,6 +139,26 @@ export default function App() {
     setScreen("home");
   };
 
+  const playOpening = async () => {
+    const video = openingVideoRef.current;
+    if (!video) {
+      setOpeningState("error");
+      return;
+    }
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("muted", "");
+    if (video.ended) video.currentTime = 0;
+    setOpeningState("loading");
+
+    try {
+      await video.play();
+    } catch {
+      setOpeningState("prompt");
+    }
+  };
+
   useEffect(() => { document.title = APP_NAME; }, []);
 
   useEffect(() => {
@@ -142,43 +167,29 @@ export default function App() {
     openingStartedRef.current = false;
 
     if (prefersReducedMotion) {
-      setOpeningFallback(true);
-      const reducedTimer = window.setTimeout(finishOpening, 1800);
-      return () => window.clearTimeout(reducedTimer);
+      setOpeningState("reduced");
+      return undefined;
     }
 
-    setOpeningFallback(false);
-    const playTimer = window.setTimeout(() => {
-      const video = openingVideoRef.current;
-      if (!video) {
-        setOpeningFallback(true);
-        return;
+    setOpeningState("loading");
+    const playTimer = window.setTimeout(playOpening, 120);
+    const promptTimer = window.setTimeout(() => {
+      if (!openingStartedRef.current) {
+        setOpeningState((current) => current === "error" ? current : "prompt");
       }
-      video.muted = true;
-      video.defaultMuted = true;
-      video.setAttribute("muted", "");
-      const playback = video.play();
-      playback?.catch(() => setOpeningFallback(true));
-    }, 80);
-    const fallbackTimer = window.setTimeout(() => {
-      if (!openingStartedRef.current) setOpeningFallback(true);
-    }, 2400);
-    const safetyTimer = window.setTimeout(finishOpening, 15500);
+    }, 7000);
 
     return () => {
       window.clearTimeout(playTimer);
-      window.clearTimeout(fallbackTimer);
-      window.clearTimeout(safetyTimer);
+      window.clearTimeout(promptTimer);
     };
   }, [screen]);
 
   useEffect(() => {
-    if (screen !== "splash" || !openingFallback) return undefined;
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return undefined;
-    const fallbackFinish = window.setTimeout(finishOpening, 6200);
-    return () => window.clearTimeout(fallbackFinish);
-  }, [screen, openingFallback]);
+    if (screen !== "splash" || openingState !== "playing") return undefined;
+    const safetyTimer = window.setTimeout(finishOpening, 13500);
+    return () => window.clearTimeout(safetyTimer);
+  }, [screen, openingState]);
 
   const saveName = (name) => {
     setProfile({ name });
@@ -189,7 +200,7 @@ export default function App() {
   const replayOpening = () => {
     clearOpeningPlayed();
     openingStartedRef.current = false;
-    setOpeningFallback(false);
+    setOpeningState("loading");
     setShowProfile(false);
     setScreen("splash");
   };
@@ -274,8 +285,9 @@ export default function App() {
   }
 
   if (screen === "splash") {
+    const openingNeedsTap = openingState === "prompt" || openingState === "reduced" || openingState === "error";
     return (
-      <main className={`opening-cinematic scene-surface ${openingFallback ? "is-fallback" : ""}`} aria-label={`Good morning, ${displayName}.`}>
+      <main className={`opening-cinematic opening-cinematic--${openingState} scene-surface`} aria-label={`Good morning, ${displayName}.`}>
         <video
           ref={openingVideoRef}
           className="opening-cinematic__video"
@@ -287,14 +299,13 @@ export default function App() {
           onEnded={finishOpening}
           onPlaying={() => {
             openingStartedRef.current = true;
-            setOpeningFallback(false);
+            setOpeningState("playing");
           }}
-          onError={() => setOpeningFallback(true)}
+          onError={() => setOpeningState("error")}
           aria-hidden="true"
         >
           <source src={`${import.meta.env.BASE_URL}video/till-opening-intro-final.mp4`} type="video/mp4" />
         </video>
-        <CharacterProp pose="aisleIntro" className="opening-cinematic__fallback" />
         <div className="opening-cinematic__brand" aria-hidden="true">
           <i />
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
@@ -304,6 +315,31 @@ export default function App() {
           <strong>{displayName}.</strong>
           <small>Come on. I know the way.</small>
         </div>
+        {openingState === "loading" && (
+          <div className="opening-cinematic__loading" role="status" aria-live="polite">
+            <i aria-hidden="true" />
+            <span>Till is on his way…</span>
+          </div>
+        )}
+        {openingNeedsTap && (
+          <section className="opening-cinematic__prompt" aria-live="polite">
+            <small>{openingState === "error" ? "VIDEO TROUBLE" : "TILL’S ENTRANCE"}</small>
+            <h1>{openingState === "error" ? "Till got stuck backstage." : "Bring Till into the aisle."}</h1>
+            <p>
+              {openingState === "reduced"
+                ? "Motion is reduced on this phone. You can still play the opening if you want it."
+                : openingState === "error"
+                  ? "The opening video didn’t load. Try it once more, or head straight into the guide."
+                  : "One tap lets the phone start the real opening video."}
+            </p>
+            <div>
+              <button type="button" className="primary" onClick={playOpening}>
+                {openingState === "error" ? "Try Till again" : "Play Till’s opening"}
+              </button>
+              <button type="button" onClick={finishOpening}>Go to the guide</button>
+            </div>
+          </section>
+        )}
         <button
           type="button"
           className="opening-cinematic__skip"
