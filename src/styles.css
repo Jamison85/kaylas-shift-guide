@@ -1437,9 +1437,11 @@ summary:focus-visible {
 }
 
 .opening-cinematic.scene-surface::after {
+  position: absolute;
+  z-index: 2;
   background:
-    radial-gradient(circle at 52% 34%, transparent 0 27%, rgba(3, 9, 17, 0.08) 72%, rgba(3, 9, 17, 0.34) 100%),
-    linear-gradient(180deg, rgba(5, 13, 25, 0.01), rgba(5, 13, 25, 0.2));
+    linear-gradient(90deg, rgba(3, 9, 17, 0.42) 0%, rgba(3, 9, 17, 0.08) 42%, transparent 70%),
+    linear-gradient(180deg, rgba(5, 13, 25, 0.05), transparent 45%, rgba(5, 13, 25, 0.2));
 }
 
 .character-prop--intro { aspect-ratio: 1; }
@@ -1458,29 +1460,74 @@ summary:focus-visible {
     till-aisle-step-bob 6s linear both;
 }
 
-.opening-cinematic__till {
-  z-index: 4;
-  bottom: -6dvh;
-  left: 50%;
-  width: min(88dvh, 172vw, 1120px);
-  opacity: 0;
-  transform: translate3d(10%, 2dvh, 0) scale(0.98);
-  transform-origin: 58% 92%;
-  will-change: opacity, transform;
-  animation: till-aisle-path 6s cubic-bezier(0.24, 0.72, 0.2, 1) both;
+.opening-cinematic__video {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  object-position: center center;
+  pointer-events: none;
+  animation: opening-video-handoff 11.1s linear both;
 }
+
+.opening-cinematic__fallback {
+  z-index: 1;
+  right: -12dvh;
+  bottom: -7dvh;
+  display: none;
+  width: min(88dvh, 172vw, 1120px);
+}
+
+.opening-cinematic__brand {
+  position: absolute;
+  z-index: 4;
+  top: 21.7dvh;
+  left: 0;
+  display: flex;
+  width: min(165px, 44vw);
+  min-height: 52px;
+  gap: 9px;
+  align-items: center;
+  padding: 8px 12px 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 0;
+  border-radius: 0 15px 15px 0;
+  color: white;
+  background: rgba(6, 14, 26, 0.88);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  backdrop-filter: blur(15px) saturate(115%);
+  animation: opening-brand-in 11.1s linear both;
+}
+
+.opening-cinematic__brand i {
+  width: 7px;
+  height: 31px;
+  flex: 0 0 auto;
+  border-radius: 99px;
+  background: var(--orange);
+  box-shadow: 0 0 16px rgba(243, 111, 44, 0.38);
+}
+
+.opening-cinematic__brand span { display: grid; min-width: 0; }
+.opening-cinematic__brand b { font-size: 0.68rem; font-weight: 800; white-space: nowrap; }
+.opening-cinematic__brand small { margin-top: 2px; color: rgba(255, 255, 255, 0.58); font-size: 0.49rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
 .opening-cinematic__greeting {
   position: absolute;
-  z-index: 6;
-  top: max(58px, 8dvh);
-  left: clamp(20px, 7vw, 64px);
-  max-width: min(84vw, 430px);
+  z-index: 4;
+  top: max(52px, 7dvh);
+  right: clamp(18px, 6vw, 54px);
+  width: min(48vw, 360px);
   color: white;
   opacity: 0;
-  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.72);
+  text-align: right;
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.82);
   transform: translateY(12px);
-  animation: till-greeting 6s ease both;
+  animation: till-video-greeting 11.1s ease both;
 }
 
 .opening-cinematic__greeting > span,
@@ -1501,7 +1548,7 @@ summary:focus-visible {
   margin-top: 3px;
   overflow-wrap: anywhere;
   font-family: "Fraunces", Georgia, serif;
-  font-size: clamp(3rem, 14vw, 6.2rem);
+  font-size: clamp(2.7rem, 12vw, 5.5rem);
   letter-spacing: -0.055em;
   line-height: 0.92;
 }
@@ -1515,25 +1562,25 @@ summary:focus-visible {
 
 .opening-cinematic__skip {
   position: absolute;
-  z-index: 12;
-  top: 14px;
+  z-index: 6;
   right: 14px;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  border: 0;
-  white-space: nowrap;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(7, 16, 29, 0.62);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+  opacity: 0;
+  backdrop-filter: blur(14px);
+  animation: opening-skip-in 600ms 900ms ease forwards;
 }
 
 .opening-cinematic__skip:focus-visible {
-  width: auto;
-  height: auto;
-  padding: 9px 13px;
-  overflow: visible;
-  clip-path: none;
-  border-radius: 999px;
   color: white;
   background: rgba(7, 16, 29, 0.88);
 }
@@ -1559,57 +1606,30 @@ summary:focus-visible {
   55%, 65%, 75%, 85% { transform: translateY(-0.7%); }
 }
 
-@keyframes till-aisle-path {
-  0%, 8% {
-    opacity: 0;
-    transform: translate3d(10%, 2dvh, 0) scale(0.98);
-  }
-  15%, 45% {
-    opacity: 1;
-    transform: translate3d(-56%, 0, 0) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translate3d(-56%, 0, 0) scale(1);
-  }
-  58% {
-    opacity: 1;
-    transform: translate3d(-56.5%, -5dvh, 0) scale(0.87);
-  }
-  66% {
-    opacity: 1;
-    transform: translate3d(-57%, -11.5dvh, 0) scale(0.72);
-  }
-  74% {
-    opacity: 1;
-    transform: translate3d(-57.5%, -18.5dvh, 0) scale(0.57);
-  }
-  82% {
-    opacity: 1;
-    transform: translate3d(-58%, -26dvh, 0) scale(0.43);
-  }
-  90%, 96% {
-    opacity: 1;
-    transform: translate3d(-58%, -36dvh, 0) scale(0.28);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(-58%, -36dvh, 0) scale(0.28);
-  }
+@keyframes opening-video-handoff {
+  0%, 94% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-@keyframes till-greeting {
-  0%, 11% { opacity: 0; transform: translateY(12px); }
-  17%, 42% { opacity: 1; transform: translateY(0); }
-  50%, 100% { opacity: 0; transform: translateY(-7px); }
+@keyframes opening-brand-in {
+  0%, 3.5% { opacity: 0; transform: translateX(-10px); }
+  4.8%, 100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes till-video-greeting {
+  0%, 5% { opacity: 0; transform: translateY(12px); }
+  9%, 28% { opacity: 1; transform: translateY(0); }
+  35%, 100% { opacity: 0; transform: translateY(-7px); }
+}
+
+@keyframes opening-skip-in {
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .opening-cinematic__till {
-    opacity: 1 !important;
-    transform: translate3d(-56%, 0, 0) scale(1) !important;
-    animation: none !important;
-  }
+  .opening-cinematic__video { display: none; }
+
+  .opening-cinematic__fallback { display: block; }
 
   .character-prop__intro {
     background-position: 0 0 !important;
@@ -1621,4 +1641,8 @@ summary:focus-visible {
     transform: none !important;
     animation: none !important;
   }
+
+  .opening-cinematic__brand { display: none; }
+
+  .opening-cinematic__skip { opacity: 1; animation: none; }
 }

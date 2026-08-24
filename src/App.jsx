@@ -7,7 +7,7 @@ import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
-const OPENING_KEY = "before-rush-opening-played";
+const OPENING_KEY = "before-rush-video-opening-played-v1";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
 const dateKey = () => {
@@ -129,9 +129,14 @@ export default function App() {
     const timer = window.setTimeout(() => {
       markOpeningPlayed();
       setScreen("home");
-    }, prefersReducedMotion ? 1400 : 6000);
+    }, prefersReducedMotion ? 1800 : 13200);
     return () => window.clearTimeout(timer);
   }, [screen]);
+
+  const finishOpening = () => {
+    markOpeningPlayed();
+    setScreen("home");
+  };
 
   const saveName = (name) => {
     setProfile({ name });
@@ -221,16 +226,33 @@ export default function App() {
   if (screen === "splash") {
     return (
       <main className="opening-cinematic scene-surface" aria-label={`Good morning, ${displayName}.`}>
+        <video
+          className="opening-cinematic__video"
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          poster={`${import.meta.env.BASE_URL}scenes/store-dawn.webp`}
+          onEnded={finishOpening}
+          onError={() => window.setTimeout(finishOpening, 1800)}
+          aria-hidden="true"
+        >
+          <source src={`${import.meta.env.BASE_URL}video/till-opening-intro-final.mp4`} type="video/mp4" />
+        </video>
+        <CharacterProp pose="aisleIntro" className="opening-cinematic__fallback" />
+        <div className="opening-cinematic__brand" aria-hidden="true">
+          <i />
+          <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
+        </div>
         <div className="opening-cinematic__greeting" role="status" aria-live="polite">
           <span>Morning,</span>
           <strong>{displayName}.</strong>
-          <small>I’ll go first.</small>
+          <small>Come on. I know the way.</small>
         </div>
-        <CharacterProp pose="aisleIntro" className="opening-cinematic__till" />
         <button
           type="button"
           className="opening-cinematic__skip"
-          onClick={() => { markOpeningPlayed(); setScreen("home"); }}
+          onClick={finishOpening}
         >
           Skip opening
         </button>
