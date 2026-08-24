@@ -1074,6 +1074,18 @@ summary:focus-visible {
 }
 .name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
 .name-card__actions button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
+.name-card__replay {
+  min-height: 38px;
+  margin-top: 10px;
+  padding: 8px 11px;
+  border: 1px solid rgba(34, 85, 199, 0.16);
+  border-radius: 11px;
+  color: var(--cobalt);
+  background: rgba(34, 85, 199, 0.055);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
 .name-card__copy > em { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 0.63rem; font-style: normal; }
 .name-prop { right: 4px; bottom: -3px; width: clamp(150px, 36vw, 210px); }
 
@@ -1475,10 +1487,19 @@ summary:focus-visible {
 
 .opening-cinematic__fallback {
   z-index: 1;
-  right: -12dvh;
   bottom: -7dvh;
+  left: 50%;
   display: none;
   width: min(88dvh, 172vw, 1120px);
+  opacity: 0;
+  transform: translateX(-50%);
+}
+
+.opening-cinematic.is-fallback .opening-cinematic__video { display: none; }
+
+.opening-cinematic.is-fallback .opening-cinematic__fallback {
+  display: block;
+  animation: till-fallback-appear 6s ease both;
 }
 
 .opening-cinematic__brand {
@@ -1611,6 +1632,12 @@ summary:focus-visible {
   100% { opacity: 0; }
 }
 
+@keyframes till-fallback-appear {
+  0%, 7% { opacity: 0; transform: translateX(-50%) translateY(14px) scale(0.98); }
+  14%, 84% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-7px) scale(0.98); }
+}
+
 @keyframes opening-brand-in {
   0%, 3.5% { opacity: 0; transform: translateX(-10px); }
   4.8%, 100% { opacity: 1; transform: translateX(0); }
@@ -1630,6 +1657,12 @@ summary:focus-visible {
   .opening-cinematic__video { display: none; }
 
   .opening-cinematic__fallback { display: block; }
+
+  .opening-cinematic__fallback {
+    opacity: 1;
+    transform: translateX(-50%);
+    animation: none !important;
+  }
 
   .character-prop__intro {
     background-position: 0 0 !important;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterProp from "./components/CharacterProp";
 import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks } from "./data/guide";
@@ -7,7 +7,7 @@ import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
-const OPENING_KEY = "before-rush-video-opening-played-v1";
+const OPENING_KEY = "before-rush-video-opening-played-v2";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
 const dateKey = () => {
@@ -36,7 +36,11 @@ function markOpeningPlayed() {
   try { window.sessionStorage.setItem(OPENING_KEY, "yes"); } catch {}
 }
 
-function NameCard({ initialName = "", onSave, onCancel }) {
+function clearOpeningPlayed() {
+  try { window.sessionStorage.removeItem(OPENING_KEY); } catch {}
+}
+
+function NameCard({ initialName = "", onSave, onCancel, onReplay }) {
   const [draft, setDraft] = useState(initialName);
   const cleanName = draft.trim().replace(/\s+/g, " ");
   const isEditor = Boolean(onCancel);
@@ -70,6 +74,7 @@ function NameCard({ initialName = "", onSave, onCancel }) {
             {isEditor && <button type="button" onClick={onCancel}>Cancel</button>}
           </div>
         </form>
+        {isEditor && onReplay && <button type="button" className="name-card__replay" onClick={onReplay}>Replay Till opening</button>}
         <em>Saved only on this device.</em>
       </div>
       <CharacterProp pose={isEditor ? "point" : "wave"} className="name-prop" />
@@ -97,6 +102,9 @@ export default function App() {
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [installMessage, setInstallMessage] = useState("");
+  const [openingFallback, setOpeningFallback] = useState(false);
+  const openingVideoRef = useRef(null);
+  const openingStartedRef = useRef(false);
   const { canInstall, install } = usePwaInstall();
 
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
@@ -121,27 +129,69 @@ export default function App() {
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
 
-  useEffect(() => { document.title = APP_NAME; }, []);
-
-  useEffect(() => {
-    if (screen !== "splash") return undefined;
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => {
-      markOpeningPlayed();
-      setScreen("home");
-    }, prefersReducedMotion ? 1800 : 13200);
-    return () => window.clearTimeout(timer);
-  }, [screen]);
-
   const finishOpening = () => {
     markOpeningPlayed();
     setScreen("home");
   };
 
+  useEffect(() => { document.title = APP_NAME; }, []);
+
+  useEffect(() => {
+    if (screen !== "splash") return undefined;
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    openingStartedRef.current = false;
+
+    if (prefersReducedMotion) {
+      setOpeningFallback(true);
+      const reducedTimer = window.setTimeout(finishOpening, 1800);
+      return () => window.clearTimeout(reducedTimer);
+    }
+
+    setOpeningFallback(false);
+    const playTimer = window.setTimeout(() => {
+      const video = openingVideoRef.current;
+      if (!video) {
+        setOpeningFallback(true);
+        return;
+      }
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute("muted", "");
+      const playback = video.play();
+      playback?.catch(() => setOpeningFallback(true));
+    }, 80);
+    const fallbackTimer = window.setTimeout(() => {
+      if (!openingStartedRef.current) setOpeningFallback(true);
+    }, 2400);
+    const safetyTimer = window.setTimeout(finishOpening, 15500);
+
+    return () => {
+      window.clearTimeout(playTimer);
+      window.clearTimeout(fallbackTimer);
+      window.clearTimeout(safetyTimer);
+    };
+  }, [screen]);
+
+  useEffect(() => {
+    if (screen !== "splash" || !openingFallback) return undefined;
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return undefined;
+    const fallbackFinish = window.setTimeout(finishOpening, 6200);
+    return () => window.clearTimeout(fallbackFinish);
+  }, [screen, openingFallback]);
+
   const saveName = (name) => {
     setProfile({ name });
     setShowProfile(false);
     if (screen === "setup") setScreen("splash");
+  };
+
+  const replayOpening = () => {
+    clearOpeningPlayed();
+    openingStartedRef.current = false;
+    setOpeningFallback(false);
+    setShowProfile(false);
+    setScreen("splash");
   };
 
   const go = (nextIndex) => {
@@ -225,8 +275,9 @@ export default function App() {
 
   if (screen === "splash") {
     return (
-      <main className="opening-cinematic scene-surface" aria-label={`Good morning, ${displayName}.`}>
+      <main className={`opening-cinematic scene-surface ${openingFallback ? "is-fallback" : ""}`} aria-label={`Good morning, ${displayName}.`}>
         <video
+          ref={openingVideoRef}
           className="opening-cinematic__video"
           autoPlay
           muted
@@ -234,7 +285,11 @@ export default function App() {
           preload="auto"
           poster={`${import.meta.env.BASE_URL}scenes/store-dawn.webp`}
           onEnded={finishOpening}
-          onError={() => window.setTimeout(finishOpening, 1800)}
+          onPlaying={() => {
+            openingStartedRef.current = true;
+            setOpeningFallback(false);
+          }}
+          onError={() => setOpeningFallback(true)}
           aria-hidden="true"
         >
           <source src={`${import.meta.env.BASE_URL}video/till-opening-intro-final.mp4`} type="video/mp4" />
@@ -341,7 +396,7 @@ export default function App() {
 
       {showProfile && (
         <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Change your name" onClick={() => setShowProfile(false)}>
-          <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} />
+          <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} onReplay={replayOpening} />
         </div>
       )}
 
