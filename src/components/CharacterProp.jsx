@@ -15,7 +15,7 @@ const actionFiles = {
 };
 
 const introFiles = {
-  aisleIntro: "characters-approved/till-action-aisle-intro-v1.webp",
+  aisleIntro: "characters-approved/till-action-aisle-intro-v2.webp",
 };
 
 const actionDurations = {
