@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterProp from "./components/CharacterProp";
 import TaskFocus from "./components/TaskFocus";
-import { closingLines, guideTasks } from "./data/guide";
+import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 
@@ -106,12 +106,14 @@ export default function App() {
   const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() && !openingIsForced() ? "home" : "splash") : "setup");
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [installMessage, setInstallMessage] = useState("");
   const [openingState, setOpeningState] = useState("loading");
   const openingVideoRef = useRef(null);
   const openingStartedRef = useRef(false);
   const { canInstall, install } = usePwaInstall();
 
+  const wisdom = useMemo(() => pick(wisdomLines, `${day}-open`), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
   const completed = useMemo(() => new Set(progress.completed || []), [progress.completed]);
   const completedCount = completed.size;
@@ -139,23 +141,36 @@ export default function App() {
     setScreen("home");
   };
 
-  const playOpening = async () => {
+  const playOpening = async ({ reload = false } = {}) => {
     const video = openingVideoRef.current;
     if (!video) {
       setOpeningState("error");
       return;
     }
 
+    if (!video.paused && !video.ended) {
+      openingStartedRef.current = true;
+      setOpeningState("playing");
+      return;
+    }
+
     video.muted = true;
     video.defaultMuted = true;
     video.setAttribute("muted", "");
-    if (video.ended) video.currentTime = 0;
+    if (reload || video.error) {
+      openingStartedRef.current = false;
+      video.load();
+    } else if (video.ended) {
+      video.currentTime = 0;
+    }
     setOpeningState("loading");
 
     try {
       await video.play();
+      openingStartedRef.current = true;
+      setOpeningState("playing");
     } catch {
-      setOpeningState("prompt");
+      setOpeningState(video.error ? "error" : "prompt");
     }
   };
 
@@ -190,6 +205,20 @@ export default function App() {
     const safetyTimer = window.setTimeout(finishOpening, 13500);
     return () => window.clearTimeout(safetyTimer);
   }, [screen, openingState]);
+
+  useEffect(() => {
+    if (!showResetConfirm) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setShowResetConfirm(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showResetConfirm]);
 
   const saveName = (name) => {
     setProfile({ name });
@@ -266,6 +295,7 @@ export default function App() {
 
   const reset = () => {
     setProgress({ ...emptyProgress });
+    setShowResetConfirm(false);
     setScreen("home");
   };
 
@@ -291,7 +321,6 @@ export default function App() {
         <video
           ref={openingVideoRef}
           className="opening-cinematic__video"
-          autoPlay
           muted
           playsInline
           preload="auto"
@@ -333,7 +362,7 @@ export default function App() {
                   : "One tap lets the phone start the real opening video."}
             </p>
             <div>
-              <button type="button" className="primary" onClick={playOpening}>
+              <button type="button" className="primary" onClick={() => playOpening({ reload: openingState === "error" })}>
                 {openingState === "error" ? "Try Till again" : "Play Till’s opening"}
               </button>
               <button type="button" onClick={finishOpening}>Go to the guide</button>
@@ -381,7 +410,7 @@ export default function App() {
               <small>Good morning, {displayName}</small>
               <h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
               <div className="home-head__meta">
-                <p>{completedCount ? `${completedCount} screens finished. Pick up where you left off.` : "One important thing at a time."}</p>
+                <p>{completedCount ? `${completedCount} screens finished. Pick up where you left off.` : wisdom}</p>
                 <div className="progress-status" aria-label={`${percent}% complete`}>
                   <span>{completedCount}<small>/{guideTasks.length}</small></span>
                   <em>{percent}% done</em>
@@ -415,7 +444,7 @@ export default function App() {
         {screen === "complete" && (
           <section className="finish">
             <div className="finish__card">
-              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={reset}>Reset today</button></div></div>
+              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={() => setShowResetConfirm(true)}>Reset today</button></div></div>
               <CharacterProp pose="celebrate" className="finish-prop" />
             </div>
           </section>
@@ -426,13 +455,27 @@ export default function App() {
         <nav className="bottom-nav" aria-label="Primary navigation">
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
-          <button type="button" onClick={reset}><NavIcon name="reset" /><small>Reset</small></button>
+          <button type="button" onClick={() => setShowResetConfirm(true)}><NavIcon name="reset" /><small>Reset</small></button>
         </nav>
       )}
 
       {showProfile && (
         <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Change your name" onClick={() => setShowProfile(false)}>
           <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} onReplay={replayOpening} />
+        </div>
+      )}
+
+      {showResetConfirm && (
+        <div className="profile-overlay" role="dialog" aria-modal="true" aria-labelledby="reset-title" onClick={() => setShowResetConfirm(false)}>
+          <section className="reset-card" onClick={(event) => event.stopPropagation()}>
+            <small>Reset today?</small>
+            <h2 id="reset-title">Start over from screen one?</h2>
+            <p>This clears today’s answers and progress on this device. Your name and saved phone numbers stay put.</p>
+            <div>
+              <button type="button" onClick={() => setShowResetConfirm(false)} autoFocus>Keep my progress</button>
+              <button type="button" className="primary" onClick={reset}>Reset today</button>
+            </div>
+          </section>
         </div>
       )}
 

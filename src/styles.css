@@ -1101,6 +1101,68 @@ summary:focus-visible {
   animation: fade-in 180ms ease both;
 }
 
+.reset-card {
+  width: min(100%, 460px);
+  padding: clamp(24px, 6vw, 34px);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 28px 12px 28px 28px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(243, 111, 44, 0.11), transparent 34%),
+    var(--paper);
+  box-shadow: var(--shadow-deep);
+}
+
+.reset-card > small {
+  display: block;
+  color: var(--orange-dark);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.reset-card h2 {
+  margin: 8px 0 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2rem, 9vw, 3rem);
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+
+.reset-card p {
+  margin: 14px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  line-height: 1.58;
+}
+
+.reset-card > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.reset-card button {
+  min-height: 48px;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.62);
+  font-size: 0.74rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.reset-card button.primary {
+  border-color: transparent;
+  color: white;
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  box-shadow: 0 10px 24px rgba(217, 84, 26, 0.22);
+}
+
 .name-card--editor { width: min(100%, 540px); min-height: 410px; border-radius: 30px 12px 30px 30px; }
 .name-card--editor .name-card__copy { width: 72%; min-height: 410px; padding: 30px 6px 26px 28px; }
 .name-card--editor h1 { font-size: clamp(2.35rem, 9vw, 3.8rem); }
