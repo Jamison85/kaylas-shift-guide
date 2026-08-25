@@ -111,6 +111,8 @@ export default function App() {
   const [openingState, setOpeningState] = useState("loading");
   const openingVideoRef = useRef(null);
   const openingStartedRef = useRef(false);
+  const resetDialogRef = useRef(null);
+  const resetTriggerRef = useRef(null);
   const { canInstall, install } = usePwaInstall();
 
   const wisdom = useMemo(() => pick(wisdomLines, `${day}-open`), [day]);
@@ -209,14 +211,36 @@ export default function App() {
   useEffect(() => {
     if (!showResetConfirm) return undefined;
     const previousOverflow = document.body.style.overflow;
+    const dialog = resetDialogRef.current;
+    const focusable = dialog ? [...dialog.querySelectorAll("button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex='-1'])")] : [];
+    const firstFocusable = focusable[0];
+    const lastFocusable = focusable[focusable.length - 1];
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setShowResetConfirm(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowResetConfirm(false);
+        return;
+      }
+      if (event.key !== "Tab" || !firstFocusable || !lastFocusable) return;
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus();
+      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
+      }
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
+    firstFocusable?.focus();
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      window.requestAnimationFrame(() => {
+        const resetTrigger = resetTriggerRef.current;
+        if (resetTrigger?.isConnected) resetTrigger.focus();
+        else document.querySelector(".bottom-nav button:last-child")?.focus();
+      });
     };
   }, [showResetConfirm]);
 
@@ -297,6 +321,11 @@ export default function App() {
     setProgress({ ...emptyProgress });
     setShowResetConfirm(false);
     setScreen("home");
+  };
+
+  const requestReset = (event) => {
+    resetTriggerRef.current = event.currentTarget;
+    setShowResetConfirm(true);
   };
 
   const installApp = async () => {
@@ -382,7 +411,7 @@ export default function App() {
 
   return (
     <div className={`shell shell--${screen}`}>
-      <header className="mini">
+      <header className="mini" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
         <button type="button" onClick={() => setScreen("home")} className="mini__brand">
           <i />
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
@@ -403,7 +432,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="content">
+      <main className="content" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
@@ -444,7 +473,7 @@ export default function App() {
         {screen === "complete" && (
           <section className="finish">
             <div className="finish__card">
-              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={() => setShowResetConfirm(true)}>Reset today</button></div></div>
+              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={requestReset}>Reset today</button></div></div>
               <CharacterProp pose="celebrate" className="finish-prop" />
             </div>
           </section>
@@ -452,10 +481,10 @@ export default function App() {
       </main>
 
       {screen !== "complete" && (
-        <nav className="bottom-nav" aria-label="Primary navigation">
+        <nav className="bottom-nav" aria-label="Primary navigation" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
-          <button type="button" onClick={() => setShowResetConfirm(true)}><NavIcon name="reset" /><small>Reset</small></button>
+          <button type="button" onClick={requestReset}><NavIcon name="reset" /><small>Reset</small></button>
         </nav>
       )}
 
@@ -466,8 +495,8 @@ export default function App() {
       )}
 
       {showResetConfirm && (
-        <div className="profile-overlay" role="dialog" aria-modal="true" aria-labelledby="reset-title" onClick={() => setShowResetConfirm(false)}>
-          <section className="reset-card" onClick={(event) => event.stopPropagation()}>
+        <div className="profile-overlay" onClick={() => setShowResetConfirm(false)}>
+          <section ref={resetDialogRef} className="reset-card" role="dialog" aria-modal="true" aria-labelledby="reset-title" onClick={(event) => event.stopPropagation()}>
             <small>Reset today?</small>
             <h2 id="reset-title">Start over from screen one?</h2>
             <p>This clears today’s answers and progress on this device. Your name and saved phone numbers stay put.</p>
