@@ -411,7 +411,7 @@ export default function App() {
 
   return (
     <div className={`shell shell--${screen}`}>
-      <header className="mini" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
+      <header className="mini" inert={showResetConfirm ? "" : undefined}>
         <button type="button" onClick={() => setScreen("home")} className="mini__brand">
           <i />
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
@@ -432,7 +432,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="content" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
+      <main className="content" inert={showResetConfirm ? "" : undefined}>
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
@@ -481,7 +481,7 @@ export default function App() {
       </main>
 
       {screen !== "complete" && (
-        <nav className="bottom-nav" aria-label="Primary navigation" inert={showResetConfirm ? "" : undefined} aria-hidden={showResetConfirm ? "true" : undefined}>
+        <nav className="bottom-nav" aria-label="Primary navigation" inert={showResetConfirm ? "" : undefined}>
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
           <button type="button" onClick={requestReset}><NavIcon name="reset" /><small>Reset</small></button>
