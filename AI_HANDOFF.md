@@ -23,7 +23,7 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 17. Do **not** reintroduce the old Recovery Photos workflow.
 18. LTO reporting day is no longer a current task.
 19. Keep the app installable as a PWA. Preserve the manifest, generated offline service worker, Android icons, and the unobtrusive header install control.
-20. Fresh, uninstalled visitors see a Home-screen invitation before name setup and Till's opening. Standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
+20. Fresh, uninstalled phone visitors see a Home-screen invitation before name setup and Till's opening. Desktop visitors and standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
 
 ## Character behavior philosophy
 The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a helpful coworker who lives inside the interface. Use him in existing negative space and in contextual explanation dialogs. The humor should happen around the work, never at the expense of the work.

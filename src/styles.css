@@ -1155,7 +1155,11 @@ summary:focus-visible {
   line-height: 0.98;
 }
 
-.install-card h1:focus { outline: none; }
+.install-card h1:focus-visible {
+  border-radius: 5px;
+  outline: 3px solid rgba(34, 85, 199, 0.38);
+  outline-offset: 5px;
+}
 
 .install-card__copy > p {
   max-width: 390px;

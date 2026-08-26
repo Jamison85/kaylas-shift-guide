@@ -50,6 +50,12 @@ function markInstallGateSkipped() {
   try { window.sessionStorage.setItem(INSTALL_GATE_KEY, "yes"); } catch {}
 }
 
+function isMobileInstallTarget() {
+  const userAgent = window.navigator.userAgent;
+  return /Android|iPad|iPhone|iPod/i.test(userAgent)
+    || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+}
+
 function openingIsForced() {
   try { return new URLSearchParams(window.location.search).get("intro") === "1"; }
   catch { return false; }
@@ -167,7 +173,7 @@ function InstallCard({ canInstall, install, onContinue }) {
           </>
         )}
         <div className="install-card__actions">
-          {phase === "intro" && (
+          {(phase === "intro" || (phase === "help" && canInstall)) && (
             <button type="button" className="primary" onClick={beginInstall}>
               <InstallIcon />{canInstall ? "Add to Home screen" : "Show me how"}
             </button>
@@ -424,7 +430,7 @@ export default function App() {
     setInstallGateSkipped(true);
   };
 
-  if (!displayName && !isStandalone && !installGateSkipped) {
+  if (!displayName && isMobileInstallTarget() && !isStandalone && !installGateSkipped) {
     return (
       <main className="name-gate scene-surface">
         <InstallCard canInstall={canInstall} install={install} onContinue={continueInBrowser} />
