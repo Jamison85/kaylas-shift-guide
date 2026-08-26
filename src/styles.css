@@ -1731,7 +1731,7 @@ summary:focus-visible {
 
 .opening-cinematic--playing .opening-cinematic__video {
   opacity: 1;
-  animation: opening-video-handoff 10.3s linear both;
+  animation: opening-video-handoff 10.1s linear both;
 }
 
 .opening-cinematic__brand {
@@ -1756,7 +1756,7 @@ summary:focus-visible {
 }
 
 .opening-cinematic--playing .opening-cinematic__brand {
-  animation: opening-brand-in 10.3s linear both;
+  animation: opening-brand-in 10.1s linear both;
 }
 
 .opening-cinematic__brand i {
@@ -1786,7 +1786,7 @@ summary:focus-visible {
 }
 
 .opening-cinematic--playing .opening-cinematic__greeting {
-  animation: till-video-greeting 10.3s ease both;
+  animation: till-video-greeting 10.1s ease both;
 }
 
 .opening-cinematic__greeting > span,
