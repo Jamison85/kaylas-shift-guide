@@ -32,7 +32,7 @@ This separation is deliberate. A different AI can redesign the UI without silent
 
 ## Current app behavior
 
-- First-run name setup, saved only on the device.
+- First-run Home-screen invitation, followed by name setup. Installed launches skip the invitation automatically, and a browser fallback is always available.
 - Personalized Good Morning splash with dry wisdom.
 - Splash automatically transitions into the working home screen.
 - Small home header plus a much larger **Start here** area.
@@ -68,8 +68,10 @@ A redesign should not change:
 
 Visual experimentation is welcome. Operational improvisation is not.
 
-## Android installation
+## Phone installation
 
-Open the published site in Chrome and tap the **Install** button in the app header. If Chrome has not yet offered the in-app prompt, use Chrome's menu and choose **Install app** or **Add to Home screen**.
+On a fresh phone, the app asks to be added to the Home screen before name setup. Android browsers use the native install sheet when available; otherwise, use the browser menu and choose **Install app** or **Add to Home screen**. On iPhone or iPad, use the browser's **Share** menu and choose **Add to Home Screen**.
+
+The invitation always includes **Continue in browser**, so an unsupported browser cannot block the opening workflow. The compact install button remains available in the app header whenever the browser later reports that native installation is ready.
 
 The installed app opens in its own window. Names, daily progress, and saved contact numbers remain on that device. They are not synced to another phone.
