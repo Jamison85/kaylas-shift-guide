@@ -34,6 +34,7 @@ This separation is deliberate. A different AI can redesign the UI without silent
 
 - First-run Home-screen invitation, followed by name setup. Installed launches skip the invitation automatically, and a browser fallback is always available.
 - Personalized Good Morning splash with dry wisdom.
+- Till's opening uses a first-frame-matched poster and a jump-free video start.
 - Splash automatically transitions into the working home screen.
 - Small home header plus a much larger **Start here** area.
 - One-task-at-a-time morning guide.
