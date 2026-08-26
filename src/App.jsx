@@ -8,6 +8,7 @@ import { usePwaInstall } from "./hooks/usePwaInstall";
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
 const OPENING_KEY = "before-rush-video-opening-played-v3";
+const INSTALL_GATE_KEY = "before-rush-install-gate-skipped";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
 const dateKey = () => {
@@ -38,6 +39,15 @@ function markOpeningPlayed() {
 
 function clearOpeningPlayed() {
   try { window.sessionStorage.removeItem(OPENING_KEY); } catch {}
+}
+
+function installGateAlreadySkipped() {
+  try { return window.sessionStorage.getItem(INSTALL_GATE_KEY) === "yes"; }
+  catch { return false; }
+}
+
+function markInstallGateSkipped() {
+  try { window.sessionStorage.setItem(INSTALL_GATE_KEY, "yes"); } catch {}
 }
 
 function openingIsForced() {
@@ -98,6 +108,79 @@ function InstallIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v11" /><path d="m7.5 10 4.5 4.5 4.5-4.5" /><path d="M5 18.5h14" /></svg>;
 }
 
+function InstallCard({ canInstall, install, onContinue }) {
+  const [phase, setPhase] = useState("intro");
+  const headingRef = useRef(null);
+  const isAppleMobile = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
+    || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+
+  useEffect(() => {
+    if (phase !== "intro") headingRef.current?.focus();
+  }, [phase]);
+
+  const beginInstall = async () => {
+    if (!canInstall) {
+      setPhase("help");
+      return;
+    }
+    const outcome = await install();
+    setPhase(outcome === "accepted" ? "installed" : "help");
+  };
+
+  const heading = phase === "installed"
+    ? "That did it."
+    : phase === "help"
+      ? "Two taps. No tiny browser bars."
+      : "Give Till the whole screen.";
+
+  return (
+    <section className={`install-card install-card--${phase}`}>
+      <div className="install-card__copy">
+        <small>{APP_NAME} · One quick setup</small>
+        <div className="install-card__badge"><InstallIcon /><span>Home screen</span></div>
+        <h1 ref={headingRef} tabIndex={phase === "intro" ? undefined : -1}>{heading}</h1>
+        {phase === "intro" && (
+          <p>Add this guide to your Home screen before we start. It opens like an app, so Till and the office are not squeezed under browser buttons.</p>
+        )}
+        {phase === "help" && (
+          <>
+            <p>Your phone wants the scenic route. Here is the short version.</p>
+            <ol className="install-card__steps">
+              {isAppleMobile ? (
+                <>
+                  <li><b>Tap Share</b><span>The square with the arrow in your browser.</span></li>
+                  <li><b>Add to Home Screen</b><span>Tap Add, then open the new Before Rush icon.</span></li>
+                </>
+              ) : (
+                <>
+                  <li><b>Open the browser menu</b><span>Use the three dots in the corner.</span></li>
+                  <li><b>Install app</b><span>Or choose Add to Home screen, then open the new icon.</span></li>
+                </>
+              )}
+            </ol>
+          </>
+        )}
+        {phase === "installed" && (
+          <>
+            <p>Close this browser tab, then open <b>Before Rush</b> from the new icon on your Home screen. That is the full-screen version.</p>
+            <div className="install-card__success" role="status"><span aria-hidden="true">✓</span> Ready from the new icon</div>
+          </>
+        )}
+        <div className="install-card__actions">
+          {phase === "intro" && (
+            <button type="button" className="primary" onClick={beginInstall}>
+              <InstallIcon />{canInstall ? "Add to Home screen" : "Show me how"}
+            </button>
+          )}
+          <button type="button" className="quiet" onClick={onContinue}>Continue in browser</button>
+        </div>
+        <em>Set it up once. Then the guide opens like a real app.</em>
+      </div>
+      <CharacterProp pose={phase === "installed" ? "celebrate" : "point"} className="install-prop" />
+    </section>
+  );
+}
+
 export default function App() {
   const day = dateKey();
   const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
@@ -107,13 +190,14 @@ export default function App() {
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
   const [installMessage, setInstallMessage] = useState("");
   const [openingState, setOpeningState] = useState("loading");
   const openingVideoRef = useRef(null);
   const openingStartedRef = useRef(false);
   const resetDialogRef = useRef(null);
   const resetTriggerRef = useRef(null);
-  const { canInstall, install } = usePwaInstall();
+  const { canInstall, isStandalone, install } = usePwaInstall();
 
   const wisdom = useMemo(() => pick(wisdomLines, `${day}-open`), [day]);
   const closing = useMemo(() => pick(closingLines, `${day}-close`), [day]);
@@ -334,6 +418,19 @@ export default function App() {
     setInstallMessage("Before the Rush is being added to your phone.");
     window.setTimeout(() => setInstallMessage(""), 3200);
   };
+
+  const continueInBrowser = () => {
+    markInstallGateSkipped();
+    setInstallGateSkipped(true);
+  };
+
+  if (!displayName && !isStandalone && !installGateSkipped) {
+    return (
+      <main className="name-gate scene-surface">
+        <InstallCard canInstall={canInstall} install={install} onContinue={continueInBrowser} />
+      </main>
+    );
+  }
 
   if (!displayName || screen === "setup") {
     return (

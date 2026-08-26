@@ -23,6 +23,7 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 17. Do **not** reintroduce the old Recovery Photos workflow.
 18. LTO reporting day is no longer a current task.
 19. Keep the app installable as a PWA. Preserve the manifest, generated offline service worker, Android icons, and the unobtrusive header install control.
+20. Fresh, uninstalled visitors see a Home-screen invitation before name setup and Till's opening. Standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
 
 ## Character behavior philosophy
 The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a helpful coworker who lives inside the interface. Use him in existing negative space and in contextual explanation dialogs. The humor should happen around the work, never at the expense of the work.
@@ -94,6 +95,7 @@ Character behavior is implemented separately from operational content. Keep it t
 - `npm run build` generates a revisioned `dist/sw.js` after Vite finishes.
 - The service worker precaches the complete production build and replaces old app caches on the next published version.
 - The install button only appears when the browser reports that installation is available. Do not leave a dead install button visible on unsupported or already-installed devices.
+- The first-run Home-screen invitation may always be shown in browser mode because its primary action falls back to working manual instructions when the native prompt is unavailable. This is separate from the header install button.
 
 ## Provenance
 This project is a reconstruction of the latest settled requirements because the ChatGPT Sites source tree could not be directly exported. Do not describe it as the original byte-for-byte Sites source.

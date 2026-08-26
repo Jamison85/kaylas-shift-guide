@@ -6,6 +6,7 @@ const runningStandalone = () =>
 export function usePwaInstall() {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [installed, setInstalled] = useState(() => runningStandalone());
+  const [isStandalone, setIsStandalone] = useState(() => runningStandalone());
 
   useEffect(() => {
     const displayMode = window.matchMedia?.("(display-mode: standalone)");
@@ -17,7 +18,11 @@ export function usePwaInstall() {
       setInstalled(true);
       setInstallPrompt(null);
     };
-    const watchDisplayMode = () => setInstalled(runningStandalone());
+    const watchDisplayMode = () => {
+      const standalone = runningStandalone();
+      setIsStandalone(standalone);
+      if (standalone) setInstalled(true);
+    };
 
     window.addEventListener("beforeinstallprompt", rememberPrompt);
     window.addEventListener("appinstalled", rememberInstall);
@@ -32,11 +37,16 @@ export function usePwaInstall() {
 
   const install = async () => {
     if (!installPrompt) return "unavailable";
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    setInstallPrompt(null);
-    return choice.outcome;
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      setInstallPrompt(null);
+      return choice.outcome;
+    } catch {
+      setInstallPrompt(null);
+      return "unavailable";
+    }
   };
 
-  return { canInstall: Boolean(installPrompt) && !installed, installed, install };
+  return { canInstall: Boolean(installPrompt) && !installed, installed, isStandalone, install };
 }
