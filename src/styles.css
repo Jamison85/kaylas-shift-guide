@@ -1687,10 +1687,8 @@ summary:focus-visible {
 }
 
 .opening-cinematic.scene-surface::before {
-  background:
-    linear-gradient(180deg, rgba(3, 9, 17, 0.02) 0%, rgba(3, 9, 17, 0.1) 38%, rgba(3, 9, 17, 0.34) 78%, rgba(3, 9, 17, 0.62) 100%),
-    url("/kaylas-shift-guide/scenes/store-dawn.webp") center 55% / cover no-repeat;
-  transform: scale(1.005);
+  background: url("/kaylas-shift-guide/scenes/till-opening-poster.webp") center center / cover no-repeat;
+  transform: none;
 }
 
 .opening-cinematic.scene-surface::after {
@@ -1727,13 +1725,13 @@ summary:focus-visible {
   object-fit: cover;
   object-position: center center;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 180ms ease;
 }
 
 .opening-cinematic--playing .opening-cinematic__video {
   opacity: 1;
-  animation: opening-video-handoff 11.1s linear both;
+  animation: opening-video-handoff 10.3s linear both;
 }
 
 .opening-cinematic__brand {
@@ -1758,7 +1756,7 @@ summary:focus-visible {
 }
 
 .opening-cinematic--playing .opening-cinematic__brand {
-  animation: opening-brand-in 11.1s linear both;
+  animation: opening-brand-in 10.3s linear both;
 }
 
 .opening-cinematic__brand i {
@@ -1788,7 +1786,7 @@ summary:focus-visible {
 }
 
 .opening-cinematic--playing .opening-cinematic__greeting {
-  animation: till-video-greeting 11.1s ease both;
+  animation: till-video-greeting 10.3s ease both;
 }
 
 .opening-cinematic__greeting > span,

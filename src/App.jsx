@@ -456,7 +456,7 @@ export default function App() {
           muted
           playsInline
           preload="auto"
-          poster={`${import.meta.env.BASE_URL}scenes/store-dawn.webp`}
+          poster={`${import.meta.env.BASE_URL}scenes/till-opening-poster.webp`}
           onEnded={finishOpening}
           onPlaying={() => {
             openingStartedRef.current = true;
