@@ -28,6 +28,16 @@ const actionDurations = {
   inventory: "4s",
 };
 
+const actionMoments = {
+  walk: { working: "0% 100%", explaining: "0% 100%" },
+  register: { working: "0% 100%", explaining: "100% 100%" },
+  paperwork: { working: "100% 0%", explaining: "0% 100%" },
+  computer: { working: "100% 0%", explaining: "0% 100%" },
+  lottery: { working: "0% 100%", explaining: "100% 0%" },
+  reconcile: { working: "100% 0%", explaining: "100% 100%" },
+  inventory: { working: "100% 0%", explaining: "100% 100%" },
+};
+
 const spritePoses = {
   carry: "0% 0%",
   push: "33.333% 0%",
@@ -38,16 +48,18 @@ const spritePoses = {
   compare: "66.667% 100%",
 };
 
-export default function CharacterProp({ pose = "hold", className = "", motion = "loop" }) {
+export default function CharacterProp({ pose = "hold", className = "", motion = "loop", moment = null }) {
   const base = import.meta.env.BASE_URL;
   const actionFile = actionFiles[pose];
   const introFile = introFiles[pose];
   const spritePosition = spritePoses[pose];
-  const motionClass = motion === "once" ? "character-prop--once" : "";
+  const actionPosition = moment ? actionMoments[pose]?.[moment] : null;
+  const motionClass = actionPosition ? "character-prop--still" : motion === "once" ? "character-prop--once" : "";
+  const momentClass = actionPosition ? `character-prop--moment-${moment}` : "";
 
   if (introFile) {
     return (
-      <div className={`character-prop character-prop--intro character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--intro character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__intro"
           style={{ backgroundImage: `url("${base}${introFile}")` }}
@@ -58,11 +70,12 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
 
   if (actionFile) {
     return (
-      <div className={`character-prop character-prop--action character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--action character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__action"
           style={{
             backgroundImage: `url("${base}${actionFile}")`,
+            backgroundPosition: actionPosition || "0 0",
             "--till-action-duration": actionDurations[pose],
           }}
         />
@@ -72,7 +85,7 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
 
   if (spritePosition) {
     return (
-      <div className={`character-prop character-prop--sprite character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--sprite character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__sprite"
           style={{
@@ -87,7 +100,7 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
   const file = poseFiles[pose] || poseFiles.hold;
 
   return (
-    <div className={`character-prop character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
+    <div className={`character-prop character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
       <img src={`${base}${file}`} alt="" draggable="false" decoding="async" />
     </div>
   );

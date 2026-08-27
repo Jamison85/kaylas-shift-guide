@@ -217,7 +217,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
             )}
           </div>
           {mode === "learn" && characterAction && (
-            <CharacterProp key={`${task.id}-intro`} pose={characterAction} motion="once" className="task-intro__till" />
+            <CharacterProp key={`${task.id}-intro`} pose={characterAction} moment="working" className="task-intro__till" />
           )}
         </section>
 
@@ -290,7 +290,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
             <div className="explanation-head">
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
-              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} motion="once" />
+              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} moment="explaining" />
             </div>
             <p>{explanation.body}</p>
             <button type="button" onClick={() => setExplanation(null)} autoFocus>Got it, Till</button>
