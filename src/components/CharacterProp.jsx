@@ -38,15 +38,16 @@ const spritePoses = {
   compare: "66.667% 100%",
 };
 
-export default function CharacterProp({ pose = "hold", className = "" }) {
+export default function CharacterProp({ pose = "hold", className = "", motion = "loop" }) {
   const base = import.meta.env.BASE_URL;
   const actionFile = actionFiles[pose];
   const introFile = introFiles[pose];
   const spritePosition = spritePoses[pose];
+  const motionClass = motion === "once" ? "character-prop--once" : "";
 
   if (introFile) {
     return (
-      <div className={`character-prop character-prop--intro character-prop--${pose} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--intro character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__intro"
           style={{ backgroundImage: `url("${base}${introFile}")` }}
@@ -57,7 +58,7 @@ export default function CharacterProp({ pose = "hold", className = "" }) {
 
   if (actionFile) {
     return (
-      <div className={`character-prop character-prop--action character-prop--${pose} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--action character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__action"
           style={{
@@ -71,7 +72,7 @@ export default function CharacterProp({ pose = "hold", className = "" }) {
 
   if (spritePosition) {
     return (
-      <div className={`character-prop character-prop--sprite character-prop--${pose} ${className}`.trim()} aria-hidden="true">
+      <div className={`character-prop character-prop--sprite character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
         <span
           className="character-prop__sprite"
           style={{
@@ -86,7 +87,7 @@ export default function CharacterProp({ pose = "hold", className = "" }) {
   const file = poseFiles[pose] || poseFiles.hold;
 
   return (
-    <div className={`character-prop character-prop--${pose} ${className}`.trim()} aria-hidden="true">
+    <div className={`character-prop character-prop--${pose} ${motionClass} ${className}`.trim()} aria-hidden="true">
       <img src={`${base}${file}`} alt="" draggable="false" decoding="async" />
     </div>
   );

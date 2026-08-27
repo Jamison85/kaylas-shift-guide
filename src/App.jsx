@@ -61,7 +61,7 @@ function openingIsForced() {
   catch { return false; }
 }
 
-function NameCard({ initialName = "", onSave, onCancel, onReplay }) {
+function NameCard({ initialName = "", onSave, onCancel, onReplay, onReset }) {
   const [draft, setDraft] = useState(initialName);
   const cleanName = draft.trim().replace(/\s+/g, " ");
   const isEditor = Boolean(onCancel);
@@ -75,7 +75,7 @@ function NameCard({ initialName = "", onSave, onCancel, onReplay }) {
   return (
     <section className={`name-card ${isEditor ? "name-card--editor" : ""}`} onClick={(event) => event.stopPropagation()}>
       <div className="name-card__copy">
-        <small>{APP_NAME} · Store 2593</small>
+        <small>{isEditor ? "Profile & settings" : `${APP_NAME} · Store 2593`}</small>
         <h1>{isEditor ? "Make it yours." : "Who’s opening today?"}</h1>
         <p>{isEditor ? "Change the name used in greetings and milestones." : "Your guide will remember you on this device and make the morning feel a little less generic."}</p>
         <form onSubmit={submit}>
@@ -96,6 +96,7 @@ function NameCard({ initialName = "", onSave, onCancel, onReplay }) {
           </div>
         </form>
         {isEditor && onReplay && <button type="button" className="name-card__replay" onClick={onReplay}>Replay Till opening</button>}
+        {isEditor && onReset && <button type="button" className="name-card__reset" onClick={onReset}>Reset today’s progress</button>}
         <em>Saved only on this device.</em>
       </div>
       <CharacterProp pose={isEditor ? "point" : "wave"} className="name-prop" />
@@ -329,7 +330,7 @@ export default function App() {
       window.requestAnimationFrame(() => {
         const resetTrigger = resetTriggerRef.current;
         if (resetTrigger?.isConnected) resetTrigger.focus();
-        else document.querySelector(".bottom-nav button:last-child")?.focus();
+        else document.querySelector(".profile-button")?.focus();
       });
     };
   }, [showResetConfirm]);
@@ -525,7 +526,7 @@ export default function App() {
               <InstallIcon /><span>Install</span>
             </button>
           )}
-          <button type="button" className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Change profile name, currently ${displayName}`}>
+          <button type="button" className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Open profile and settings, currently ${displayName}`}>
             <b>{displayName.charAt(0).toUpperCase()}</b><span>{displayName}</span>
           </button>
           <div className="mode-toggle" aria-label="Guide detail mode">
@@ -542,7 +543,7 @@ export default function App() {
               <small>Good morning, {displayName}</small>
               <h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
               <div className="home-head__meta">
-                <p>{completedCount ? `${completedCount} screens finished. Pick up where you left off.` : wisdom}</p>
+                <p>{completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>
                 <div className="progress-status" aria-label={`${percent}% complete`}>
                   <span>{completedCount}<small>/{guideTasks.length}</small></span>
                   <em>{percent}% done</em>
@@ -555,7 +556,7 @@ export default function App() {
                 <button type="button" className="start" onClick={startFromHome}>
                   <div className="start-sheet">
                     <div className="start-copy">
-                      <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Screen {resumeIndex + 1} of {guideTasks.length}</span></div>
+                      <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Task {resumeIndex + 1} of {guideTasks.length}</span></div>
                       <strong>{nextTask.title}</strong>
                       <p>{nextTask.short}</p>
                       <div className="start-meta"><span>{nextTask.category}</span><b>Open task <i>→</i></b></div>
@@ -583,17 +584,25 @@ export default function App() {
         )}
       </main>
 
-      {screen !== "complete" && (
+      {screen === "home" && (
         <nav className="bottom-nav" aria-label="Primary navigation" inert={showResetConfirm ? "" : undefined}>
           <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
-          <button type="button" onClick={requestReset}><NavIcon name="reset" /><small>Reset</small></button>
         </nav>
       )}
 
       {showProfile && (
-        <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Change your name" onClick={() => setShowProfile(false)}>
-          <NameCard initialName={displayName} onSave={saveName} onCancel={() => setShowProfile(false)} onReplay={replayOpening} />
+        <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Profile and settings" onClick={() => setShowProfile(false)}>
+          <NameCard
+            initialName={displayName}
+            onSave={saveName}
+            onCancel={() => setShowProfile(false)}
+            onReplay={replayOpening}
+            onReset={(event) => {
+              setShowProfile(false);
+              requestReset(event);
+            }}
+          />
         </div>
       )}
 
@@ -601,7 +610,7 @@ export default function App() {
         <div className="profile-overlay" onClick={() => setShowResetConfirm(false)}>
           <section ref={resetDialogRef} className="reset-card" role="dialog" aria-modal="true" aria-labelledby="reset-title" onClick={(event) => event.stopPropagation()}>
             <small>Reset today?</small>
-            <h2 id="reset-title">Start over from screen one?</h2>
+            <h2 id="reset-title">Start over from task one?</h2>
             <p>This clears today’s answers and progress on this device. Your name and saved phone numbers stay put.</p>
             <div>
               <button type="button" onClick={() => setShowResetConfirm(false)} autoFocus>Keep my progress</button>
