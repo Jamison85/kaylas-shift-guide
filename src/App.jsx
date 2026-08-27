@@ -7,7 +7,6 @@ import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
-const OPENING_KEY = "before-rush-video-opening-played-v3";
 const INSTALL_GATE_KEY = "before-rush-install-gate-skipped";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
@@ -28,19 +27,6 @@ function legacyProgress(day) {
   }
 }
 
-function openingAlreadyPlayed() {
-  try { return window.sessionStorage.getItem(OPENING_KEY) === "yes"; }
-  catch { return false; }
-}
-
-function markOpeningPlayed() {
-  try { window.sessionStorage.setItem(OPENING_KEY, "yes"); } catch {}
-}
-
-function clearOpeningPlayed() {
-  try { window.sessionStorage.removeItem(OPENING_KEY); } catch {}
-}
-
 function installGateAlreadySkipped() {
   try { return window.sessionStorage.getItem(INSTALL_GATE_KEY) === "yes"; }
   catch { return false; }
@@ -56,12 +42,7 @@ function isMobileInstallTarget() {
     || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
 }
 
-function openingIsForced() {
-  try { return new URLSearchParams(window.location.search).get("intro") === "1"; }
-  catch { return false; }
-}
-
-function NameCard({ initialName = "", onSave, onCancel, onReplay, onReset }) {
+function NameCard({ initialName = "", onSave, onCancel, onReset }) {
   const [draft, setDraft] = useState(initialName);
   const cleanName = draft.trim().replace(/\s+/g, " ");
   const isEditor = Boolean(onCancel);
@@ -95,7 +76,6 @@ function NameCard({ initialName = "", onSave, onCancel, onReplay, onReset }) {
             {isEditor && <button type="button" onClick={onCancel}>Cancel</button>}
           </div>
         </form>
-        {isEditor && onReplay && <button type="button" className="name-card__replay" onClick={onReplay}>Replay Till opening</button>}
         {isEditor && onReset && <button type="button" className="name-card__reset" onClick={onReset}>Reset today’s progress</button>}
         <em>Saved only on this device.</em>
       </div>
@@ -193,15 +173,12 @@ export default function App() {
   const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
   const displayName = typeof profile?.name === "string" ? profile.name.trim() : "";
   const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, legacyProgress(day));
-  const [screen, setScreen] = useState(() => displayName ? (openingAlreadyPlayed() && !openingIsForced() ? "home" : "splash") : "setup");
+  const [screen, setScreen] = useState(() => displayName ? "home" : "setup");
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
   const [installMessage, setInstallMessage] = useState("");
-  const [openingState, setOpeningState] = useState("loading");
-  const openingVideoRef = useRef(null);
-  const openingStartedRef = useRef(false);
   const resetDialogRef = useRef(null);
   const resetTriggerRef = useRef(null);
   const { canInstall, isStandalone, install } = usePwaInstall();
@@ -229,75 +206,7 @@ export default function App() {
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
 
-  const finishOpening = () => {
-    markOpeningPlayed();
-    setScreen("home");
-  };
-
-  const playOpening = async ({ reload = false } = {}) => {
-    const video = openingVideoRef.current;
-    if (!video) {
-      setOpeningState("error");
-      return;
-    }
-
-    if (!video.paused && !video.ended) {
-      openingStartedRef.current = true;
-      setOpeningState("playing");
-      return;
-    }
-
-    video.muted = true;
-    video.defaultMuted = true;
-    video.setAttribute("muted", "");
-    if (reload || video.error) {
-      openingStartedRef.current = false;
-      video.load();
-    } else if (video.ended) {
-      video.currentTime = 0;
-    }
-    setOpeningState("loading");
-
-    try {
-      await video.play();
-      openingStartedRef.current = true;
-      setOpeningState("playing");
-    } catch {
-      setOpeningState(video.error ? "error" : "prompt");
-    }
-  };
-
   useEffect(() => { document.title = APP_NAME; }, []);
-
-  useEffect(() => {
-    if (screen !== "splash") return undefined;
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    openingStartedRef.current = false;
-
-    if (prefersReducedMotion) {
-      setOpeningState("reduced");
-      return undefined;
-    }
-
-    setOpeningState("loading");
-    const playTimer = window.setTimeout(playOpening, 120);
-    const promptTimer = window.setTimeout(() => {
-      if (!openingStartedRef.current) {
-        setOpeningState((current) => current === "error" ? current : "prompt");
-      }
-    }, 7000);
-
-    return () => {
-      window.clearTimeout(playTimer);
-      window.clearTimeout(promptTimer);
-    };
-  }, [screen]);
-
-  useEffect(() => {
-    if (screen !== "splash" || openingState !== "playing") return undefined;
-    const safetyTimer = window.setTimeout(finishOpening, 13500);
-    return () => window.clearTimeout(safetyTimer);
-  }, [screen, openingState]);
 
   useEffect(() => {
     if (!showResetConfirm) return undefined;
@@ -338,15 +247,7 @@ export default function App() {
   const saveName = (name) => {
     setProfile({ name });
     setShowProfile(false);
-    if (screen === "setup") setScreen("splash");
-  };
-
-  const replayOpening = () => {
-    clearOpeningPlayed();
-    openingStartedRef.current = false;
-    setOpeningState("loading");
-    setShowProfile(false);
-    setScreen("splash");
+    if (screen === "setup") setScreen("home");
   };
 
   const go = (nextIndex) => {
@@ -447,72 +348,6 @@ export default function App() {
     );
   }
 
-  if (screen === "splash") {
-    const openingNeedsTap = openingState === "prompt" || openingState === "reduced" || openingState === "error";
-    return (
-      <main className={`opening-cinematic opening-cinematic--${openingState} scene-surface`} aria-label={`Good morning, ${displayName}.`}>
-        <video
-          ref={openingVideoRef}
-          className="opening-cinematic__video"
-          muted
-          playsInline
-          preload="auto"
-          poster={`${import.meta.env.BASE_URL}scenes/till-opening-poster.webp`}
-          onEnded={finishOpening}
-          onPlaying={() => {
-            openingStartedRef.current = true;
-            setOpeningState("playing");
-          }}
-          onError={() => setOpeningState("error")}
-          aria-hidden="true"
-        >
-          <source src={`${import.meta.env.BASE_URL}video/till-opening-intro-final.mp4`} type="video/mp4" />
-        </video>
-        <div className="opening-cinematic__brand" aria-hidden="true">
-          <i />
-          <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
-        </div>
-        <div className="opening-cinematic__greeting" role="status" aria-live="polite">
-          <span>Morning,</span>
-          <strong>{displayName}.</strong>
-          <small>Come on. I know the way.</small>
-        </div>
-        {openingState === "loading" && (
-          <div className="opening-cinematic__loading" role="status" aria-live="polite">
-            <i aria-hidden="true" />
-            <span>Till is on his way…</span>
-          </div>
-        )}
-        {openingNeedsTap && (
-          <section className="opening-cinematic__prompt" aria-live="polite">
-            <small>{openingState === "error" ? "VIDEO TROUBLE" : "TILL’S ENTRANCE"}</small>
-            <h1>{openingState === "error" ? "Till got stuck backstage." : "Bring Till into the aisle."}</h1>
-            <p>
-              {openingState === "reduced"
-                ? "Motion is reduced on this phone. You can still play the opening if you want it."
-                : openingState === "error"
-                  ? "The opening video didn’t load. Try it once more, or head straight into the guide."
-                  : "One tap lets the phone start the real opening video."}
-            </p>
-            <div>
-              <button type="button" className="primary" onClick={() => playOpening({ reload: openingState === "error" })}>
-                {openingState === "error" ? "Try Till again" : "Play Till’s opening"}
-              </button>
-              <button type="button" onClick={finishOpening}>Go to the guide</button>
-            </div>
-          </section>
-        )}
-        <button
-          type="button"
-          className="opening-cinematic__skip"
-          onClick={finishOpening}
-        >
-          Skip opening
-        </button>
-      </main>
-    );
-  }
-
   return (
     <div className={`shell shell--${screen}`}>
       <header className="mini" inert={showResetConfirm ? "" : undefined}>
@@ -597,7 +432,6 @@ export default function App() {
             initialName={displayName}
             onSave={saveName}
             onCancel={() => setShowProfile(false)}
-            onReplay={replayOpening}
             onReset={(event) => {
               setShowProfile(false);
               requestReset(event);
