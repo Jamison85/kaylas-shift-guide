@@ -157,6 +157,10 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const [explanation, setExplanation] = useState(null);
   const steps = task.steps.map(normalizedStep);
   const characterAction = taskCharacterActions[task.id] || null;
+  const displayTitle = task.title.replace(/^Start with (?:the )?/i, "");
+  const thingsLabel = `${steps.length} ${steps.length === 1 ? "thing" : "things"} to check`;
+  const whyLabel = index === 0 ? "Ask Till why this comes first" : "Ask Till why this matters";
+  const completeLabel = displayTitle.length <= 22 ? `Complete ${displayTitle} →` : "Complete this task →";
 
   useEffect(() => {
     setExpandedStep(mode === "learn" ? 0 : null);
@@ -187,28 +191,39 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
     <section className="task-focus">
       <article className="task-card">
         <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
-        <header><span>Screen {index + 1} of {total}</span><em>{task.category}</em></header>
+        <header>
+          <span>Task {index + 1} of {total}</span>
+          {done && <span className="task-state task-state--done">✓ Completed</span>}
+        </header>
 
-        <div className="title-row">
-          <div><small>{task.short}</small><h1>{task.title}</h1></div>
-          <div className="title-tools">
-            <b className={done ? "status done" : "status"}>{done ? "Done" : "Current"}</b>
+        <section className={`task-intro ${mode === "learn" && characterAction ? "task-intro--with-till" : ""}`}>
+          <div className="task-intro__copy">
+            <p className="task-intro__summary">{task.short}</p>
+            <h1>{displayTitle}</h1>
+            {task.location && mode === "learn" && (
+              <div className="task-location-line">
+                <span>Location</span>
+                <p>{task.location}</p>
+              </div>
+            )}
             {mode === "learn" && (
-              <button type="button" className="why-chip" onClick={() => openExplanation("Why this matters", task.title, task.purpose)}>Why?</button>
+              <button
+                type="button"
+                className="task-why-link"
+                onClick={() => openExplanation(index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose)}
+              >
+                {whyLabel}<span aria-hidden="true">→</span>
+              </button>
             )}
           </div>
-        </div>
-
-        {task.location && mode === "learn" && (
-          <section className={`task-location ${characterAction ? `task-location--with-character task-location--${characterAction}` : ""}`}>
-            <small>Where you are</small><p>{task.location}</p>
-            {characterAction && <CharacterProp key={`${task.id}-location`} pose={characterAction} />}
-          </section>
-        )}
+          {mode === "learn" && characterAction && (
+            <CharacterProp key={`${task.id}-intro`} pose={characterAction} motion="once" className="task-intro__till" />
+          )}
+        </section>
 
         <div className="steps-heading">
-          <div><small>{mode === "learn" ? "Step by step" : "Quick steps"}</small><strong>Do these in order</strong></div>
-          <span>{steps.length} steps</span>
+          <div><small>{mode === "learn" ? "Step by step" : "Quick list"}</small><strong>Do these in order</strong></div>
+          <span>{thingsLabel}</span>
         </div>
 
         <ol className={`steps ${mode === "learn" ? "steps--detailed" : "steps--quick"}`}>
@@ -263,10 +278,10 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         {task.decision && !canComplete && <p className="completion-gate">Answer the Yes / No question above before moving on.</p>}
       </article>
 
-      <footer className="guided-footer">
-        <button type="button" disabled={index === 0} onClick={onBack}>Back</button>
+      <footer className={`guided-footer ${index === 0 ? "guided-footer--single" : ""}`}>
+        {index > 0 && <button type="button" className="guided-back" onClick={onBack}>← Back</button>}
         <button type="button" className={done ? "complete done-next" : "primary done-next"} disabled={!canComplete} onClick={onDoneNext}>
-          {index === total - 1 ? "Finish morning" : done ? "Done · Next →" : "Done & Next →"}
+          {index === total - 1 ? "Finish morning" : done ? "Next task →" : completeLabel}
         </button>
       </footer>
 
@@ -275,10 +290,10 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
             <div className="explanation-head">
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
-              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} />
+              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} motion="once" />
             </div>
             <p>{explanation.body}</p>
-            <button type="button" onClick={() => setExplanation(null)} autoFocus>That makes sense</button>
+            <button type="button" onClick={() => setExplanation(null)} autoFocus>Got it, Till</button>
           </article>
         </div>
       )}
