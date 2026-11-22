@@ -7,8 +7,8 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 1. Keep the morning workflow sequential and easy to follow.
 2. Prefer one important thing on one screen.
 3. Do not turn Home into a long scrolling dashboard.
-4. First-run setup asks for the employee's name; the opening experience uses that saved name with dry/funny/helpful wisdom.
-5. Opening should visually transition into the compact working experience.
+4. First-run setup asks for the employee's name; the Home greeting uses that saved name with dry/funny/helpful wisdom.
+5. After setup, open the compact Home screen directly.
 6. **Start here** dominates Home.
 7. Health Department and Gas Inspection use Yes/No decisions revealing corresponding directions.
 8. If Jamo or Loretta is clickable in an info area, each person's name appears only once in that bubble/panel.
@@ -23,8 +23,8 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 17. Do **not** reintroduce the old Recovery Photos workflow.
 18. LTO reporting day is no longer a current task.
 19. Keep the app installable as a PWA. Preserve the manifest, generated offline service worker, Android icons, and the unobtrusive header install control.
-20. Fresh, uninstalled phone visitors see a Home-screen invitation before name setup and Till's opening. Desktop visitors and standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
-21. Till's opening poster must remain the exact first frame of the final video. Keep the clip stabilization and the brief dark transition masking its internal pose cut. Do not restore the discarded mismatched pre-roll or hide the poster before playback; those changes bring back the opening jumps.
+20. Fresh, uninstalled phone visitors see a Home-screen invitation before name setup. Desktop visitors and standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
+21. The opening video was retired in August 2026. Preserve the direct entry to Home and Till’s contextual poses.
 
 ## Character behavior philosophy
 The coworker is not a sticker, mascot costume, or permanent header decoration. He should feel like a helpful coworker who lives inside the interface. Use him in existing negative space and in contextual explanation dialogs. The humor should happen around the work, never at the expense of the work.
@@ -94,7 +94,7 @@ Character behavior is implemented separately from operational content. Keep it t
 ## PWA behavior
 - `public/manifest.webmanifest` defines the Android install experience.
 - `npm run build` generates a revisioned `dist/sw.js` after Vite finishes.
-- The service worker precaches the complete production build and replaces old app caches on the next published version.
+- The service worker precaches the complete production build and replaces old app caches when a downloaded update activates after the previous version’s windows close.
 - The install button only appears when the browser reports that installation is available. Do not leave a dead install button visible on unsupported or already-installed devices.
 - The first-run Home-screen invitation may always be shown in browser mode because its primary action falls back to working manual instructions when the native prompt is unavailable. This is separate from the header install button.
 

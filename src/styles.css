@@ -1,4 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
+@font-face {
+  font-family: "DM Sans";
+  src: url("./fonts/dm-sans-latin.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("./fonts/fraunces-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
 
 :root {
   color: #172138;
@@ -12,7 +24,7 @@
   --paper-deep: #f1e8d8;
   --line: rgba(38, 44, 56, 0.13);
   --orange: #f36f2c;
-  --orange-dark: #d9541a;
+  --orange-dark: #aa4010;
   --cobalt: #2255c7;
   --navy: #08111d;
   --red: #bd2d34;
@@ -41,7 +53,7 @@ button:focus-visible,
 input:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid rgba(34, 85, 199, 0.38);
+  outline: 3px solid var(--cobalt);
   outline-offset: 3px;
 }
 
@@ -60,7 +72,7 @@ summary:focus-visible {
   inset: 0;
   background:
     linear-gradient(180deg, rgba(5, 13, 25, 0.2) 0%, rgba(5, 13, 25, 0.58) 65%, rgba(5, 13, 25, 0.88) 100%),
-    url("/kaylas-shift-guide/scenes/store-dawn.webp") center 42% / cover no-repeat;
+    url("/scenes/store-dawn.webp") center 42% / cover no-repeat;
   content: "";
   transform: scale(1.01);
 }
@@ -80,7 +92,7 @@ summary:focus-visible {
 .shell--home::before {
   background:
     linear-gradient(180deg, rgba(3, 9, 17, 0.03) 0%, rgba(3, 9, 17, 0.14) 38%, rgba(3, 9, 17, 0.43) 76%, rgba(3, 9, 17, 0.74) 100%),
-    url("/kaylas-shift-guide/scenes/store-dawn.webp") center 55% / cover no-repeat;
+    url("/scenes/store-dawn.webp") center 55% / cover no-repeat;
   transform: scale(1.005);
 }
 
@@ -238,8 +250,8 @@ summary:focus-visible {
   text-shadow: none;
   backdrop-filter: blur(14px);
 }
-.progress-status span { font-family: "Fraunces", Georgia, serif; font-size: 1rem; line-height: 1; }
-.progress-status span small { margin-left: 2px; color: rgba(255, 255, 255, 0.55); font-family: "DM Sans", sans-serif; font-size: 0.62rem; }
+.progress-status span { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: "Fraunces", Georgia, serif; font-size: 1rem; line-height: 1; }
+.progress-status span small { display: inline; margin: 0 0 0 2px; color: rgba(255, 255, 255, 0.55); font-family: "DM Sans", sans-serif; font-size: 0.62rem; }
 .progress-status em { color: #f6aa77; font-size: 0.54rem; font-style: normal; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .home-stage {
@@ -252,7 +264,6 @@ summary:focus-visible {
   position: relative;
   min-height: 246px;
   animation: home-scene-in 520ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
-  will-change: opacity, transform;
 }
 
 .home-stage.is-launching .home-card-scene {
@@ -287,8 +298,8 @@ summary:focus-visible {
 }
 
 .start-sheet {
-  position: absolute;
-  inset: 0 48px 0 0;
+  position: relative;
+  margin-right: 48px;
   overflow: hidden;
   border-radius: 27px 11px 27px 27px;
 }
@@ -325,7 +336,7 @@ summary:focus-visible {
   padding: 6px 10px;
   border-radius: 999px;
   color: #fff;
-  background: var(--orange);
+  background: var(--orange-dark);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -756,13 +767,14 @@ summary:focus-visible {
   font-weight: 800;
   cursor: pointer;
 }
-.contact-edit { min-height: 34px; border: 0; background: transparent; }
+.contact-add, .contact-edit { min-height: 44px; }
+.contact-edit { border: 0; background: transparent; }
 .contact-phone form { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(34, 85, 199, 0.055); }
 .contact-phone form label { color: var(--ink); font-size: 0.72rem; font-weight: 800; }
 .contact-phone form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid rgba(23, 33, 56, 0.2); border-radius: 10px; color: var(--ink); background: rgba(255, 255, 255, 0.8); }
 .contact-phone form input:focus { border-color: var(--cobalt); outline: 3px solid rgba(34, 85, 199, 0.14); }
 .contact-phone form > div { display: flex; flex-wrap: wrap; gap: 6px; }
-.contact-phone form button { min-height: 36px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: rgba(255, 255, 255, 0.72); font-size: 0.67rem; font-weight: 800; cursor: pointer; }
+.contact-phone form button { min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: rgba(255, 255, 255, 0.72); font-size: 0.67rem; font-weight: 800; cursor: pointer; }
 .contact-phone form button[type="submit"] { border-color: transparent; color: white; background: var(--cobalt); }
 .contact-phone form button:disabled { cursor: not-allowed; opacity: 0.42; }
 .contact-phone form button.contact-remove { color: var(--red); }
@@ -783,7 +795,7 @@ summary:focus-visible {
 .finish__actions button { border: 1px solid var(--line); color: var(--ink); background: rgba(255, 255, 255, 0.5); }
 .guided-footer button.primary,
 .guided-footer button.complete,
-.finish__actions button.primary { border-color: transparent; color: white; background: var(--orange); box-shadow: 0 10px 20px rgba(211, 80, 20, 0.2); }
+.finish__actions button.primary { border-color: transparent; color: white; background: var(--orange-dark); box-shadow: 0 10px 20px rgba(211, 80, 20, 0.2); }
 .guided-footer button.complete { background: #19704a; }
 .guided-footer button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 
@@ -830,7 +842,7 @@ summary:focus-visible {
 .finish__copy h1 { font-size: clamp(2.45rem, 9vw, 4.6rem); }
 .finish__copy > p { color: var(--ink-soft); font-family: "Fraunces", Georgia, serif; line-height: 1.5; }
 .finish__actions { display: grid; gap: 8px; margin-top: 24px; }
-.finish-prop { right: -3px; bottom: 0; width: clamp(155px, 38vw, 260px); }
+.finish-prop { right: 0; bottom: 0; width: min(30%, 260px); }
 
 .bottom-nav {
   position: fixed;
@@ -872,7 +884,7 @@ summary:focus-visible {
   .home-stage { min-height: 430px; padding-top: 130px; }
   .home-card-scene { min-height: 300px; }
   .start { min-height: 300px; }
-  .start-sheet { right: 68px; }
+  .start-sheet { margin-right: 68px; }
   .start-copy { width: 75%; min-height: 300px; padding: 27px 23px 24px 32px; }
   .home-action--anchor { right: 44px; width: 142px; }
   .task-card > header,
@@ -901,7 +913,8 @@ summary:focus-visible {
   .home-stage { min-height: 342px; padding-top: 96px; }
   .home-card-scene { min-height: 246px; }
   .start { min-height: 246px; }
-  .start-sheet { right: 44px; }
+  .start-sheet { margin-right: 44px; }
+  .home-action--anchor { right: 4px; width: 100px; }
   .start-copy { width: 78%; min-height: 246px; padding: 18px 8px 15px 19px; }
   .start-copy > strong { font-size: clamp(1.67rem, 7.6vw, 1.98rem); }
   .coach-bubble { max-width: none; }
@@ -913,12 +926,10 @@ summary:focus-visible {
   .task-card h1 { font-size: clamp(2rem, 10vw, 2.9rem); }
   .finish__copy { width: 70%; padding: 30px 5px 24px 24px; }
   .finish__copy h1 { font-size: 2.55rem; }
-  .finish-prop { right: -19px; width: 168px; }
 }
 
 @media (max-width: 350px) {
   .mini { padding-right: 10px; padding-left: 10px; }
-  .mini__brand b { max-width: 122px; }
   .content { padding-right: 10px; padding-left: 10px; }
   .start-copy { width: 79%; padding-left: 16px; }
   .start-copy > strong { font-size: 1.55rem; }
@@ -926,7 +937,7 @@ summary:focus-visible {
   .start-meta { gap: 6px; }
   .start-meta > span { font-size: 0.58rem; }
   .start-meta b { padding: 8px 9px; font-size: 0.65rem; }
-  .home-action--anchor { right: 16px; width: 108px; }
+  .home-action--anchor { right: 4px; width: 96px; }
   .task-card > header,
   .title-row,
   .task-card > .purpose,
@@ -1073,10 +1084,10 @@ summary:focus-visible {
   font-weight: 800;
   cursor: pointer;
 }
-.name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
+.name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange-dark); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
 .name-card__actions button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 .name-card__copy > em { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 0.63rem; font-style: normal; }
-.name-prop { right: 4px; bottom: -3px; width: clamp(150px, 36vw, 210px); }
+.name-prop { right: 0; bottom: 0; width: min(28%, 210px); }
 
 .install-card {
   position: relative;
@@ -1146,7 +1157,7 @@ summary:focus-visible {
 
 .install-card h1:focus-visible {
   border-radius: 5px;
-  outline: 3px solid rgba(34, 85, 199, 0.38);
+  outline: 3px solid var(--cobalt);
   outline-offset: 5px;
 }
 
@@ -1226,14 +1237,14 @@ summary:focus-visible {
   justify-content: center;
   border: 0;
   color: white;
-  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  background: var(--orange-dark);
   box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23);
 }
 
 .install-card__actions button.primary svg { width: 18px; height: 18px; }
 
 .install-card__actions button.quiet {
-  min-height: 38px;
+  min-height: 44px;
   border: 0;
   color: var(--ink-soft);
   background: transparent;
@@ -1248,7 +1259,7 @@ summary:focus-visible {
   font-style: normal;
 }
 
-.install-prop { z-index: 1; right: -4px; bottom: -4px; width: clamp(150px, 36vw, 210px); }
+.install-prop { z-index: 1; right: 0; bottom: 0; width: min(24%, 210px); }
 
 .profile-overlay {
   position: fixed;
@@ -1320,14 +1331,14 @@ summary:focus-visible {
 .reset-card button.primary {
   border-color: transparent;
   color: white;
-  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  background: var(--orange-dark);
   box-shadow: 0 10px 24px rgba(217, 84, 26, 0.22);
 }
 
 .name-card--editor { width: min(100%, 540px); min-height: 410px; border-radius: 30px 12px 30px 30px; }
 .name-card--editor .name-card__copy { width: 72%; min-height: 410px; padding: 30px 6px 26px 28px; }
 .name-card--editor h1 { font-size: clamp(2.35rem, 9vw, 3.8rem); }
-.name-card--editor .name-prop { right: -5px; width: 150px; }
+.name-card--editor .name-prop { width: min(26%, 150px); }
 
 .mini {
   min-height: 72px;
@@ -1342,8 +1353,8 @@ summary:focus-visible {
 
 .profile-button {
   display: flex;
-  width: 34px;
-  height: 34px;
+  min-width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -1357,12 +1368,12 @@ summary:focus-visible {
 
 .profile-button b { font-family: "Fraunces", Georgia, serif; font-size: 0.94rem; }
 .profile-button span { display: none; }
-.mode-toggle button { min-height: 34px; padding: 6px 10px; }
+.mode-toggle button { min-width: 44px; min-height: 44px; padding: 6px 10px; }
 
 .install-button {
   display: flex;
-  width: 34px;
-  height: 34px;
+  min-width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(246, 170, 119, 0.32);
@@ -1527,7 +1538,7 @@ summary:focus-visible {
   animation: bubble-in 220ms ease both;
 }
 .step-detail p { margin: 0; color: var(--ink-soft); font-size: 0.82rem; line-height: 1.55; }
-.step-more { margin-top: 9px; min-height: 34px; padding: 7px 10px; }
+.step-more { margin-top: 9px; min-height: 44px; padding: 7px 10px; }
 
 .quick-step-row {
   display: grid;
@@ -1615,18 +1626,14 @@ summary:focus-visible {
   .install-card h1 { font-size: 2.55rem; }
   .install-card__copy > p { font-size: 0.79rem; }
   .install-card__actions { width: min(100%, 244px); margin-top: 17px; }
-  .install-prop { right: -15px; width: 158px; }
   .name-card { min-height: 430px; }
   .name-card__copy { width: 72%; min-height: 430px; padding: 30px 5px 25px 24px; }
   .name-card h1 { font-size: 2.65rem; }
   .name-card__copy > p { font-size: 0.8rem; }
-  .name-prop { right: -13px; width: 160px; }
   .name-card--editor { min-height: 390px; }
   .name-card--editor .name-card__copy { width: 74%; min-height: 390px; padding-left: 23px; }
-  .name-card--editor .name-prop { right: -17px; width: 138px; }
   .mini { padding-right: 12px; padding-left: 12px; }
-  .mini__brand b { max-width: 116px; }
-  .mini__brand small { max-width: 125px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini__brand small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mini__actions { gap: 6px; }
   .mode-toggle button { padding-right: 9px; padding-left: 9px; }
   .content { padding-top: 15px; }
@@ -1649,16 +1656,11 @@ summary:focus-visible {
   .install-card h1 { font-size: 2.25rem; }
   .install-card__copy > p { font-size: 0.75rem; }
   .install-card__actions button { padding-inline: 10px; }
-  .install-prop { right: -21px; width: 143px; }
   .name-card__copy { width: 74%; padding-left: 20px; }
   .name-card h1 { font-size: 2.35rem; }
   .name-card__copy > p { font-size: 0.76rem; }
   .name-card input { min-height: 48px; }
   .name-card__actions { display: grid; }
-  .name-prop { right: -18px; width: 145px; }
-  .mini__brand b { max-width: 102px; }
-  .mini__brand small { max-width: 108px; }
-  .profile-button { width: 31px; height: 31px; }
   .mode-toggle button { padding-right: 7px; padding-left: 7px; font-size: 0.66rem; }
   .task-card { --panel-x: 16px; }
   .task-location--with-character { padding-right: 72px; }
@@ -1718,7 +1720,7 @@ summary:focus-visible {
 .shell--task::before {
   background:
     linear-gradient(180deg, rgba(5, 13, 25, 0.38) 0%, rgba(5, 13, 25, 0.7) 68%, rgba(5, 13, 25, 0.92) 100%),
-    url("/kaylas-shift-guide/scenes/store-dawn.webp") center 42% / cover no-repeat;
+    url("/scenes/store-dawn.webp") center 42% / cover no-repeat;
   filter: saturate(0.78);
 }
 
@@ -1814,7 +1816,7 @@ summary:focus-visible {
 
 .task-why-link {
   display: inline-flex;
-  min-height: 32px;
+  min-height: 44px;
   gap: 7px;
   align-items: center;
   margin-top: 9px;
@@ -1899,9 +1901,9 @@ summary:focus-visible {
 }
 
 .step-toggle strong,
-.quick-step-row strong { font-size: 0.83rem; }
+.quick-step-row strong { font-size: 0.92rem; }
 .step-detail { padding: 0 13px 13px 50px; }
-.step-detail p { font-size: 0.83rem; line-height: 1.56; }
+.step-detail p { font-size: 0.91rem; line-height: 1.56; }
 
 .task-focus > .guided-footer {
   bottom: max(10px, env(safe-area-inset-bottom));
@@ -1969,7 +1971,7 @@ summary:focus-visible {
 }
 
 .name-card__reset {
-  min-height: 38px;
+  min-height: 44px;
   margin-top: 7px;
   padding: 8px 11px;
   border: 1px solid rgba(189, 45, 52, 0.16);
@@ -1987,7 +1989,6 @@ summary:focus-visible {
 @media (max-width: 430px) {
   .mini { padding-right: 10px; padding-left: 10px; }
   .mini__brand i { height: 28px; }
-  .mode-toggle button { min-height: 32px; }
   .shell--task .content { padding-right: 8px; padding-left: 8px; }
   .task-card { --panel-x: 17px; }
   .task-intro--with-till .task-intro__copy { padding-right: 96px; }
@@ -2011,4 +2012,58 @@ summary:focus-visible {
   .explanation-head .character-prop--action { width: 110px; }
   .task-intro__summary { font-size: 0.68rem; }
   .task-location-line p { font-size: 0.69rem; }
+}
+
+/* Modal panels must remain reachable with a phone keyboard or a short viewport. */
+dialog.profile-overlay,
+dialog.panel-zoom {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  color: var(--ink);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-items: safe center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+dialog:not([open]) { display: none; }
+dialog::backdrop { background: transparent; }
+.mini {
+  padding-top: calc(9px + env(safe-area-inset-top));
+  padding-left: max(10px, env(safe-area-inset-left));
+  padding-right: max(10px, env(safe-area-inset-right));
+}
+.mini__brand { min-height: 44px; }
+.mini__brand:focus-visible, .mini__actions button:focus-visible,
+.bottom-nav button:focus-visible { outline-color: #ffbf92; }
+.step-toggle:focus-visible, .contacts summary:focus-visible { outline-offset: -3px; }
+.finish__copy h1, .home-head > small { overflow-wrap: anywhere; }
+.task-why-link, .step-toggle, .contacts summary {
+  scroll-margin-block: calc(80px + env(safe-area-inset-top)) calc(82px + env(safe-area-inset-bottom));
+}
+.storage-warning {
+  position: relative;
+  padding: 10px 16px;
+  color: var(--paper);
+  background: #713212;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+@media (max-height: 650px) and (max-width: 639px) {
+  .home-stage { padding-top: 20px; min-height: auto; }
+}
+
+@media (orientation: landscape) {
+  .content, .shell--task .content {
+    padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+  }
+  .task-focus > .guided-footer {
+    width: min(calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)), 688px);
+  }
 }

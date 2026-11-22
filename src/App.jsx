@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Modal from "./components/Modal";
 import CharacterProp from "./components/CharacterProp";
 import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
-import { useLocalStorage } from "./hooks/useLocalStorage";
+import { useLocalStorage, useStorageWarning } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 
 const APP_NAME = "Before the Rush";
@@ -25,6 +26,23 @@ function legacyProgress(day) {
   } catch {
     return emptyProgress;
   }
+}
+
+const emptyProfile = { name: "" };
+const taskIds = new Set(guideTasks.map((item) => item.id));
+
+function normalizeProgress(value) {
+  const completed = Array.isArray(value?.completed) ? value.completed.filter((id) => taskIds.has(id)) : [];
+  const answers = Object.fromEntries(Object.entries(value?.answers || {}).filter(
+    ([id, answer]) => taskIds.has(id) && (answer === "yes" || answer === "no")
+  ));
+  return {
+    ...value,
+    completed: [...new Set(completed)],
+    answers,
+    mode: value?.mode === "quick" ? "quick" : "learn",
+    currentIndex: Number.isInteger(value?.currentIndex) ? value.currentIndex : undefined,
+  };
 }
 
 function installGateAlreadySkipped() {
@@ -169,17 +187,48 @@ function InstallCard({ canInstall, install, onContinue }) {
 }
 
 export default function App() {
-  const day = dateKey();
-  const [profile, setProfile] = useLocalStorage(PROFILE_KEY, { name: "" });
+  const [day, setDay] = useState(dateKey);
+  const storageWarning = useStorageWarning();
+  useEffect(() => {
+    let timer;
+    const checkDay = () => {
+      clearTimeout(timer);
+      setDay(dateKey());
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      timer = setTimeout(checkDay, midnight - now);
+    };
+    checkDay();
+    window.addEventListener("pageshow", checkDay);
+    document.addEventListener("visibilitychange", checkDay);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pageshow", checkDay);
+      document.removeEventListener("visibilitychange", checkDay);
+    };
+  }, []);
+  return (
+    <>
+      {storageWarning && <div className="storage-warning" role="alert">This browser couldn’t save your changes. Keep this tab open to keep using them.</div>}
+      <DailyGuide key={day} day={day} />
+    </>
+  );
+}
+
+function DailyGuide({ day }) {
+  const [profile, setProfile] = useLocalStorage(PROFILE_KEY, emptyProfile);
   const displayName = typeof profile?.name === "string" ? profile.name.trim() : "";
-  const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, legacyProgress(day));
-  const [screen, setScreen] = useState(() => displayName ? "home" : "setup");
+  const fallback = useMemo(() => legacyProgress(day), [day]);
+  const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, fallback, normalizeProgress);
+  const [requestedScreen, setScreen] = useState("home");
   const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
   const [installMessage, setInstallMessage] = useState("");
-  const resetDialogRef = useRef(null);
+  const profileTriggerRef = useRef(null);
+  const launchTimer = useRef(null);
   const resetTriggerRef = useRef(null);
   const { canInstall, isStandalone, install } = usePwaInstall();
 
@@ -198,7 +247,9 @@ export default function App() {
     return skipped;
   }, [answers]);
   const firstIncomplete = guideTasks.findIndex((item) => !completed.has(item.id));
-  const resumeIndex = firstIncomplete === -1 ? guideTasks.length - 1 : firstIncomplete;
+  const allDone = firstIncomplete === -1;
+  const screen = requestedScreen === "complete" && !allDone ? "home" : requestedScreen;
+  const resumeIndex = allDone ? guideTasks.length - 1 : firstIncomplete;
   const index = Math.max(0, Math.min(progress.currentIndex ?? resumeIndex, guideTasks.length - 1));
   const task = guideTasks[index];
   const nextTask = guideTasks[resumeIndex];
@@ -206,48 +257,11 @@ export default function App() {
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
 
-  useEffect(() => { document.title = APP_NAME; }, []);
-
-  useEffect(() => {
-    if (!showResetConfirm) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    const dialog = resetDialogRef.current;
-    const focusable = dialog ? [...dialog.querySelectorAll("button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex='-1'])")] : [];
-    const firstFocusable = focusable[0];
-    const lastFocusable = focusable[focusable.length - 1];
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setShowResetConfirm(false);
-        return;
-      }
-      if (event.key !== "Tab" || !firstFocusable || !lastFocusable) return;
-      if (event.shiftKey && document.activeElement === firstFocusable) {
-        event.preventDefault();
-        lastFocusable.focus();
-      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
-        event.preventDefault();
-        firstFocusable.focus();
-      }
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
-    firstFocusable?.focus();
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-      window.requestAnimationFrame(() => {
-        const resetTrigger = resetTriggerRef.current;
-        if (resetTrigger?.isConnected) resetTrigger.focus();
-        else document.querySelector(".profile-button")?.focus();
-      });
-    };
-  }, [showResetConfirm]);
+  useEffect(() => () => clearTimeout(launchTimer.current), []);
 
   const saveName = (name) => {
-    setProfile({ name });
+    setProfile((current) => ({ ...current, name }));
     setShowProfile(false);
-    if (screen === "setup") setScreen("home");
   };
 
   const go = (nextIndex) => {
@@ -263,13 +277,14 @@ export default function App() {
       return;
     }
     setIsLaunching(true);
-    window.setTimeout(() => {
+    launchTimer.current = window.setTimeout(() => {
       setIsLaunching(false);
       startOrResume();
     }, 320);
   };
   const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
   const setDecision = (taskId, answer) => setProgress((current) => {
+    if (current.answers[taskId] === answer) return current;
     const taskDefinition = guideTasks.find((item) => item.id === taskId);
     const possibleSkips = new Set([
       ...(taskDefinition?.decision?.yesSkip || []),
@@ -289,18 +304,16 @@ export default function App() {
   const doneAndNext = () => {
     if (!canComplete) return;
     const answerSkips = task.decision?.[`${decisionAnswer}Skip`] || [];
-    const nextCompleted = completed.has(task.id) ? [...(progress.completed || [])] : [...(progress.completed || []), task.id];
-    answerSkips.forEach((id) => nextCompleted.push(id));
-    const nextCount = new Set(nextCompleted).size;
-    if (nextCount === guideTasks.length) {
-      setProgress((current) => ({ ...current, completed: nextCompleted, currentIndex: index }));
-      window.setTimeout(() => setScreen("complete"), 380);
-      return;
-    }
+    const nextCompleted = new Set([...completed, task.id, ...answerSkips]);
     let nextIndex = Math.min(index + 1, guideTasks.length - 1);
     while (nextIndex < guideTasks.length - 1 && answerSkips.includes(guideTasks[nextIndex].id)) nextIndex += 1;
-    setProgress((current) => ({ ...current, completed: [...new Set(nextCompleted)], currentIndex: nextIndex }));
-    setScreen("task");
+    const finished = nextCompleted.size === guideTasks.length;
+    setProgress((current) => ({
+      ...current,
+      completed: [...new Set([...current.completed, task.id, ...answerSkips])],
+      currentIndex: finished ? index : nextIndex,
+    }));
+    setScreen(finished ? "complete" : "task");
   };
 
   const goBack = () => {
@@ -310,13 +323,13 @@ export default function App() {
   };
 
   const reset = () => {
-    setProgress({ ...emptyProgress });
+    setProgress((current) => ({ ...current, ...emptyProgress, mode: current.mode }));
     setShowResetConfirm(false);
     setScreen("home");
   };
 
   const requestReset = (event) => {
-    resetTriggerRef.current = event.currentTarget;
+    resetTriggerRef.current = showProfile ? profileTriggerRef.current : event.currentTarget;
     setShowResetConfirm(true);
   };
 
@@ -340,7 +353,7 @@ export default function App() {
     );
   }
 
-  if (!displayName || screen === "setup") {
+  if (!displayName) {
     return (
       <main className="name-gate scene-surface">
         <NameCard onSave={saveName} />
@@ -350,8 +363,8 @@ export default function App() {
 
   return (
     <div className={`shell shell--${screen}`}>
-      <header className="mini" inert={showResetConfirm ? "" : undefined}>
-        <button type="button" onClick={() => setScreen("home")} className="mini__brand">
+      <header className="mini">
+        <button type="button" onClick={() => setScreen("home")} className="mini__brand" aria-label="Before the Rush home">
           <i />
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
         </button>
@@ -361,24 +374,24 @@ export default function App() {
               <InstallIcon /><span>Install</span>
             </button>
           )}
-          <button type="button" className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Open profile and settings, currently ${displayName}`}>
+          <button type="button" ref={profileTriggerRef} className="profile-button" onClick={() => setShowProfile(true)} aria-label={`Open profile and settings, currently ${displayName}`}>
             <b>{displayName.charAt(0).toUpperCase()}</b><span>{displayName}</span>
           </button>
-          <div className="mode-toggle" aria-label="Guide detail mode">
-            <button type="button" className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
-            <button type="button" className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
+          <div className="mode-toggle" role="group" aria-label="Guide detail mode">
+            <button type="button" aria-pressed={mode === "learn"} className={mode === "learn" ? "active" : ""} onClick={() => setMode("learn")}>Learn</button>
+            <button type="button" aria-pressed={mode === "quick"} className={mode === "quick" ? "active" : ""} onClick={() => setMode("quick")}>Quick</button>
           </div>
         </div>
       </header>
 
-      <main className="content" inert={showResetConfirm ? "" : undefined}>
+      <main className="content">
         {screen === "home" && (
           <section className="home home--compact">
             <div className="home-head">
               <small>Good morning, {displayName}</small>
-              <h1>{completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
+              <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
               <div className="home-head__meta">
-                <p>{completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>
+                <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>
                 <div className="progress-status" aria-label={`${percent}% complete`}>
                   <span>{completedCount}<small>/{guideTasks.length}</small></span>
                   <em>{percent}% done</em>
@@ -391,10 +404,10 @@ export default function App() {
                 <button type="button" className="start" onClick={startFromHome}>
                   <div className="start-sheet">
                     <div className="start-copy">
-                      <div className="start-kicker"><small>{completedCount ? "Continue" : "First move"}</small><span>Task {resumeIndex + 1} of {guideTasks.length}</span></div>
+                      <div className="start-kicker"><small>{allDone ? "Completed" : completedCount ? "Continue" : "First move"}</small><span>Task {resumeIndex + 1} of {guideTasks.length}</span></div>
                       <strong>{nextTask.title}</strong>
                       <p>{nextTask.short}</p>
-                      <div className="start-meta"><span>{nextTask.category}</span><b>Open task <i>→</i></b></div>
+                      <div className="start-meta"><span>{nextTask.category}</span><b>{allDone ? "Review task" : "Open task"} <i>→</i></b></div>
                     </div>
                     <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
                   </div>
@@ -420,14 +433,14 @@ export default function App() {
       </main>
 
       {screen === "home" && (
-        <nav className="bottom-nav" aria-label="Primary navigation" inert={showResetConfirm ? "" : undefined}>
-          <button type="button" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
+        <nav className="bottom-nav" aria-label="Primary navigation">
+          <button type="button" aria-current="page" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
           <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
         </nav>
       )}
 
       {showProfile && (
-        <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Profile and settings" onClick={() => setShowProfile(false)}>
+        <Modal className="profile-overlay" label="Profile and settings" returnFocus={profileTriggerRef} onClose={() => setShowProfile(false)}>
           <NameCard
             initialName={displayName}
             onSave={saveName}
@@ -437,12 +450,12 @@ export default function App() {
               requestReset(event);
             }}
           />
-        </div>
+        </Modal>
       )}
 
       {showResetConfirm && (
-        <div className="profile-overlay" onClick={() => setShowResetConfirm(false)}>
-          <section ref={resetDialogRef} className="reset-card" role="dialog" aria-modal="true" aria-labelledby="reset-title" onClick={(event) => event.stopPropagation()}>
+        <Modal className="profile-overlay" labelledBy="reset-title" returnFocus={resetTriggerRef} onClose={() => setShowResetConfirm(false)}>
+          <section className="reset-card" onClick={(event) => event.stopPropagation()}>
             <small>Reset today?</small>
             <h2 id="reset-title">Start over from task one?</h2>
             <p>This clears today’s answers and progress on this device. Your name and saved phone numbers stay put.</p>
@@ -451,7 +464,7 @@ export default function App() {
               <button type="button" className="primary" onClick={reset}>Reset today</button>
             </div>
           </section>
-        </div>
+        </Modal>
       )}
 
       {installMessage && <div className="install-toast" role="status">{installMessage}</div>}

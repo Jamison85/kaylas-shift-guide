@@ -35,14 +35,9 @@ const worker = `const CACHE_NAME = ${JSON.stringify(cacheName)};
 const CACHE_PREFIX = "before-rush-";
 const BASE_PATH = ${JSON.stringify(basePath)};
 const PRECACHE_URLS = ${JSON.stringify(precacheUrls, null, 2)};
-const FONT_HOSTS = new Set(["fonts.googleapis.com", "fonts.gstatic.com"]);
-
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-  );
+  const requests = PRECACHE_URLS.map((url) => new Request(url, { cache: "reload" }));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(requests)));
 });
 
 self.addEventListener("activate", (event) => {
@@ -55,45 +50,16 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-async function networkFirst(request) {
-  const cache = await caches.open(CACHE_NAME);
-  try {
-    const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
-    return response;
-  } catch {
-    return (await cache.match(request, { ignoreSearch: true }))
-      || (await cache.match(BASE_PATH))
-      || (await cache.match(BASE_PATH + "index.html"));
-  }
-}
-
-async function cachedWithRefresh(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request, { ignoreSearch: true });
-  const refreshed = fetch(request).then(async (response) => {
-    if (response.ok || response.type === "opaque") await cache.put(request, response.clone());
-    return response;
-  }).catch(() => null);
-  return cached || refreshed || Response.error();
-}
-
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  const isAppRequest = url.origin === self.location.origin && url.pathname.startsWith(BASE_PATH);
-  const isFontRequest = FONT_HOSTS.has(url.hostname);
-  if (!isAppRequest && !isFontRequest) return;
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE_PATH)) return;
 
-  if (event.request.mode === "navigate") {
-    event.respondWith(networkFirst(event.request));
-    return;
-  }
-  event.respondWith(cachedWithRefresh(event.request));
-});
-
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  // Keep the shell and its hashed assets on the same release for this shift.
+  const path = event.request.mode === "navigate" ? BASE_PATH : url.pathname;
+  event.respondWith(caches.open(CACHE_NAME).then(async (cache) =>
+    (await cache.match(path)) || fetch(event.request)
+  ));
 });
 `;
 

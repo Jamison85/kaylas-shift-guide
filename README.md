@@ -33,16 +33,14 @@ This separation is deliberate. A different AI can redesign the UI without silent
 ## Current app behavior
 
 - First-run Home-screen invitation, followed by name setup. Installed launches skip the invitation automatically, and a browser fallback is always available.
-- Personalized Good Morning splash with dry wisdom.
-- Till's opening uses a stabilized clip, a first-frame-matched poster, and an intentional transition across the generated video's internal pose cut.
-- Splash automatically transitions into the working home screen.
+- Personalized Home greeting with dry opening wisdom. Setup leads directly to the first task card.
 - Small home header plus a much larger **Start here** area.
 - One-task-at-a-time morning guide.
 - 21 operational tasks.
 - Progress saved by date in browser local storage.
 - Installable on Android as a Progressive Web App, with a compact in-app install button when supported.
 - The full guide and its local visual assets are cached for offline use after the first visit.
-- New published versions replace the offline cache automatically.
+- Published updates activate after all windows using the previous version close. An update can download during a shift without interrupting an open form.
 - Learn mode uses one expanded instruction at a time to reduce scrolling.
 - Quick mode keeps the same workflow as a compact list.
 - Character-led **Why?** explanations use the existing context instead of adding permanent page rows.
@@ -76,3 +74,7 @@ On a fresh phone, the app asks to be added to the Home screen before name setup.
 The invitation always includes **Continue in browser**, so an unsupported browser cannot block the opening workflow. The compact install button remains available in the app header whenever the browser later reports that native installation is ready.
 
 The installed app opens in its own window. Names, daily progress, and saved contact numbers remain on that device. They are not synced to another phone.
+
+## Browser regression tests
+
+Run `npx playwright install chromium` once, then `npm test`. The tests build and serve the production app locally and use isolated browser storage. Set `CHROMIUM_EXECUTABLE_PATH` to use an existing Chromium installation.

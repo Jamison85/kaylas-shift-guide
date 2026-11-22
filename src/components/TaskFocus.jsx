@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Modal from "./Modal";
 import CharacterProp from "./CharacterProp";
 import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -68,8 +69,12 @@ function legacyPhoneNumbers() {
   }
 }
 
+function normalizeNumbers(value) {
+  return Object.fromEntries(Object.entries(value || {}).filter(([, number]) => typeof number === "string"));
+}
+
 function Contacts({ ids = [] }) {
-  const [phoneNumbers, setPhoneNumbers] = useLocalStorage("before-rush-contact-numbers", legacyPhoneNumbers());
+  const [phoneNumbers, setPhoneNumbers] = useLocalStorage("before-rush-contact-numbers", legacyPhoneNumbers, normalizeNumbers);
   const [editingId, setEditingId] = useState(null);
   const [draftNumber, setDraftNumber] = useState("");
   const pairedIds = [...new Set(ids)];
@@ -155,6 +160,8 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const taskPercent = Math.round(((index + 1) / total) * 100);
   const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
   const [explanation, setExplanation] = useState(null);
+  const explanationTrigger = useRef(null);
+  const heading = useRef(null);
   const steps = task.steps.map(normalizedStep);
   const characterAction = taskCharacterActions[task.id] || null;
   const displayTitle = task.title.replace(/^Start with (?:the )?/i, "");
@@ -168,24 +175,14 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   }, [task.id, mode]);
 
   useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [task.id]);
 
-  useEffect(() => {
-    if (!explanation) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") setExplanation(null);
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [explanation]);
-
-  const openExplanation = (label, title, body) => setExplanation({ label, title, body });
+  const openExplanation = (trigger, label, title, body) => {
+    explanationTrigger.current = trigger;
+    setExplanation({ label, title, body });
+  };
 
   return (
     <section className="task-focus">
@@ -199,7 +196,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         <section className={`task-intro ${mode === "learn" && characterAction ? "task-intro--with-till" : ""}`}>
           <div className="task-intro__copy">
             <p className="task-intro__summary">{task.short}</p>
-            <h1>{displayTitle}</h1>
+            <h1 ref={heading} tabIndex={-1}>{displayTitle}</h1>
             {task.location && mode === "learn" && (
               <div className="task-location-line">
                 <span>Location</span>
@@ -210,7 +207,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
               <button
                 type="button"
                 className="task-why-link"
-                onClick={() => openExplanation(index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose)}
+                onClick={(event) => openExplanation(event.currentTarget, index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose)}
               >
                 {whyLabel}<span aria-hidden="true">→</span>
               </button>
@@ -238,7 +235,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                       type="button"
                       className="step-toggle"
                       aria-expanded={isExpanded}
-                      aria-controls={detailsId}
+                      aria-controls={isExpanded ? detailsId : undefined}
                       onClick={() => setExpandedStep(isExpanded ? null : stepIndex)}
                     >
                       <b>{stepIndex + 1}</b>
@@ -249,7 +246,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                       <div className="step-detail" id={detailsId}>
                         <p>{step.detail}</p>
                         {step.more && (
-                          <button type="button" className="step-more" onClick={() => openExplanation(`Step ${stepIndex + 1} · Why this matters`, step.title, step.more)}>
+                          <button type="button" className="step-more" onClick={(event) => openExplanation(event.currentTarget, `Step ${stepIndex + 1} · Why this matters`, step.title, step.more)}>
                             Ask why <span>→</span>
                           </button>
                         )}
@@ -286,7 +283,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       </footer>
 
       {explanation && (
-        <div className="panel-zoom" role="dialog" aria-modal="true" aria-label={explanation.label} onClick={() => setExplanation(null)}>
+        <Modal className="panel-zoom" label={explanation.label} returnFocus={explanationTrigger} onClose={() => setExplanation(null)}>
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
             <div className="explanation-head">
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
@@ -295,7 +292,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
             <p>{explanation.body}</p>
             <button type="button" onClick={() => setExplanation(null)} autoFocus>Got it, Till</button>
           </article>
-        </div>
+        </Modal>
       )}
     </section>
   );
