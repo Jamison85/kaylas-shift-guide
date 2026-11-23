@@ -17,16 +17,16 @@ void main() {
   float neck = weight(head, vec2(.31,.24));
   p.x += neck * (.0035 * sin(time * 1.34) + .018 * glance);
   p.y += neck * (.003 * breath + .028 * glance);
-  float wrist = weight(vec2(.53,.83),vec2(.16,.13)) * writing;
+  float wrist = weight(vec2(.49,.55),vec2(.13,.09)) * writing;
   p += wrist * vec2(.009 * sin(time*6.), .0045 * sin(time*12.));
   // A cue leads with the gaze. The shoulder and badge hand follow it.
   p.y -= gesture * .009 * neck;
   p.x += gesture * .006 * weight(vec2(.43,.46),vec2(.23,.16));
   p.y -= gesture * .014 * weight(vec2(.28,.58),vec2(.17,.12));
-  // The raised forearm in 05_explaining pivots around its own elbow.
-  vec2 elbow = vec2(.653,.54);
+  // The raised forearm in the farewell frames pivots around the left elbow.
+  vec2 elbow = vec2(.34,.46);
   vec2 arm = p - elbow;
-  float swing = wave * smoothstep(.64,.82,p.x) * (.21 * sin(time*8.5) - .13);
+  float swing = wave * (1.-smoothstep(.25,.43,p.x)) * (.24 * sin(time*9.) - .05);
   p += mat2(cos(swing)-1., sin(swing), -sin(swing), cos(swing)-1.) * arm;
   gl_Position = vec4(p.x*2.-1., 1.-p.y*2., 0., 1.);
 }`;
@@ -57,17 +57,19 @@ void main() {
   gl_FragColor = mix(oldColor,newColor,exchange);
 }`;
 
-// Center between the pupils and vector along their axis, measured in each cutout.
+// Centers and eye-line vectors in the aligned 420×640 cutouts.
 const eyes = {
-  working: [.549,.261,.089,.028], notices: [.505,.268,.114,.037],
-  shock: [.379,.224,.096,-.020], badge: [.418,.201,.089,-.033],
-  explain: [.403,.267,.092,-.037], dodge: [.406,.267,.088,-.037],
-  recovery: [.405,.267,.092,-.037],
+  working: [.54,.294,.094,.013], notices: [.522,.236,.103,.025],
+  shock: [.456,.239,.100,-.012], uneasy: [.565,.271,.095,.020],
+  badge: [.523,.264,.102,.026], explain: [.510,.261,.097,.022],
+  anticipation: [.463,.277,.087,-.018], dodge: [.294,.280,.083,-.018],
+  recovery: [.475,.260,.107,-.022], wave: [.467,.244,.102,-.010],
 };
 
 const badges = {
-  working:[.39,.67], notices:[.37,.67], shock:[.39,.53], badge:[.41,.50],
-  explain:[.41,.615], dodge:[.40,.595], recovery:[.41,.59],
+  working:[.411,.444], notices:[.413,.459], shock:[.450,.474], uneasy:[.389,.453],
+  badge:[.428,.468], explain:[.430,.470], anticipation:[.410,.453],
+  dodge:[.307,.464], recovery:[.424,.429], wave:[.437,.436],
 };
 const exchangeTime = pose => pose === "shock" || pose === "dodge" ? .23 : .36;
 
@@ -177,7 +179,7 @@ export function renderer(canvas) {
       const impulse = Math.sin(Math.PI*Math.min(1,age/1.05));
       gl.uniform1f(uniforms.gesture, gesturing ? impulse : 0);
       gl.uniform1f(uniforms.glance, nervous ? .65 + .35*Math.sin(time*2.1) : 0);
-      gl.uniform2f(uniforms.head, pose === "working" ? .54 : .38, .22);
+      gl.uniform2f(uniforms.head, eyes[pose][0], eyes[pose][1]);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, coords.length/2);
     },

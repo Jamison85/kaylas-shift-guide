@@ -6,17 +6,23 @@ import { beats } from "./story";
 // Each peanut leaves the mouth of the open carton at a different time.
 // travel and bounce are in peanut lengths so the paths scale with the office.
 const peanuts = [
-  [-4, 6.9, 210, 60], [-1.5, 8.7, -120, 30], [-6, 8.3, 260, 105], [2, 7.3, 175, 145],
-  [-8, 8.8, -200, 190], [-3, 9.4, 90, 215], [3.4, 7.5, -145, 240], [-5, 9.7, 310, 285],
+  [-3.6, 13, 210, 60], [-1.3, 12.8, -120, 30], [-5.8, 15, 260, 105], [2.6, 10.5, 175, 145],
+  [-7.4, 13.8, -200, 190], [-2.7, 16.4, 90, 215], [4, 16.2, -145, 240], [-4.8, 17.3, 310, 285],
 ];
+const after = id => beats.findIndex(beat => beat.id === id);
+const scatterAt = after("fall");
+const dropAt = after("echo");
 const descriptions = {
-  working: "Till works on his clipboard behind the office desk.",
-  notices: "Till tips his face up toward you, high above his desk.",
-  shock: "Till recoils. His pen, papers and clipboard fly up.",
-  badge: "Hair ruffled and glasses crooked, Till points to his name badge.",
+  working: "Till writes on his clipboard beside the desk in the miniature office.",
+  notices: "Till stands in the tiled aisle and tips his face up to meet your gaze.",
+  shock: "Till recoils and sends his clipboard flying.",
+  uneasy: "Till glances nervously down at his messy desk.",
+  badge: "Till gets his bearings and points to his name badge.",
   explain: "Till looks up at you and gestures across his little office.",
-  dodge: "Till ducks as the stack of cartons topples and packing peanuts scatter behind him.",
-  recovery: "Dusty, Till brushes his hair back and gives you a sheepish thumbs-up.",
+  anticipation: "Till glances aside as the stack of taped cartons begins to wobble.",
+  dodge: "Till ducks as the cartons topple and packing peanuts scatter across the tiled floor.",
+  recovery: "Till brushes off the front of his polo and looks up sheepishly.",
+  wave: "Till waves up at you.",
 };
 export default function Office({ story, images, reduced, destination }) {
   const { beat, index, response, paused } = story;
@@ -56,24 +62,30 @@ export default function Office({ story, images, reduced, destination }) {
     return () => { resize.disconnect(); animation.cancel(); flight.current = null; };
   }, [revealing, destination, reduced, beat.ms]);
   useLayoutEffect(() => { if (flight.current) paused ? flight.current.pause() : flight.current.play(); }, [paused, revealing, destination]);
-  const performanceBeat = beat.id === "answer" && response === "watching" ? { ...beat, pose: "badge" } : beat;
-  const fallen = index >= beats.findIndex(b => b.id === "fall");
-  return <div className="fc-office" ref={stage} role="img" aria-label={performanceBeat !== beat ? "Till glances nervously down at his messy desk." : descriptions[beat.pose]}
+  const performanceBeat = beat.id === "answer" && response === "watching" ? { ...beat, pose: "uneasy" } : beat;
+  const fallen = index >= scatterAt && beat.id !== "home";
+  const dropped = index >= dropAt && beat.id !== "home";
+  const roomPaint = { backgroundImage: `url("${office}")` };
+  return <div className="fc-office" ref={stage} role="img" aria-label={descriptions[performanceBeat.pose]}
     data-beat={beat.id} data-branch={response} data-fallen={fallen} data-act={beat.act} data-paused={paused}>
     <div className="fc-camera"><div className="fc-world">
-      <div className="fc-scenery" style={{backgroundImage: `url("${office}")`}}>
+      <div className="fc-scenery" style={roomPaint}>
         <div className="fc-lamp" />
+        <div className="fc-stack-shadow" />
         {["right", "center", "left", "open"].map(key => (
           <div key={key} className={`fc-box fc-box--${key}`}>
-            <img className="fc-closed" src={art[key === "open" || key === "left" ? "left" : "upright"]} alt="" />
-            {fallen && key !== "left" && <img className="fc-turning" src={art[key]} alt="" />}
+            <img className="fc-closed" src={art.closed} alt="" />
+            {fallen && key === "open" && <img className="fc-turning" src={art.open} alt="" />}
           </div>
         ))}
+        {dropped && <img className="fc-clipboard" src={art.clipboard} alt="" />}
         {fallen && peanuts.map(([x,y,r,d], i) => <div key={i} className="fc-peanut" style={{
           "--travel": x*100+"%", "--drop": y*100+"%", "--roll": r+"deg", "--delay": (470+d)+"ms",
         }}><img src={art.peanut} alt="" /></div>)}
       </div>
+      <div className="fc-foot-shadow" />
       <div className="fc-player"><TillActor beat={performanceBeat} response={response} images={images} reduced={reduced} paused={paused || beat.id === "home"} /></div>
+      <div className="fc-foreground" style={roomPaint} />
     </div></div>
     <div className="fc-overhead" />
   </div>;

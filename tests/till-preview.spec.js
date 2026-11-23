@@ -26,6 +26,10 @@ for (const branch of Object.keys(responses)) {
     await open(page);
     await page.getByRole("button",{name:"Mute sound",exact:true}).click();
     await page.getByRole("button",{name:"Start introduction"}).click();
+    const actor = page.locator(".fc-actor");
+    const floorRegistration = () => actor.evaluate(el => [el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight]);
+    const planted = await floorRegistration();
+    await expect(page.locator(".fc-clipboard")).toHaveCount(0);
     await advance(page,0,at("choice"));
     await page.clock.fastForward(120000);
     await expect(page.getByRole("button",{name:responses.hello,exact:true})).toBeFocused();
@@ -33,10 +37,16 @@ for (const branch of Object.keys(responses)) {
     await expect(page.locator(".fc-caption")).toHaveText(responses[branch]);
     await advance(page,at("echo"),at("answer"));
     await expect(page.locator(".fc-caption")).toContainText(branch === "hello" ? "GOOD GRAVY!" : "deeply unsettling");
+    await expect(page.locator(".fc-actor")).toHaveAttribute("data-pose",branch === "hello" ? "shock" : "uneasy");
+    await expect(page.locator(".fc-clipboard")).toBeVisible();
     await advance(page,at("answer"),at("lean"));
     await expect(page.locator(".fc-box .fc-closed")).toHaveCount(4);
     await expect(page.locator(".fc-turning,.fc-peanut")).toHaveCount(0);
-    await advance(page,at("lean"),at("fall"));
+    await advance(page,at("lean"),at("poise"));
+    await expect(page.locator(".fc-actor")).toHaveAttribute("data-pose","anticipation");
+    await expect(page.locator(".fc-turning,.fc-peanut")).toHaveCount(0);
+    expect(await floorRegistration()).toEqual(planted);
+    await advance(page,at("poise"),at("fall"));
     await expect(page.locator(".fc-box")).toHaveCount(4);
     await expect(page.locator(".fc-peanut")).toHaveCount(8);
     expect(await page.locator(".fc-player").evaluate(el =>
