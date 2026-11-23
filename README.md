@@ -83,7 +83,7 @@ Run `npx playwright install chromium` once, then `npm test`. The tests build and
 
 **Hello? Is Somebody Up There?** is a standalone interactive short on the `till-first-connection-assets` branch. The timed sequence runs for about 55 seconds. Discovery waits for your reply.
 
-Download and extract [the portable preview](review/hello-till.zip), then open `Hello-Till.html` in a browser. The file includes its artwork, fonts, player and sound cues. The [phone recording](review/hello-till.mp4) shows a complete playthrough of “Hello, Till!” at normal speed.
+Download and extract [the portable preview](review/hello-till.zip), then open `Hello-Till.html` in a browser. The file includes its artwork, fonts, player and sound cues. The [phone recording](review/hello-till.mp4) shows a complete playthrough of “Hello, Till!” at normal speed. [Opening and discovery stills](review/till-desk-polish/README.md) show the desk contact, upward gaze, and post-reply costume.
 
 For the React version, run the following on this branch.
 
@@ -99,7 +99,7 @@ Choose **Start introduction**, answer Till, and watch the stack on his right. Us
 ### Artwork, sound and motion
 
 - All five scenes use the same elevated three-quarter composition from the [perspective proof](review/till-perspective/README.md). The room plate, ten Till poses, clipboard, closed carton, open carton, and loose peanut are based on that proof and the original design references. The browser uses local WebP assets in `public/till-preview/art`.
-- Till’s cutouts share one registration point on the tiled floor. A contact shadow sits beneath his boots, and a separate desk edge provides foreground occlusion. The camera gently reframes the locked view. The clipboard flies on the reply, while the stacked cartons stay closed until the fall. Eight independently timed peanuts spill out and settle.
+- Till writes with the clipboard resting across the near desk corner, then lifts his face to the overhead viewer. The poses share a floor anchor and projected height. Separate layers place his hands and clipboard over the worktop and the boot shadows on the tiles. After the reply, his glasses sit crooked, his red polo is dusty, and the loose black pen stays in his hair alongside his usual pocket pens. The taped cartons stay closed until the fall.
 - The sequence, captions and beat lengths live in `src/till-preview/story.js`. A texture mesh moves Till’s head, writing hand and waving arm. Pose exchanges register his eyes and name badge. Reduced motion holds the camera steady and shows settled props. Browsers without WebGL use a 2D pose transition with the same eye anchors. The introductory shot uses layered artwork, so camera travel and articulation are limited.
 - There are no recorded lines or finished effects in the package. The player synthesizes a short notification and carton impact after a user gesture. Overhead replies use the chosen words, lighting and recoil. The review video is silent. The interactive player has the sound controls.
 - To add recordings, place local clips in `public/till-preview/audio/` and map their paths (relative to the Vite app base) in `src/till-preview/audio.js`. Supply pre-mixed overhead recordings for `echo_hello` and `echo_watching`, and Till’s reactions for `answer_hello` and `answer_watching`. Other spoken lines use their beat IDs. Use `notification` and `crash` for replacement effects. Adjust beat lengths to the final performances.

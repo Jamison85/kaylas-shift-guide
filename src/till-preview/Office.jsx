@@ -13,9 +13,9 @@ const after = id => beats.findIndex(beat => beat.id === id);
 const scatterAt = after("fall");
 const dropAt = after("echo");
 const descriptions = {
-  working: "Till writes on his clipboard beside the desk in the miniature office.",
-  notices: "Till stands in the tiled aisle and tips his face up to meet your gaze.",
-  shock: "Till recoils and sends his clipboard flying.",
+  working: "Till leans over the desk and writes on the clipboard resting on the worktop.",
+  notices: "Till keeps his feet next to the desk and lifts his chin to look up at you.",
+  shock: "Till recoils. His glasses slip, a pen catches in his hair, and his clipboard flies.",
   uneasy: "Till glances nervously down at his messy desk.",
   badge: "Till gets his bearings and points to his name badge.",
   explain: "Till looks up at you and gestures across his little office.",
@@ -23,6 +23,7 @@ const descriptions = {
   dodge: "Till ducks as the cartons topple and packing peanuts scatter across the tiled floor.",
   recovery: "Till brushes off the front of his polo and looks up sheepishly.",
   wave: "Till waves up at you.",
+  cleanWave: "Till waves up at you.",
 };
 export default function Office({ story, images, reduced, destination }) {
   const { beat, index, response, paused } = story;
@@ -62,12 +63,14 @@ export default function Office({ story, images, reduced, destination }) {
     return () => { resize.disconnect(); animation.cancel(); flight.current = null; };
   }, [revealing, destination, reduced, beat.ms]);
   useLayoutEffect(() => { if (flight.current) paused ? flight.current.pause() : flight.current.play(); }, [paused, revealing, destination]);
-  const performanceBeat = beat.id === "answer" && response === "watching" ? { ...beat, pose: "uneasy" } : beat;
+  let performanceBeat = beat;
+  if (beat.id === "answer" && response === "watching") performanceBeat = { ...beat, pose: "uneasy" };
+  if (beat.id === "home" && !response) performanceBeat = { ...beat, pose: "cleanWave" };
   const fallen = index >= scatterAt && beat.id !== "home";
   const dropped = index >= dropAt && beat.id !== "home";
   const roomPaint = { backgroundImage: `url("${office}")` };
   return <div className="fc-office" ref={stage} role="img" aria-label={descriptions[performanceBeat.pose]}
-    data-beat={beat.id} data-branch={response} data-fallen={fallen} data-act={beat.act} data-paused={paused}>
+    data-beat={beat.id} data-pose={performanceBeat.pose} data-branch={response} data-fallen={fallen} data-act={beat.act} data-paused={paused}>
     <div className="fc-camera"><div className="fc-world">
       <div className="fc-scenery" style={roomPaint}>
         <div className="fc-lamp" />

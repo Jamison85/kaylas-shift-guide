@@ -29,8 +29,11 @@ for (const branch of Object.keys(responses)) {
     const actor = page.locator(".fc-actor");
     const floorRegistration = () => actor.evaluate(el => [el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight]);
     const planted = await floorRegistration();
+    await expect(page.getByRole("img", { name: /clipboard resting on the worktop/ })).toBeVisible();
     await expect(page.locator(".fc-clipboard")).toHaveCount(0);
     await advance(page,0,at("choice"));
+    await expect(actor).toHaveAttribute("data-pose","notices");
+    expect(await floorRegistration()).toEqual(planted);
     await page.clock.fastForward(120000);
     await expect(page.getByRole("button",{name:responses.hello,exact:true})).toBeFocused();
     await page.getByRole("button",{name:responses[branch],exact:true}).click();
@@ -74,6 +77,8 @@ for (const phase of ["ready","odd","choice","echo","helper","fall","dust","revea
     await page.getByRole("button",{name:"Skip",exact:true}).click();
     await page.clock.fastForward(120000);
     await expect(screen(page)).toHaveAttribute("data-screen","home");
+    await expect(page.locator(".fc-home-anchor .fc-actor")).toHaveAttribute("data-pose",
+      ["ready","odd","choice"].includes(phase) ? "cleanWave" : "wave");
     await expect(page.getByRole("button",{name:"Replay introduction"})).toBeVisible();
   });
 }

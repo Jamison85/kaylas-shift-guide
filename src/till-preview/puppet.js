@@ -17,16 +17,16 @@ void main() {
   float neck = weight(head, vec2(.31,.24));
   p.x += neck * (.0035 * sin(time * 1.34) + .018 * glance);
   p.y += neck * (.003 * breath + .028 * glance);
-  float wrist = weight(vec2(.49,.55),vec2(.13,.09)) * writing;
+  float wrist = weight(vec2(.254,.515),vec2(.10,.09)) * writing;
   p += wrist * vec2(.009 * sin(time*6.), .0045 * sin(time*12.));
   // A cue leads with the gaze. The shoulder and badge hand follow it.
   p.y -= gesture * .009 * neck;
   p.x += gesture * .006 * weight(vec2(.43,.46),vec2(.23,.16));
   p.y -= gesture * .014 * weight(vec2(.28,.58),vec2(.17,.12));
   // The raised forearm in the farewell frames pivots around the left elbow.
-  vec2 elbow = vec2(.34,.46);
+  vec2 elbow = vec2(.432,.46);
   vec2 arm = p - elbow;
-  float swing = wave * (1.-smoothstep(.25,.43,p.x)) * (.24 * sin(time*9.) - .05);
+  float swing = wave * (1.-smoothstep(.36,.50,p.x)) * (.24 * sin(time*9.) - .05);
   p += mat2(cos(swing)-1., sin(swing), -sin(swing), cos(swing)-1.) * arm;
   gl_Position = vec4(p.x*2.-1., 1.-p.y*2., 0., 1.);
 }`;
@@ -57,19 +57,20 @@ void main() {
   gl_FragColor = mix(oldColor,newColor,exchange);
 }`;
 
-// Centers and eye-line vectors in the aligned 420×640 cutouts.
+// Pupil centers and eye-lines in the aligned 560×640 cutouts.
 const eyes = {
-  working: [.54,.294,.094,.013], notices: [.522,.236,.103,.025],
-  shock: [.456,.239,.100,-.012], uneasy: [.565,.271,.095,.020],
-  badge: [.523,.264,.102,.026], explain: [.510,.261,.097,.022],
-  anticipation: [.463,.277,.087,-.018], dodge: [.294,.280,.083,-.018],
-  recovery: [.475,.260,.107,-.022], wave: [.467,.244,.102,-.010],
+  working: [.547,.286,.065,.020], notices: [.626,.228,.065,.022],
+  shock: [.533,.245,.063,-.020], uneasy: [.616,.271,.070,.015],
+  badge: [.601,.245,.070,.022], explain: [.599,.247,.072,.017],
+  anticipation: [.525,.269,.067,-.019], dodge: [.421,.286,.066,-.017],
+  recovery: [.561,.252,.077,-.019], wave: [.550,.232,.075,-.015],
+  cleanWave: [.554,.244,.077,-.010],
 };
 
 const badges = {
-  working:[.411,.444], notices:[.413,.459], shock:[.450,.474], uneasy:[.389,.453],
-  badge:[.428,.468], explain:[.430,.470], anticipation:[.410,.453],
-  dodge:[.307,.464], recovery:[.424,.429], wave:[.437,.436],
+  working:[.509,.416], notices:[.500,.416], shock:[.527,.476], uneasy:[.512,.453],
+  badge:[.533,.465], explain:[.533,.468], anticipation:[.499,.456],
+  dodge:[.436,.462], recovery:[.525,.432], wave:[.534,.441], cleanWave:[.531,.436],
 };
 const exchangeTime = pose => pose === "shock" || pose === "dodge" ? .23 : .36;
 

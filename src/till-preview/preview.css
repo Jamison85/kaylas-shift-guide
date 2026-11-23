@@ -28,10 +28,10 @@
 .fc-scenery { position:absolute; inset:0; z-index:1; background-size:100% 100%; }
 .fc-world { width:100%; height:auto; aspect-ratio:4/5; top:50%; bottom:auto; transform:translateY(-50%); }
 .fc-player { z-index:3; }
-/* The 420×640 frames register to one pair of footprints in the tiled aisle. */
-.fc-actor { position:absolute; width:25.6%; aspect-ratio:420/640; left:34.2%; bottom:30%; transform-origin:50% 96%; }
+/* Wide artwork frames leave room for Till’s reach over the worktop at the same visible scale. */
+.fc-actor { position:absolute; width:34.1333%; aspect-ratio:560/640; left:22.35%; bottom:30%; transform-origin:57.85% 96%; }
 .fc-paint,.fc-paint canvas { display:block; width:100%; height:100%; }
-.fc-paint { background:center/100% 100% no-repeat; transform-origin:50% 96%; }
+.fc-paint { background:center/100% 100% no-repeat; transform-origin:57.85% 96%; }
 .fc-paint canvas { visibility:hidden; }
 .fc-paint[data-painted=true] { background-image:none !important; }
 .fc-paint[data-painted=true] canvas { visibility:visible; }
@@ -40,13 +40,19 @@
   position:absolute; inset:0; z-index:4; background-size:100% 100%; pointer-events:none;
   clip-path:polygon(0 44.9%,9.5% 44.8%,13% 46.2%,39% 57.15%,39% 58.1%,37.4% 59.4%,37.4% 67.4%,36% 68%,34.6% 67.4%,34.6% 61.6%,26.3% 68.2%,26.3% 76.1%,24.8% 77%,23.3% 76%,22.5% 68.3%,2% 58.25%,0 57.8%);
 }
-.fc-foot-shadow {
-  position:absolute; z-index:2; left:40.8%; top:66.5%; width:14%; height:4.3%; pointer-events:none; mix-blend-mode:multiply;
-  background:radial-gradient(ellipse at 23% 48%,#191619aa,transparent 23%),
-    radial-gradient(ellipse at 56% 53%,#191619aa,transparent 24%),
-    radial-gradient(ellipse at 55% 70%,#27232755,transparent 67%);
-  transform:rotate(11deg);
+/* The standing figure stays outside the desk. Only his work and forearms cross above it. */
+.fc-office[data-pose=working] .fc-player { z-index:5; }
+.fc-office[data-pose=working] .fc-player::before {
+  content:""; position:absolute; left:26.5%; top:54.1%; width:11.4%; height:2.9%; pointer-events:none;
+  background:radial-gradient(ellipse,#21150e63,transparent 74%); transform:rotate(22deg); mix-blend-mode:multiply;
 }
+.fc-foot-shadow {
+  position:absolute; z-index:2; left:35.5%; top:65.75%; width:15.2%; height:4.6%; pointer-events:none; mix-blend-mode:multiply;
+  background:radial-gradient(ellipse 12% 17% at 23% 44%,#171417ce,transparent),
+    radial-gradient(ellipse 13% 18% at 61% 66%,#171417ce,transparent),
+    radial-gradient(ellipse 43% 35% at 57% 62%,#27232763,transparent);
+}
+.fc-office[data-pose=dodge] .fc-foot-shadow { transform:scaleX(1.18); }
 .fc-lamp { opacity:0; background:radial-gradient(ellipse at 11% 45%,#ffdd9a98,transparent 28%); }
 .fc-office[data-beat=signal] .fc-lamp { animation:fc-light .65s both; }
 .fc-office[data-beat=signal] .fc-world { animation:fc-rattle .55s .12s; }
@@ -85,8 +91,8 @@
 .fc-peanut { width:2.15%; left:77%; top:60.7%; opacity:0; filter:drop-shadow(1px 1px 1px #21191666); }
 .fc-office[data-fallen=true] .fc-peanut { animation:fc-spill .92s var(--delay) both; }
 .fc-clipboard {
-  position:absolute; z-index:2; left:48.2%; top:52.7%; width:7.15%;
-  transform:translate(-176%,233%) rotate(18deg) scaleY(.65);
+  position:absolute; z-index:2; left:36.1%; top:52.7%; width:7.15%;
+  transform:translate(170%,273%) rotate(18deg) scaleY(.65);
   filter:drop-shadow(1px 2px 1px #20191366); animation:fc-clipboard .97s both;
 }
 .fc-script { min-width:0; background:var(--panel); display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:clamp(25px,3.6vw,64px); }
@@ -126,7 +132,7 @@
 }
 .fc[data-screen=echo] .fc-caption p { font-size:clamp(2.15rem,3.5vw,3.7rem); font-weight:700; }
 @keyframes fc-home-in { from { opacity:0; } }
-.fc-home-anchor { position:absolute; right:9px; bottom:8px; width:24%; max-width:102px; aspect-ratio:420/640; }
+.fc-home-anchor { position:absolute; right:9px; bottom:8px; width:32%; max-width:136px; aspect-ratio:560/640; }
 .fc-office[data-beat=reveal] :is(.fc-actor,.fc-camera) { transition:none; }
 @property --fc-room-radius { syntax:"<percentage>"; inherits:false; initial-value:145%; }
 .fc-office[data-beat=reveal] .fc-scenery {
@@ -177,8 +183,8 @@
   from { opacity:0; transform:translate(0,0) rotate(-10deg); }
   14% { opacity:1; }
   28% { transform:translate(-25%,-67%) rotate(-92deg); animation-timing-function:ease-in; }
-  76% { transform:translate(-163%,237%) rotate(-12deg) scaleY(.7); }
-  90% { transform:translate(-174%,227%) rotate(15deg) scaleY(.73); }
+  76% { transform:translate(165%,278%) rotate(-12deg) scaleY(.7); }
+  90% { transform:translate(171%,264%) rotate(15deg) scaleY(.73); }
 }
 @media (max-width:740px) and (orientation:portrait) {
   .fc-shell { max-width:580px; padding:0; }

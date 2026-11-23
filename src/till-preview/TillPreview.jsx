@@ -97,7 +97,7 @@ export default function TillPreview() {
             <div className="fc-label">{beat.id === "echo" ? "You · From above" : line ? "Till" : "Till’s office"}</div>
             <div className="fc-caption" aria-live="polite" aria-atomic="true">
               <p key={line} className={line ? "" : "fc-sound-caption"}>{line || ({
-                routine: "Pencil scratches on a clipboard.", signal: "A chime. The desk trembles.", fall: "The boxes tip…",
+                routine: "Till writes on his clipboard.", signal: "A chime. The desk trembles.", fall: "The boxes tip…",
                 impact: "A crash. Packing peanuts everywhere.", wave: "Till waves up at you.", reveal: "Back to the opening guide.",
               }[beat.id])}</p>
             </div>
