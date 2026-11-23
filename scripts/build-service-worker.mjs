@@ -16,6 +16,8 @@ async function listFiles(directory) {
 }
 
 const files = (await listFiles(outputDirectory))
+  // Experimental preview files are downloaded only when the preview is opened.
+  .filter((file) => relative(outputDirectory, file).split(sep)[0] !== "till-preview")
   .filter((file) => !file.endsWith(`${sep}sw.js`))
   .sort();
 

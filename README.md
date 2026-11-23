@@ -78,3 +78,29 @@ The installed app opens in its own window. Names, daily progress, and saved cont
 ## Browser regression tests
 
 Run `npx playwright install chromium` once, then `npm test`. The tests build and serve the production app locally and use isolated browser storage. Set `CHROMIUM_EXECUTABLE_PATH` to use an existing Chromium installation.
+
+## Till’s First Connection preview
+
+**Hello? Is Somebody Up There?** is a standalone interactive short on the `till-first-connection-assets` branch. The timed sequence runs for about 55 seconds. Discovery waits for your reply.
+
+Download and extract [the portable preview](review/hello-till.zip), then open `Hello-Till.html` in a browser. The file includes its artwork, fonts, player and sound cues. The [phone recording](review/hello-till.mp4) shows a complete playthrough of “Hello, Till!” at normal speed.
+
+For the React version, run the following on this branch.
+
+```sh
+npm ci
+npm run dev -- --host 0.0.0.0
+```
+
+Open `http://localhost:5173/kaylas-shift-guide/?till-preview=1`. On a phone on the same Wi-Fi, use the computer’s LAN IP in place of `localhost`.
+
+Choose **Start introduction**, answer Till, and watch the stack on his right. Use **Replay** to try “I've been watching you.” **Pause** holds a beat for inspection. **Skip** goes directly to a read-only Home preview using the sample name “Opener.” The normal app URL retains the install invitation, setup and saved shift workflow.
+
+### Artwork, sound and motion
+
+- The approved PNGs in the original ZIP supply the office, seven Till poses, four boxes and a loose peanut sampled for eight independently timed pieces. The browser uses local WebP derivatives in `public/till-preview/art`.
+- The sequence, captions and beat lengths live in `src/till-preview/story.js`. A texture mesh moves Till’s head, writing hand and waving arm. Pose exchanges align the eyes, and the desk edge masks his lower body. Reduced motion uses stable compositions and a settled stack. Browsers without WebGL use the approved still poses with CSS movement.
+- The office is a single painting. The camera can pan and scale within it. The gesture range, facial expressions and wave are limited by the supplied poses. The falling clipboard and papers are baked into the shock illustration.
+- There are no recorded lines or finished effects in the package. The player synthesizes a short notification and carton impact after a user gesture. Overhead replies use the chosen words, lighting and recoil. The review video is silent. The interactive player has the sound controls.
+- To add recordings, place local clips in `public/till-preview/audio/` and map their paths (relative to the Vite app base) in `src/till-preview/audio.js`. Supply pre-mixed overhead recordings for `echo_hello` and `echo_watching`, and Till’s reactions for `answer_hello` and `answer_watching`. Other spoken lines use their beat IDs. Use `notification` and `crash` for replacement effects. Adjust beat lengths to the final performances.
+- The Home landing is a static capture of the existing Home markup with the app’s own stylesheet. Preview playback operates in memory. The normal service worker excludes the experimental bundle and artwork.
