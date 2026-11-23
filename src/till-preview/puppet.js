@@ -3,7 +3,7 @@
 const vertex = `
 attribute vec2 point;
 varying vec2 uv;
-uniform float time, writing, wave, glance;
+uniform float time, writing, wave, glance, gesture;
 uniform vec2 head;
 float weight(vec2 center, vec2 radius) {
   vec2 d = (point - center) / radius;
@@ -19,6 +19,10 @@ void main() {
   p.y += neck * (.003 * breath + .028 * glance);
   float wrist = weight(vec2(.53,.83),vec2(.16,.13)) * writing;
   p += wrist * vec2(.009 * sin(time*6.), .0045 * sin(time*12.));
+  // A cue leads with the gaze. The shoulder and badge hand follow it.
+  p.y -= gesture * .009 * neck;
+  p.x += gesture * .006 * weight(vec2(.43,.46),vec2(.23,.16));
+  p.y -= gesture * .014 * weight(vec2(.28,.58),vec2(.17,.12));
   // The raised forearm in 05_explaining pivots around its own elbow.
   vec2 elbow = vec2(.653,.54);
   vec2 arm = p - elbow;
@@ -30,22 +34,26 @@ const fragment = `precision mediump float;
 varying vec2 uv;
 uniform sampler2D portrait, outgoing;
 uniform vec4 oldEyes, newEyes;
+uniform vec2 oldBadge, newBadge;
 uniform float progress;
 // Match eye centers, eye-line angle and scale during the short pose exchange.
 // Farther down the body, hand the motion off to the torso and prop silhouettes.
-vec2 registerFace(vec2 point, vec4 target, vec4 source) {
+vec2 registerPose(vec2 point, vec4 target, vec4 source, vec2 chest, vec2 sourceChest) {
   vec2 rel = point-target.xy;
   vec2 a = target.zw, b = source.zw;
   vec2 rotation = vec2(dot(a,b), a.x*b.y-a.y*b.x)/dot(a,a);
   vec2 aligned = source.xy + mat2(rotation.x,rotation.y,-rotation.y,rotation.x)*rel;
-  return mix(aligned, point, smoothstep(.17,.62,length(rel)));
+  vec2 d = (point-chest)/vec2(.39,.30);
+  vec2 torso = point + (sourceChest-chest)*exp(-dot(d,d));
+  return mix(aligned, torso, smoothstep(.15,.45,length(rel)));
 }
 void main() {
   if (progress >= 1.) { gl_FragColor = texture2D(portrait,uv); return; }
   vec4 eyes = mix(oldEyes,newEyes,progress);
-  vec4 oldColor = texture2D(outgoing, registerFace(uv,eyes,oldEyes));
-  vec4 newColor = texture2D(portrait, registerFace(uv,eyes,newEyes));
-  float exchange = smoothstep(.22,.78,progress + (uv.y-.5)*.22);
+  vec2 chest = mix(oldBadge,newBadge,progress);
+  vec4 oldColor = texture2D(outgoing, registerPose(uv,eyes,oldEyes,chest,oldBadge));
+  vec4 newColor = texture2D(portrait, registerPose(uv,eyes,newEyes,chest,newBadge));
+  float exchange = smoothstep(.22,.78,progress + (uv.y-.5)*.34);
   gl_FragColor = mix(oldColor,newColor,exchange);
 }`;
 
@@ -57,9 +65,57 @@ const eyes = {
   recovery: [.405,.267,.092,-.037],
 };
 
+const badges = {
+  working:[.39,.67], notices:[.37,.67], shock:[.39,.53], badge:[.41,.50],
+  explain:[.41,.615], dodge:[.40,.595], recovery:[.41,.59],
+};
+const exchangeTime = pose => pose === "shock" || pose === "dodge" ? .23 : .36;
+
+function sizeSurface(canvas,image) {
+  const width = Math.max(1,Math.min(image.naturalWidth,Math.ceil(canvas.clientWidth * devicePixelRatio * 1.25)));
+  const height = Math.max(1,Math.round(width * image.naturalHeight/image.naturalWidth));
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+}
+
+// Local-file viewers can disable WebGL. Register both paintings to the same
+// eyes on one 2D surface during the pose exchange in those browsers.
+function planarRenderer(canvas) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  let current, previous, started;
+  return {
+    draw(image,pose,beat,nervous,time) {
+      if (pose !== current?.pose) {
+        previous = current;
+        current = { image,pose };
+        started = time;
+      }
+      sizeSurface(canvas,image);
+      const t = previous && beat !== "home" ? Math.min(1,(time-started)/exchangeTime(pose)) : 1;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+      if (t >= 1) { ctx.drawImage(image,0,0,w,h); return; }
+      const a = eyes[previous.pose], b = eyes[pose];
+      const x = a[0]+(b[0]-a[0])*t, y = a[1]+(b[1]-a[1])*t;
+      const blend = t*t*(3-2*t);
+      for (const [layer,eye,alpha] of [[previous,a,1-blend],[current,b,blend]]) {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(layer.image,(x-eye[0])*w,(y-eye[1])*h,w,h);
+        ctx.restore();
+      }
+    },
+    dispose() {},
+  };
+}
+
 export function renderer(canvas) {
   const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: true, depth: false, antialias: true });
-  if (!gl) return null;
+  if (!gl) return planarRenderer(canvas);
   const program = gl.createProgram();
   for (const [type, code] of [[gl.VERTEX_SHADER, vertex], [gl.FRAGMENT_SHADER, fragment]]) {
     const shader = gl.createShader(type);
@@ -82,7 +138,7 @@ export function renderer(canvas) {
   const point = gl.getAttribLocation(program, "point");
   gl.enableVertexAttribArray(point);
   gl.vertexAttribPointer(point, 2, gl.FLOAT, false, 0, 0);
-  const uniforms = Object.fromEntries(["time","writing","wave","glance","head","progress","newEyes","oldEyes"].map(k => [k, gl.getUniformLocation(program,k)]));
+  const uniforms = Object.fromEntries(["time","writing","wave","glance","head","progress","newEyes","oldEyes","newBadge","oldBadge","gesture"].map(k => [k, gl.getUniformLocation(program,k)]));
   const textures = [0,1].map(unit => {
     const texture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0 + unit);
@@ -97,8 +153,12 @@ export function renderer(canvas) {
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
   let activePose, started = -1, unit = 0;
   return {
-    draw(image, pose, beat, nervous, time) {
+    draw(image, pose, beat, nervous, time, age) {
+      sizeSurface(canvas,image);
+      gl.viewport(0,0,canvas.width,canvas.height);
       if (activePose !== pose) {
+        gl.uniform2fv(uniforms.oldBadge, badges[activePose || pose]);
+        gl.uniform2fv(uniforms.newBadge, badges[pose]);
         gl.uniform4fv(uniforms.oldEyes, eyes[activePose || pose]);
         gl.uniform4fv(uniforms.newEyes, eyes[pose]);
         started = activePose ? time : -1;
@@ -107,16 +167,15 @@ export function renderer(canvas) {
         gl.activeTexture(gl.TEXTURE0 + unit);
         gl.uniform1i(portrait,unit);
         gl.uniform1i(outgoing,1-unit);
-        const width = Math.min(image.naturalWidth, Math.ceil(canvas.clientWidth * window.devicePixelRatio * 1.2));
-        canvas.width = Math.max(1,width);
-        canvas.height = Math.round(canvas.width * image.naturalHeight/image.naturalWidth);
-        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       }
-      gl.uniform1f(uniforms.progress, Math.min(1,(time-started)/.20));
+      gl.uniform1f(uniforms.progress, beat === "home" ? 1 : Math.min(1,(time-started)/exchangeTime(pose)));
       gl.uniform1f(uniforms.time, time);
-      gl.uniform1f(uniforms.writing, pose === "working" ? 1 : 0);
-      gl.uniform1f(uniforms.wave, beat === "wave" || beat === "reveal" ? 1 : 0);
+      gl.uniform1f(uniforms.writing, ["ready","routine"].includes(beat) ? 1 : 0);
+      gl.uniform1f(uniforms.wave, beat === "wave" ? Math.sin(Math.PI*Math.min(1,age/1.45)) : 0);
+      const gesturing = ["lookup","badge","helper","rent","dust"].includes(beat);
+      const impulse = Math.sin(Math.PI*Math.min(1,age/1.05));
+      gl.uniform1f(uniforms.gesture, gesturing ? impulse : 0);
       gl.uniform1f(uniforms.glance, nervous ? .65 + .35*Math.sin(time*2.1) : 0);
       gl.uniform2f(uniforms.head, pose === "working" ? .54 : .38, .22);
       gl.clear(gl.COLOR_BUFFER_BIT);

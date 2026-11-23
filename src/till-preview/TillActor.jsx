@@ -12,12 +12,13 @@ export default function TillActor({ beat, response, images, paused, reduced }) {
     const surface = canvas.current;
     const mesh = renderer(surface);
     if (!mesh) return;
-    let frame, last = 0, elapsed = 0, previousBeat;
+    let frame, last = 0, elapsed = 0, cueStart = 0, previousBeat;
     function draw(now) {
       const { beat: active, response: answer, paused: stopped } = current.current;
       if ((!stopped && !document.hidden && now-last >= 32) || previousBeat !== active.id) {
         if (last && !stopped) elapsed += Math.min(now - last, 60) / 1000;
-        mesh.draw(images[active.pose], active.pose, active.id, active.id === "answer" && answer === "watching", elapsed);
+        if (previousBeat !== active.id) cueStart = elapsed;
+        mesh.draw(images[active.pose], active.pose, active.id, active.id === "answer" && answer === "watching", elapsed, elapsed - cueStart);
         surface.parentElement.dataset.painted = "true";
         previousBeat = active.id;
         last = now;

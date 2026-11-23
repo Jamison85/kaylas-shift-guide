@@ -29,6 +29,9 @@ export default function TillPreview() {
   const [reduced, setReduced] = useState(() => matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [anchor, setAnchor] = useState(null);
   const snapshot = useRef(null);
+  const stageSlot = useRef(null);
+  // Move one host between the stage and Home. The same canvas and puppet survive the landing.
+  const [officeHost] = useState(() => document.createElement("div"));
   const firstResponse = useRef(null);
   const replay = useRef(null);
   const isReady = beat === ready;
@@ -49,6 +52,11 @@ export default function TillPreview() {
     if (landing) setAnchor(snapshot.current.querySelector(".fc-home-anchor"));
     else setAnchor(null);
   }, [landing]);
+  useLayoutEffect(() => {
+    const parent = finished || (reduced && landing && anchor) ? anchor : stageSlot.current;
+    if (parent && parent !== officeHost.parentNode) parent.appendChild(officeHost);
+  }, [finished, reduced, landing, anchor, officeHost]);
+  useLayoutEffect(() => () => officeHost.remove(), [officeHost]);
   useEffect(() => {
     if (beat.id === "choice") firstResponse.current?.focus({preventScroll:true});
     if (finished) replay.current?.focus({preventScroll:true});
@@ -56,7 +64,7 @@ export default function TillPreview() {
   const line = caption(beat, story.response);
   const playing = !isReady && !finished;
   const start = () => { window.scrollTo(0,0); act("start"); };
-  const office = <Office key={story.take} story={story} reduced={reduced || finished} images={images} destination={anchor}/>;
+  const office = <Office key={story.take} story={story} reduced={reduced} images={images} destination={anchor}/>;
   return <div className="fc" data-screen={beat.id} data-paused={story.paused}>
     {landing && <section className="fc-landing" aria-label="Home preview">
       <div ref={snapshot} inert="" aria-hidden="true" dangerouslySetInnerHTML={homeSnapshot} />
@@ -70,12 +78,12 @@ export default function TillPreview() {
       <header className="fc-header">
         <div className="fc-brand"><i aria-hidden="true"/><span>Before the Rush<small>Store 2593</small></span></div>
         <div className="fc-controls">
-          <button aria-pressed={muted} aria-label={muted ? "Unmute sound" : "Mute sound"} onClick={toggleMute}><Icon name={muted ? "mute" : "sound"}/><span>Sound {muted ? "off" : "on"}</span></button>
+          <button title="Prototype sound effects. Dialogue is captioned." aria-description="Controls the notification and crash effects. Dialogue is captioned." aria-pressed={muted} aria-label={muted ? "Unmute sound" : "Mute sound"} onClick={toggleMute}><Icon name={muted ? "mute" : "sound"}/><span>Sound {muted ? "off" : "on"}</span></button>
           <button onClick={() => act("skip")}>Skip<Icon name="skip"/></button>
         </div>
       </header>
       <main className="fc-feature">
-        <div className="fc-stage-slot">{office}</div>
+        <div className="fc-stage-slot" ref={stageSlot}/>
         <section className="fc-script" aria-label={isReady ? "Introduction" : "Dialogue"}>
           {isReady ? <>
             <small className="fc-label">Till’s first connection</small>
@@ -107,6 +115,6 @@ export default function TillPreview() {
         </div>}
       </footer>
     </div>}
-    {finished && anchor && createPortal(office,anchor)}
+    {createPortal(office,officeHost)}
   </div>;
 }

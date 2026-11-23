@@ -33,7 +33,10 @@ for (const branch of Object.keys(responses)) {
     await expect(page.locator(".fc-caption")).toHaveText(responses[branch]);
     await advance(page,at("echo"),at("answer"));
     await expect(page.locator(".fc-caption")).toContainText(branch === "hello" ? "GOOD GRAVY!" : "deeply unsettling");
-    await advance(page,at("answer"),at("fall"));
+    await advance(page,at("answer"),at("lean"));
+    await expect(page.locator(".fc-box .fc-closed")).toHaveCount(4);
+    await expect(page.locator(".fc-turning,.fc-peanut")).toHaveCount(0);
+    await advance(page,at("lean"),at("fall"));
     await expect(page.locator(".fc-box")).toHaveCount(4);
     await expect(page.locator(".fc-peanut")).toHaveCount(8);
     expect(await page.locator(".fc-player").evaluate(el =>
@@ -45,6 +48,7 @@ for (const branch of Object.keys(responses)) {
     await expect(page.getByRole("button",{name:"Replay introduction"})).toBeFocused();
     await page.getByRole("button",{name:"Replay introduction"}).click();
     await expect(page.getByRole("button",{name:"Unmute sound",exact:true})).toHaveAttribute("aria-pressed","true");
+    await expect(page.locator(".fc-peanut,.fc-turning")).toHaveCount(0);
     await advance(page,0,at("choice"));
     await expect(page.getByRole("button",{name:responses.watching,exact:true})).toBeVisible();
     expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);
@@ -96,6 +100,12 @@ for (const [width,height,scale] of [[360,800,1],[390,844,2],[412,915,1],[844,390
     await expect(page.locator(".fc-actor")).toHaveCount(1);
     const stage=await page.locator(".fc-office").boundingBox();
     const caption=await page.locator(".fc-caption").boundingBox();
+    if (width < height && scale === 1) {
+      expect(stage.width).toBe(width);
+      expect(stage.height).toBeGreaterThan(height * .46);
+      expect((await page.locator(".fc-choices").boundingBox()).y).toBeGreaterThan(stage.y+stage.height);
+      expect((await page.locator(".fc-transport").boundingBox()).y+44).toBeLessThanOrEqual(height);
+    }
     expect(stage.y+stage.height <= caption.y+1 || stage.x+stage.width <= caption.x+1).toBe(true);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     for (const button of await page.locator(".fc-choices button").all()) expect((await button.boundingBox()).height).toBeGreaterThanOrEqual(44);
@@ -134,7 +144,14 @@ test("full motion paints one Till, scatters each prop and reframes the office in
   await page.emulateMedia({reducedMotion:"no-preference"});
   await open(page);
   await page.getByRole("button",{name:"Start introduction"}).click();
-  await advance(page,0,at("fall"));
+  await expect(page.locator(".fc-peanut,.fc-turning")).toHaveCount(0);
+  await advance(page,0,at("lean"));
+  await expect(page.locator(".fc-peanut,.fc-turning")).toHaveCount(0);
+  expect(await page.locator(".fc-box").first().evaluate(el=>{
+    const wobble = el.getAnimations()[0];
+    return wobble.animationName === "fc-wobble" && wobble.effect.getTiming().delay > 4000;
+  })).toBe(true);
+  await advance(page,at("lean"),at("fall"));
   const layers = await page.locator(".fc-paint").evaluate(el => ({
     bitmap: getComputedStyle(el).backgroundImage !== "none",
     canvas: getComputedStyle(el.querySelector("canvas")).visibility === "visible",
@@ -150,17 +167,48 @@ test("full motion paints one Till, scatters each prop and reframes the office in
     expect(new Set(paths).size).toBe(paths.length);
   }
   await advance(page,at("fall"),at("reveal"));
-  const sizes = await page.locator(".fc-office").evaluate(el => {
+  const actor = await page.locator(".fc-actor").elementHandle();
+  const bounds = await page.locator(".fc-office").evaluate(el => {
     const flight = el.getAnimations()[0];
     flight.pause();
     return [0,650,1700].map(ms => {
       flight.currentTime = ms;
-      return el.getBoundingClientRect().width;
+      return el.querySelector(".fc-actor").getBoundingClientRect().toJSON();
     });
   });
-  expect(sizes[0]).toBeGreaterThan(sizes[1]);
-  expect(sizes[1]).toBeGreaterThan(sizes[2]);
-  expect(sizes[2]).toBeCloseTo((await page.locator(".fc-home-anchor").boundingBox()).width,0);
+  const target = await page.locator(".fc-home-anchor").boundingBox();
+  expect(bounds[0].width).toBeGreaterThan(bounds[1].width);
+  expect(bounds[1].width).toBeGreaterThan(bounds[2].width);
+  expect(Math.abs(bounds[2].width-target.width)).toBeLessThan(1);
+  expect(Math.abs(bounds[2].left-target.x)).toBeLessThan(1);
+  expect(Math.abs(bounds[2].bottom-target.y-target.height)).toBeLessThan(1);
   await page.clock.fastForward(beats[at("reveal")].ms);
+  await expect(screen(page)).toHaveAttribute("data-screen","home");
   await expect(page.locator(".fc-actor")).toHaveCount(1);
+  await expect(page.locator(".fc-scenery")).toBeHidden();
+  expect(await actor.evaluate(el=>document.querySelector(".fc-home-anchor .fc-actor") === el)).toBe(true);
+  const landed = await actor.boundingBox();
+  expect(Math.abs(landed.x-bounds[2].left)).toBeLessThan(1);
+  expect(Math.abs(landed.y-bounds[2].top)).toBeLessThan(1);
+});
+
+test("2D playback retains the nervous reply and replay clears the falling props",async ({page})=>{
+  await page.emulateMedia({reducedMotion:"no-preference"});
+  await page.addInitScript(()=>{
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(type,...options) {
+      return type === "webgl" ? null : getContext.call(this,type,...options);
+    };
+  });
+  await open(page);
+  await page.getByRole("button",{name:"Start introduction"}).click();
+  await advance(page,0,at("answer"),"watching");
+  await expect(page.locator(".fc-caption")).toContainText("deeply unsettling");
+  await expect(page.locator(".fc-paint")).toHaveAttribute("data-painted","true");
+  expect(await page.locator(".fc-paint canvas").evaluate(el=>!!el.getContext("2d"))).toBe(true);
+  await advance(page,at("answer"),at("fall"));
+  await expect(page.locator(".fc-peanut")).toHaveCount(8);
+  await page.getByRole("button",{name:"Replay",exact:true}).click();
+  await expect(screen(page)).toHaveAttribute("data-screen","routine");
+  await expect(page.locator(".fc-turning,.fc-peanut")).toHaveCount(0);
 });
