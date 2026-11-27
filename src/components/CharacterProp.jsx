@@ -21,6 +21,7 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
   const host = useRef(null);
   const timer = useRef(null);
   const played = useRef(false);
+  const ambientTimer = useRef(null);
   const selection = selectClip(pose, moment);
   const [active, setActive] = useState(false);
   const [clip, setClip] = useState("still");
@@ -61,6 +62,16 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
     return () => clearTimeout(timer.current);
   }, [active, selection, motion, unavailable]);
 
+  // Quiet, occasional work gestures, never an endless performance.
+  useEffect(() => {
+    if (!active || unavailable || motion !== "loop" || clip !== "idle" || moment === "explaining") return;
+    const choices = clipboardPoses.has(pose) ? ["clipboard", "nod"] : ["nod", "thumbs"];
+    ambientTimer.current = setTimeout(() => {
+      setClip(choices[Math.floor(Math.random() * choices.length)]);
+    }, 28000 + Math.random() * 32000);
+    return () => clearTimeout(ambientTimer.current);
+  }, [active, unavailable, motion, clip, moment, pose]);
+
   function onLoad() {
     clearTimeout(timer.current);
     if (active && durations[clip]) {
@@ -73,7 +84,7 @@ export default function CharacterProp({ pose = "hold", className = "", motion = 
     <div ref={host}
       className={`character-prop character-prop--runtime ${action ? "character-prop--action" : ""} character-prop--${pose} ${className}`.trim()}
       data-till-runtime="v2" data-till-clip={clip} aria-hidden="true"
-      style={{ aspectRatio: action ? "1" : "3 / 4", overflow: "hidden" }}>
+      style={{ aspectRatio: action ? "1" : "3 / 4", overflow: "hidden", pointerEvents: "none" }}>
       <img key={clip} src={base + clip + ".webp"} alt="" draggable="false" decoding="async"
         onLoad={onLoad} onError={() => { clearTimeout(timer.current); setUnavailable(true); setClip("still"); }}
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom", filter: "none" }} />
