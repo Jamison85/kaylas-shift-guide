@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import poster from "../till/art/poster.webp";
 import TillScenery from "./TillScenery";
 import { directTill } from "../till/director.js";
-import { paintScenery } from "../till/scenery.js";
+import { paintScenery, watchPeepDirection } from "../till/scenery.js";
 import { positionInStage, posterPosition, stageLayout, stages } from "../till/stages.js";
 
 const activityEvents = ["pointerdown", "keydown", "scroll", "focusin"];
@@ -36,6 +36,7 @@ export default function TillStage({
     let request = 0;
     let sending = false;
     const scenery = sceneryRef.current;
+    const stopPeeping = anchor === "home" ? watchPeepDirection(art) : null;
 
     function deliverNote() {
       if (!sending) return;
@@ -121,6 +122,7 @@ export default function TillStage({
       motion.removeEventListener("change", sync);
       director.dispose();
       player.release();
+      stopPeeping?.();
       host.dataset.tillVisible = "false";
     };
   }, [anchor, resident, session, preference, work, taskId, cueKey, cueKind, paused, leaving, stage, onReceiveNote]);

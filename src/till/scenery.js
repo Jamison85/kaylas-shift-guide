@@ -7,60 +7,96 @@ export const tubeNotes = [
   "If it comes back full of glitter, I deny everything.",
 ];
 
-// A cut across the top of the card, seen looking down into Till's room.
-const ceilingSeam = [
-  [227, 543, 0, 0], [276, 532, 25, 30], [325, 534, 54, 70],
-  [380, 528, 86, 101], [443, 540, 138, 117], [515, 532, 126, 143],
-  [577, 525, 124, 151], [634, 543, 115, 117], [698, 532, 88, 97],
-  [742, 548, 52, 56], [773, 548, 0, 0],
+// The opening stays on the glass while the office and visitor move at different depths.
+const rift = [
+  [458, 95], [548, 118], [625, 89], [705, 143], [716, 224], [782, 259],
+  [754, 344], [795, 415], [752, 469], [773, 549], [686, 561], [653, 640],
+  [579, 617], [501, 677], [442, 610], [350, 647], [320, 570], [245, 543],
+  [271, 470], [207, 414], [251, 341], [221, 254], [302, 230], [314, 147], [396, 162],
 ];
+const glassCenter = [505, 380];
 
 export const ladderRungs = [
-  { left: 537, right: 692, y: 628 },
-  { left: 516, right: 671, y: 572 },
-  { left: 485, right: 646, y: 513 },
-  { left: 451, right: 618, y: 451 },
+  { left: 566, right: 661, y: 580 },
+  { left: 567, right: 684, y: 523 },
+  { left: 569, right: 706, y: 454 },
+  { left: 572, right: 732, y: 378 },
 ];
-
-export function ladderPoint(index, side, inset = 11) {
-  const step = ladderRungs[index];
-  return [side === "R" ? step.left + inset : step.right - inset, step.y];
-}
-
-export function hatchHandTarget(side) {
-  return side === "R" ? [381, 625] : [632, 654];
-}
 
 function paintTear(element, stage, tear) {
   const art = element.parentElement;
   if (!tear) {
     delete element.dataset.tillTear;
-    delete art.dataset.tillBehindTear;
-    delete art.dataset.tillThroughTear;
+    delete art.dataset.tillPeeping;
+    art.style.removeProperty("--portrait-opacity");
+    art.style.removeProperty("--peep-cover");
     return;
   }
+
   if (element.dataset.tillTear !== tear.phase) element.dataset.tillTear = tear.phase;
-  art.toggleAttribute("data-till-behind-tear", Boolean(tear.behind));
-  art.toggleAttribute("data-till-through-tear", Boolean(tear.through));
+  art.toggleAttribute("data-till-peeping", Boolean(tear.visitor));
+  art.style.setProperty("--portrait-opacity", tear.portrait ?? 0);
+  art.style.setProperty("--peep-cover", tear.cover?.opacity ?? 0);
+  art.style.setProperty("--peep-cover-shift", `${tear.cover?.x ?? 0}%`);
   const [left, top, width, height] = stage.viewBox;
   const polygon = points => `polygon(${points.map(([x, y]) =>
     `${((x - left) / width * 100).toFixed(2)}% ${((y - top) / height * 100).toFixed(2)}%`).join(", ")})`;
+  const contour = (w, h) => rift.map(([x, y]) => [
+    glassCenter[0] + (x - glassCenter[0]) * w,
+    glassCenter[1] + (y - glassCenter[1]) * h,
+  ]);
   const amount = tear.opening;
-  const far = ceilingSeam.map(([x, y, depth]) => [x, y - depth * amount]);
-  const near = ceilingSeam.map(([x, y, , depth]) => [x, y + depth * amount]);
-  const fold = (path, direction, thickness) => path.map(([x, y], i) => {
-    const taper = Math.sin(i / (path.length - 1) * Math.PI);
-    return [x - direction * (i % 3) * taper * 4, y + direction * (thickness + i % 3 * 8) * taper * amount];
-  });
-  const open = amount < 0.012 ? "inset(50%)" : polygon([...far, ...[...near].reverse()]);
-  art.style.setProperty("--tear-opening", open);
-  art.style.setProperty("--tear-far-lip", polygon([...far, ...fold(far, -1, 25).reverse()]));
-  art.style.setProperty("--tear-near-lip", polygon([...near.slice().reverse(), ...fold(near, 1, 15)]));
-  art.style.setProperty("--tear-foreground", polygon([
-    [left, top], [left + width, top], [left + width, stage.edgeY],
-    ...near.slice().reverse(), [left, stage.edgeY],
-  ]));
+  const heightOpen = amount * (0.24 + 0.76 * amount);
+  art.style.setProperty("--tear-opening", amount < 0.01 ? "inset(50%)" : polygon(contour(amount, heightOpen)));
+  art.style.setProperty("--tear-rim", polygon(contour(amount * 1.055, heightOpen * 1.045)));
   art.style.setProperty("--tear-light", String(Math.min(1, amount * 5)));
+
+  const visitor = tear.visitor;
+  if (!visitor) return;
+  const palms = Math.min(1, visitor.through / 0.4);
+  const shoulders = Math.max(0, (visitor.through - 0.4) / 0.6);
+  const properties = {
+    "--visitor-x": `${(visitor.x - left) / width * 100}%`,
+    "--visitor-y": `${(visitor.y - top) / height * 100}%`,
+    "--visitor-width": `${visitor.width / width * 100}%`,
+    "--visitor-distance": visitor.parallax,
+    "--visitor-roll": `${visitor.roll}deg`,
+    "--visitor-opacity": visitor.opacity,
+    "--visitor-work": 1 - visitor.reach,
+    "--visitor-reach": visitor.reach,
+    "--visitor-cross-x": `${42 * palms + 58 * shoulders}%`,
+    "--visitor-cross-y": `${52 * palms + 48 * shoulders}%`,
+  };
+  for (const [name, value] of Object.entries(properties)) art.style.setProperty(name, value);
+}
+
+export function watchPeepDirection(art) {
+  let reference;
+  let x = 0;
+  let y = 0;
+  const delta = (value, origin) => ((value - origin + 540) % 360) - 180;
+  const limit = value => Math.max(-1, Math.min(1, value));
+
+  function tilt({ beta, gamma }) {
+    if (!art.hasAttribute("data-till-peeping") || !Number.isFinite(beta) || !Number.isFinite(gamma)) return;
+    const rotation = (window.screen.orientation?.angle ?? 0) * Math.PI / 180;
+    if (!reference || reference.rotation !== rotation) reference = { beta, gamma, rotation };
+    const roll = delta(gamma, reference.gamma);
+    const pitch = delta(beta, reference.beta);
+    const horizontal = roll * Math.cos(rotation) + pitch * Math.sin(rotation);
+    const vertical = pitch * Math.cos(rotation) - roll * Math.sin(rotation);
+    x += (limit(horizontal / 20) - x) * 0.27;
+    y += (limit(vertical / 23) - y) * 0.27;
+    art.style.setProperty("--peep-x", x.toFixed(3));
+    art.style.setProperty("--peep-y", y.toFixed(3));
+  }
+
+  window.addEventListener("deviceorientation", tilt, { passive: true });
+  return () => {
+    window.removeEventListener("deviceorientation", tilt);
+    art.style.removeProperty("--peep-x");
+    art.style.removeProperty("--peep-y");
+  };
 }
 
 export function paintScenery(element, stage, scene) {

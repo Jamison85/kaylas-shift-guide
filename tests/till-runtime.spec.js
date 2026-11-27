@@ -32,31 +32,53 @@ test("reduced motion shows the approved still and keeps the launch control usabl
   const home = page.locator(actor("home"));
   await expect(home).toHaveAttribute("data-till-motion", "still");
   await expect(home).toHaveCSS("pointer-events", "none");
-  await expect(home.locator("img")).toBeVisible();
-  await expect.poll(() => home.locator("img").evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(home.locator(".till-stage__poster")).toBeVisible();
+  await expect.poll(() => home.locator(".till-stage__poster").evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await page.locator(".start").click();
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
 
 test("Till greets the opener and performs distinct actions as the shift progresses", async ({ page }) => {
   await enableMotion(page);
+  await page.addInitScript(() => {
+    window.tillEntrancePhases = [];
+    const record = new MutationObserver(entries => {
+      for (const { oldValue, target } of entries) {
+        window.tillEntrancePhases.push(oldValue, target.dataset.tillTear);
+      }
+    });
+    record.observe(document, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ["data-till-tear"] });
+  });
   await openGuide(page);
   const home = page.locator(actor("home"));
   await expect(home).toHaveAttribute("data-till-motion", "climb_through_rip");
   await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "tugging");
-  await expect(home.locator(".till-tear__depth")).toHaveCSS("background-image", /till-ceiling-view-/);
+  const room = home.locator(".till-tear__room");
+  const art = home.locator(".till-stage__art");
+  await expect(room).toHaveCSS("background-image", /peep-office-/);
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "peeking");
+  await expect(home.locator("canvas")).toHaveCSS("opacity", "0");
+  const straightOn = await room.evaluate(node => getComputedStyle(node).transform);
+  await page.evaluate(() => {
+    const tilt = (beta, gamma) => window.dispatchEvent(Object.assign(new Event("deviceorientation"), { beta, gamma }));
+    tilt(26, 2);
+    tilt(37, 16);
+  });
+  await expect(room).not.toHaveCSS("transform", straightOn);
+  const offset = await art.evaluate(node => node.style.getPropertyValue("--peep-x"));
+  expect(Math.abs(Number(offset))).toBeGreaterThan(0.05);
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "ladder");
   await expect(home.locator(".till-ladder__rung")).toHaveCount(4);
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "slipping");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "bracing");
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "climbing");
-  await expect(home.locator(".till-stage__art")).toHaveAttribute("data-till-through-tear", "");
+  expect(await page.evaluate(() => window.tillEntrancePhases)).toContain("slipping");
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "crossing");
+  await expect.poll(() => art.evaluate(node => Number.parseFloat(node.style.getPropertyValue("--visitor-cross-x")))).toBeGreaterThan(40);
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "standing");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "dusting");
   await expect(home.locator("canvas")).toHaveAttribute("data-view", "front");
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
-  await expect(home.locator(".till-stage__art")).not.toHaveAttribute("data-till-behind-tear");
+  await expect(art).not.toHaveAttribute("data-till-peeping");
 
   await page.locator(".start").click();
   const task = page.locator(actor("task"));
@@ -246,7 +268,7 @@ test("WebGL failure leaves the approved still and working guidance", async ({ pa
   await openGuide(page);
   const home = page.locator(actor("home"));
   await expect(home).toHaveAttribute("data-till-visible", "false");
-  await expect(home.locator("img")).toBeVisible();
+  await expect(home.locator(".till-stage__poster")).toBeVisible();
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
   await expect(page.getByRole("dialog")).toContainText("Where");

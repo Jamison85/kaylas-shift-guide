@@ -1,6 +1,6 @@
 import { Motion } from "./rig.js";
 import { deskY } from "./stages.js";
-import { hatchHandTarget, ladderPoint, ladderRungs, noteTube } from "./scenery.js";
+import { noteTube } from "./scenery.js";
 
 const { angle, arm, between, blink, knots, pulse, shift, stance, v } = Motion;
 
@@ -101,23 +101,29 @@ const exitSeconds = 2.1;
 const awaySeconds = 0.85;
 const roundTripSeconds = exitSeconds + awaySeconds + climbSeconds;
 
-function ladderReach(time, side, steps) {
-  const index = knots(time, steps);
-  const lower = Math.floor(index);
-  const lift = index - lower;
-  const next = Math.min(lower + 1, ladderRungs.length - 1);
-  const [x, y] = v(ladderPoint(lower, side), ladderPoint(next, side), lift);
-  return [x, y - 18 * Math.sin(Math.PI * lift)];
+const peepCenter = [505, 365];
+
+function projectVisitor(x, y, depth, roll, reach, through, opacity) {
+  // Depth is measured along the normal to the glass. 0 is the glass plane.
+  const zoom = 620 / (620 + depth);
+  return {
+    x: peepCenter[0] + (x - peepCenter[0]) * zoom,
+    y: peepCenter[1] + (y - peepCenter[1]) * zoom,
+    width: 610 * zoom,
+    parallax: Math.max(0.7, Math.min(8, depth / 180)),
+    roll, reach, through, opacity,
+  };
 }
 
-function risingPose(x, head, scale, lean = 0) {
-  const radians = lean * Math.PI / 180;
-  const chestToHeel = 1004 * scale;
-  return { bones: { root: {
-    scale: [scale, scale],
-    angle: lean,
-    offset: [x - chestToHeel * Math.sin(radians), head - 1434 * (1 - scale) + chestToHeel * (Math.cos(radians) - 1)],
-  } } };
+function risingPose(x, head, scale) {
+  return { bones: { root: { scale: [scale, scale], offset: [x, head - 1434 * (1 - scale)] } } };
+}
+
+function palmPass(time, start, covered, hold, end) {
+  return {
+    opacity: pulse(time, start, covered, hold, end),
+    x: knots(time, [[start, -24], [covered, 0], [hold, 0], [end, 31]]),
+  };
 }
 
 function brushOff(time, pose, x, head, scale, edgeY) {
@@ -147,53 +153,49 @@ function brushOff(time, pose, x, head, scale, edgeY) {
 
 function climbThroughRip(t, { edgeY }) {
   const time = t * climbSeconds;
-  const opening = knots(time, [[0, 0], [0.48, 0.09], [0.75, 0.035], [1.15, 0.36], [1.62, 1],
-    [8.65, 1], [9.16, 0.78], [9.54, 0]]);
-  const head = knots(time, [[0, 670], [0.68, 610], [1.59, 511], [2.20, 507], [2.82, 478], [3.43, 451],
-    [3.84, 431], [4.08, 474], [4.55, 447], [5.16, 391], [5.67, 343], [6.24, 314], [6.71, 335],
-    [7.34, 211], [8.05, 129], [8.65, 86], [9.55, 58], [11.55, 34], [climbSeconds, 0]]);
-  const scale = knots(time, [[0, 0.18], [1.62, 0.20], [3.82, 0.265], [4.08, 0.246], [5.34, 0.363],
-    [6.77, 0.48], [7.67, 0.57], [8.60, 0.72], [9.6, 0.9], [11.48, 0.94], [climbSeconds, 1]]);
-  const x = knots(time, [[0, 80], [1.5, 76], [2.4, 62], [3.25, 48], [3.83, 24],
-    [4.07, 63], [4.63, 30], [5.45, 8], [6.49, -20], [7.19, -33], [8.51, -39], [climbSeconds, 0]]);
-  const slip = pulse(time, 3.86, 4.08, 4.12, 4.50);
-  const effort = pulse(time, 5.48, 5.92, 6.88, 7.38) + pulse(time, 7.49, 7.76, 8.14, 8.73);
-  const weightShift = pulse(time, 6.19, 6.73, 7.15, 8.39);
-  const pose = risingPose(x, head, scale, -10 * weightShift + 4.2 * slip);
-  pose.scenery = { tear: {
-    opening,
-    behind: time < 5.04,
-    through: time >= 5.04 && time < 9.12,
-    phase: time < 0.92 ? "opening" : time < 1.63 ? "tugging" : time < 3.88 ? "ladder"
-      : time < 4.39 ? "slipping" : time < 5.58 ? "bracing" : time < 8.74 ? "climbing"
-        : time < 9.54 ? "standing" : time < 11.51 ? "dusting" : "closing",
-  } };
-  const ladderLean = pulse(time, 1.68, 2.4, 4.98, 5.51);
-  angle(pose.bones, "chest", -10.8 * effort + 12 * slip - 5 * ladderLean);
-  look(pose, 7 * effort - 8 * slip, [1.7 * slip, -3 + 6 * effort], {
-    mouth: slip > 0.35 ? "open" : "closed", mouthWeight: Math.max(0.79 * effort, 0.95 * slip),
-    brow: slip * 3.5 + effort * 1.6, blink: blink(time, 9.26, 0.035, 0.065),
+  const opening = knots(time, [[0, 0], [0.59, 0.13], [0.85, 0.08], [1.62, 1],
+    [8.98, 1], [9.54, 0.48], [10.02, 0]]);
+  const depth = knots(time, [[0, 1575], [1.65, 1510], [2.67, 1510], [3.24, 1120],
+    [3.53, 1075], [4.26, 722], [4.56, 956], [4.86, 903], [5.62, 408],
+    [6.00, 317], [6.63, 160], [6.99, 115], [7.65, 0], [8.24, -51], [8.94, -55]]);
+  const x = knots(time, [[0, 662], [2.59, 662], [3.45, 719], [4.26, 624],
+    [4.62, 721], [5.62, 572], [6.65, 544], [8.14, 496], [8.90, 522]]);
+  const y = knots(time, [[0, 686], [2.64, 686], [3.54, 576], [4.26, 533], [4.62, 592],
+    [5.62, 427], [6.63, 346], [7.57, 295], [8.49, 260], [9.15, 218]]);
+  const slip = pulse(time, 4.21, 4.53, 4.68, 5.07);
+  const rocking = knots(time, [[0, 0], [2.39, -1.8], [3.20, 5], [4.14, -4], [4.56, 14],
+    [5.45, -5], [6.64, -4], [7.68, 3], [8.48, -1.5], [9.15, 0]]);
+  const reach = time >= 2.97 ? 1 : 0;
+  const through = between(time, 6.71, 8.51);
+  const palmCover = palmPass(time, 8.79, 9.02, 9.12, 9.44);
+  const portrait = time >= 9.06 ? 1 : 0;
+  const settle = between(time, 9.06, 9.48);
+  const visitor = projectVisitor(x, y, depth, rocking, reach, through,
+    between(time, 0.93, 1.48) * (1 - portrait));
+  const scale = knots(time, [[0, 0.82], [8.93, 0.84], [9.54, 0.93], [11.5, 0.95], [climbSeconds, 1]]);
+  const head = knots(time, [[0, 96], [8.93, 96], [9.50, 42], [11.55, 26], [climbSeconds, 0]]);
+  const restX = knots(time, [[0, -4], [9.20, -4], [climbSeconds, 0]]);
+  const pose = risingPose(restX, head, scale);
+  pose.scenery = {
+    tear: { opening, visitor: portrait < 1 ? visitor : null, portrait, cover: palmCover,
+      phase: time < 0.92 ? "opening" : time < 1.64 ? "tugging" : time < 2.80 ? "peeking"
+        : time < 4.27 ? "ladder" : time < 4.75 ? "slipping" : time < 6.72 ? "bracing"
+          : time < 8.9 ? "crossing" : time < 9.54 ? "standing" : time < 11.51 ? "dusting" : "closing",
+    },
+  };
+  look(pose, -3.4 * (1 - settle), [-0.2, -1.8 * (1 - settle)], {
+    mouth: "relaxed", mouthWeight: 0.66 * (1 - settle), blink: blink(time, 9.68, 0.035, 0.065),
   });
-
-  if (time < 9.25) {
-    const right = ladderReach(time, "R", [[0, 0], [2.20, 0], [2.62, 1], [3.25, 1],
-      [3.64, 2], [3.87, 2], [4.10, 1.26], [4.53, 1.26], [5.13, 3]]);
-    const left = ladderReach(time, "L", [[0, 0], [1.71, 0], [2.18, 1], [2.80, 1],
-      [3.20, 2], [4.49, 2], [4.98, 3]]);
-    const reachRight = between(time, 5.47, 6.21);
-    const reachLeft = between(time, 5.93, 6.50);
-    const release = 1 - between(time, 8.53, 9.25);
-    pose.armFront = ["right", "left"];
-    pose.edgeHands = pose.armFront;
-    pose.socketContacts = [
-      handContact("R", v(right, hatchHandTarget("R"), reachRight), release * (1 - slip * 0.77),
-        108 - 86 * reachRight, reachRight > 0.7 ? "ledge" : "grip", reachRight > 0.7 ? "ledge" : "grip"),
-      handContact("L", v(left, hatchHandTarget("L"), reachLeft), release,
-        -95 + 72 * reachLeft, reachLeft > 0.7 ? "ledge" : "grip", reachLeft > 0.7 ? "ledge" : "grip"),
-    ];
-  } else {
-    brushOff(time, pose, x, head, scale, edgeY);
+  if (time > 8.88 && time < 9.5) {
+    const release = 1 - between(time, 9.04, 9.5);
+    pose.armFront = ["right"];
+    arm(pose, "R", [342 + 21 * settle, 458 + 160 * settle], release * 0.67, 112, "open_palm");
+  } else if (time >= 9.5) {
+    brushOff(time, pose, restX, head, scale, edgeY);
   }
+
+  // The slide on the ladder sends him deeper again before he closes on the glass.
+  visitor.parallax *= 1 + slip * 0.24;
   return pose;
 }
 
@@ -202,20 +204,23 @@ function leaveAndReturn(t, context) {
   const returnAt = exitSeconds + awaySeconds;
   if (elapsed < exitSeconds) {
     const progress = elapsed / exitSeconds;
-    const retreat = between(progress, 0.13, 0.89);
-    const pose = risingPose(48 * retreat, 675 * retreat, 1 - 0.81 * retreat);
-    gripEdge(pose, context.edgeY + 4, 1 - between(progress, 0.04, 0.27));
+    const retreat = between(progress, 0.22, 0.93);
+    const pose = risingPose(0, 25 * retreat, 1 - 0.08 * retreat);
+    gripEdge(pose, context.edgeY + 4, 1 - between(progress, 0.04, 0.31));
+    const transfer = progress >= 0.30 ? 1 : 0;
     pose.scenery = { tear: {
-      opening: pulse(progress, 0, 0.23, 0.66, 0.98),
-      behind: progress > 0.74,
-      through: progress > 0.22 && progress <= 0.74,
+      opening: pulse(progress, 0, 0.24, 0.67, 0.99),
+      visitor: projectVisitor(508 + 173 * retreat, 221 + 464 * retreat, -38 + 1397 * retreat,
+        -7 * retreat, 1, 1 - between(progress, 0.40, 0.67), transfer * (1 - between(progress, 0.76, 0.99))),
+      portrait: 1 - transfer,
+      cover: palmPass(progress, 0.13, 0.27, 0.36, 0.53),
       phase: "exiting",
     } };
     return pose;
   }
   if (elapsed >= returnAt) return climbThroughRip((elapsed - returnAt) / climbSeconds, context);
-  const pose = risingPose(67, 681, 0.19);
-  pose.scenery = { tear: { opening: 0, behind: true, phase: "away" } };
+  const pose = risingPose(0, 0, 1);
+  pose.scenery = { tear: { opening: 0, portrait: 0, phase: "away" } };
   return pose;
 }
 

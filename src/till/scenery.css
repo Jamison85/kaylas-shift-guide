@@ -13,53 +13,99 @@
 
 .till-scenery[data-till-tear] .till-tear { display: block; }
 
-.till-tear i {
+.till-tear__rim,
+.till-tear__depth,
+.till-peep-visitor {
   position: absolute;
   inset: 0;
-  opacity: var(--tear-light, 0);
 }
 
-.till-tear .till-tear__surface {
-  inset: 53% 14% var(--till-overhang) 12%;
+.till-tear__rim {
   z-index: 1;
-  clip-path: polygon(16% 0, 85% 0, 100% 100%, 0 100%);
+  clip-path: var(--tear-rim);
+  opacity: var(--tear-light, 0);
   background:
-    linear-gradient(180deg, #171c2499, #24232a 57%, #35323a 97%, #bb8b5b 98%),
-    linear-gradient(105deg, #82919b33, transparent 80%);
+    linear-gradient(114deg, #e7dbcb 1%, #686c73 22%, #b5a599 35%, #e7c8a5 60%, #615457 79%, #dac9ba),
+    #8d7761;
 }
 
 .till-tear__depth {
   z-index: 1;
   clip-path: var(--tear-opening);
-  background:
-    linear-gradient(165deg, #050c14ab, #1016230d 73%, #1915229c),
-    url("./art/till-ceiling-view.webp") 50% 99% / 68% 48% no-repeat,
-    #071322;
+  opacity: var(--tear-light, 0);
+  background: #16202a;
 }
 
-.till-tear__lip {
-  z-index: 1;
-  background:
-    repeating-linear-gradient(119deg, #f4daba1c 0 1px, transparent 1px 3px),
-    linear-gradient(94deg, #82766a 23%, #d2bca0 36%, #f2ddbb 55%, #f6e1c4 65%, #9e8374 81%);
-}
-
-.till-tear__lip--far { clip-path: var(--tear-far-lip); }
-.till-tear__lip--near {
-  clip-path: var(--tear-near-lip);
-  background: linear-gradient(180deg, #b39b7b 65%, #e8cfad 81%, #846648 91%);
-}
-
-.till-stage__art[data-till-behind-tear] .till-stage__actor { clip-path: var(--tear-opening); }
-.till-stage__art[data-till-through-tear] .till-stage__actor { clip-path: var(--tear-foreground); }
-.till-stage__art:is([data-till-behind-tear], [data-till-through-tear]) .till-tear__lip--near { z-index: 3; }
-
+.till-tear__room,
 .till-tear__ladder {
   position: absolute;
-  z-index: 1;
   inset: 0;
-  clip-path: var(--tear-opening);
-  opacity: var(--tear-light, 0);
+}
+
+.till-tear__room {
+  inset: -9% 8% -17%;
+  transform: translate(calc(var(--peep-x, 0) * -10%), calc(var(--peep-y, 0) * 9%)) scale(1.13);
+  background:
+    radial-gradient(ellipse at 56% 57%, #151a2210 27%, #0a111a75 88%),
+    url("./art/peep-office.webp") center 56% / cover no-repeat;
+}
+
+.till-tear__ladder {
+  transform: translate(calc(var(--peep-x, 0) * -5%), calc(var(--peep-y, 0) * 4%));
+  opacity: 0.88;
+}
+
+.till-peep-visitor img {
+  --anchor-x: 59%;
+  --anchor-y: 34%;
+  position: absolute;
+  left: calc(var(--visitor-x) - var(--peep-x, 0) * var(--visitor-distance) * 1%);
+  top: calc(var(--visitor-y) + var(--peep-y, 0) * var(--visitor-distance) * 0.85%);
+  width: var(--visitor-width);
+  height: auto;
+  max-width: none;
+  transform-origin: var(--anchor-x) var(--anchor-y);
+  transform: translate(calc(-1 * var(--anchor-x)), calc(-1 * var(--anchor-y))) rotate(var(--visitor-roll));
+  opacity: calc(var(--visitor-reach) * var(--visitor-opacity));
+}
+
+.till-peep-visitor img.till-peep-visitor__work {
+  --anchor-x: 44%;
+  --anchor-y: 33%;
+  opacity: calc(var(--visitor-work) * var(--visitor-opacity));
+}
+
+.till-peep-visitor--well .till-peep-visitor__reach {
+  clip-path: polygon(var(--visitor-cross-x) 0, 100% 0, 100% 100%, 0 100%,
+    0 var(--visitor-cross-y), var(--visitor-cross-x) var(--visitor-cross-y));
+}
+
+.till-peep-visitor--glass { z-index: 3; }
+.till-stage__art:not([data-till-peeping]) .till-peep-visitor { visibility: hidden; }
+.till-peep-visitor--glass .till-peep-visitor__reach {
+  clip-path: inset(0 calc(100% - var(--visitor-cross-x)) calc(100% - var(--visitor-cross-y)) 0);
+}
+
+.till-stage__art .till-stage__actor { opacity: var(--portrait-opacity, 1); }
+
+.till-peep-palm {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  opacity: var(--peep-cover, 0);
+  transform: translateX(var(--peep-cover-shift, 0%));
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse at 50% 53%, #000 42%, #000 61%, transparent 83%);
+  background: radial-gradient(ellipse at 50% 53%, #a47354 46%, #51372d 79%);
+}
+
+.till-peep-palm img {
+  position: absolute;
+  width: 500%;
+  max-width: none;
+  left: -55%;
+  top: -198%;
+  filter: brightness(0.78) blur(9px);
 }
 
 .till-ladder__rail,
@@ -241,7 +287,7 @@
 .till-stage--home[data-till-tube] .till-stage__talk { inset-inline: 11% 44px; }
 .till-stage--home[data-till-tube] .till-stage__talk span { inset-inline: 0 auto; top: 40%; }
 .till-stage--home[data-till-tube]:is([data-till-motion="climb_through_rip"], [data-till-motion="leave_and_return"]) .till-stage__talk span {
-  top: 12%;
+  top: 0;
 }
 
 .till-tube-trigger {

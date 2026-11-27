@@ -1,5 +1,7 @@
 import { ladderRungs, noteTube } from "../till/scenery";
 import { positionInStage } from "../till/stages";
+import workView from "../till/art/peep-work.webp";
+import reachView from "../till/art/peep-reach.webp";
 
 function propSize(stage, width, height) {
   return { width: `${width / stage.viewBox[2] * 100}%`, height: `${height / stage.viewBox[3] * 100}%` };
@@ -41,11 +43,19 @@ export default function TillScenery({ stage, sceneryRef, hasTube }) {
             <i />
           </span>
           <span className="till-tear">
-            <i className="till-tear__surface" />
-            <i className="till-tear__depth" />
-            <Ladder stage={stage} />
-            <i className="till-tear__lip till-tear__lip--far" />
-            <i className="till-tear__lip till-tear__lip--near" />
+            <span className="till-tear__rim" />
+            <span className="till-tear__depth">
+              <span className="till-tear__room" />
+              <Ladder stage={stage} />
+              <span className="till-peep-visitor till-peep-visitor--well">
+                <img className="till-peep-visitor__work" src={workView} alt="" draggable={false} />
+                <img className="till-peep-visitor__reach" src={reachView} alt="" draggable={false} />
+              </span>
+            </span>
+            <span className="till-peep-visitor till-peep-visitor--glass">
+              <img className="till-peep-visitor__reach" src={reachView} alt="" draggable={false} />
+            </span>
+            <span className="till-peep-palm"><img src={reachView} alt="" draggable={false} /></span>
           </span>
           <span className="till-dust" />
         </>
