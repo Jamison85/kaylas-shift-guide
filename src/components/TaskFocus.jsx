@@ -203,7 +203,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                 <p>{task.location}</p>
               </div>
             )}
-            {mode === "learn" && (
+            {(
               <button
                 type="button"
                 className="task-why-link"
@@ -214,7 +214,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
             )}
           </div>
           {mode === "learn" && characterAction && (
-            <CharacterProp key={`${task.id}-intro`} pose={characterAction} moment="working" className="task-intro__till" />
+            <CharacterProp key={`${task.id}-intro`} pose={done ? "thumbs" : characterAction} moment={done ? null : "working"} className="task-intro__till" />
           )}
         </section>
 
