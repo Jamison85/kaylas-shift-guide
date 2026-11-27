@@ -7,20 +7,28 @@ export const tubeNotes = [
   "If it comes back full of glitter, I deny everything.",
 ];
 
-const tearSeam = [
-  [36, 511, 0, 0], [99, 527, 63, 46], [169, 495, 140, 167],
-  [235, 511, 193, 161], [304, 519, 175, 222], [369, 516, 216, 202],
-  [435, 495, 181, 219], [502, 531, 187, 158], [566, 518, 159, 153],
-  [625, 504, 129, 117], [659, 531, 78, 88], [680, 514, 0, 0],
+// A cut across the top of the card, seen looking down into Till's room.
+const ceilingSeam = [
+  [227, 543, 0, 0], [276, 532, 25, 30], [325, 534, 54, 70],
+  [380, 528, 86, 101], [443, 540, 138, 117], [515, 532, 126, 143],
+  [577, 525, 124, 151], [634, 543, 115, 117], [698, 532, 88, 97],
+  [742, 548, 52, 56], [773, 548, 0, 0],
 ];
 
-function tearRow([y, center, left, right], opening) {
-  return { y, left: center - (2 + left) * opening, right: center + (2 + right) * opening };
+export const ladderRungs = [
+  { left: 537, right: 692, y: 628 },
+  { left: 516, right: 671, y: 572 },
+  { left: 485, right: 646, y: 513 },
+  { left: 451, right: 618, y: 451 },
+];
+
+export function ladderPoint(index, side, inset = 11) {
+  const step = ladderRungs[index];
+  return [side === "R" ? step.left + inset : step.right - inset, step.y];
 }
 
-export function tearHandTarget(side, opening) {
-  const row = tearRow(tearSeam[5], opening);
-  return [row[side], row.y + 8];
+export function hatchHandTarget(side) {
+  return side === "R" ? [381, 625] : [632, 654];
 }
 
 function paintTear(element, stage, tear) {
@@ -28,27 +36,31 @@ function paintTear(element, stage, tear) {
   if (!tear) {
     delete element.dataset.tillTear;
     delete art.dataset.tillBehindTear;
+    delete art.dataset.tillThroughTear;
     return;
   }
   if (element.dataset.tillTear !== tear.phase) element.dataset.tillTear = tear.phase;
-  if (tear.behind) art.dataset.tillBehindTear = "";
-  else delete art.dataset.tillBehindTear;
+  art.toggleAttribute("data-till-behind-tear", Boolean(tear.behind));
+  art.toggleAttribute("data-till-through-tear", Boolean(tear.through));
   const [left, top, width, height] = stage.viewBox;
-  const rows = tearSeam.map(row => tearRow(row, tear.opening));
   const polygon = points => `polygon(${points.map(([x, y]) =>
     `${((x - left) / width * 100).toFixed(2)}% ${((y - top) / height * 100).toFixed(2)}%`).join(", ")})`;
-  const outline = side => rows.map(row => [row[side], row.y]);
-  const innerLeft = outline("left");
-  const innerRight = outline("right");
-  const fold = (side, direction) => rows.map((row, i) => [
-    row[side] + direction * (Math.sin(i / (rows.length - 1) * Math.PI) * (24 + (i % 3) * 11) * tear.opening + 2),
-    row.y + direction * ((i % 3) - 1) * 9 * tear.opening,
-  ]);
-  const opening = tear.opening < 0.012 ? "inset(50%)" : polygon([...innerLeft, ...[...innerRight].reverse()]);
-  art.style.setProperty("--tear-opening", opening);
-  art.style.setProperty("--tear-left-lip", polygon([...innerLeft, ...fold("left", -1).reverse()]));
-  art.style.setProperty("--tear-right-lip", polygon([...innerRight, ...fold("right", 1).reverse()]));
-  art.style.setProperty("--tear-light", String(Math.min(1, tear.opening * 4)));
+  const amount = tear.opening;
+  const far = ceilingSeam.map(([x, y, depth]) => [x, y - depth * amount]);
+  const near = ceilingSeam.map(([x, y, , depth]) => [x, y + depth * amount]);
+  const fold = (path, direction, thickness) => path.map(([x, y], i) => {
+    const taper = Math.sin(i / (path.length - 1) * Math.PI);
+    return [x - direction * (i % 3) * taper * 4, y + direction * (thickness + i % 3 * 8) * taper * amount];
+  });
+  const open = amount < 0.012 ? "inset(50%)" : polygon([...far, ...[...near].reverse()]);
+  art.style.setProperty("--tear-opening", open);
+  art.style.setProperty("--tear-far-lip", polygon([...far, ...fold(far, -1, 25).reverse()]));
+  art.style.setProperty("--tear-near-lip", polygon([...near.slice().reverse(), ...fold(near, 1, 15)]));
+  art.style.setProperty("--tear-foreground", polygon([
+    [left, top], [left + width, top], [left + width, stage.edgeY],
+    ...near.slice().reverse(), [left, stage.edgeY],
+  ]));
+  art.style.setProperty("--tear-light", String(Math.min(1, amount * 5)));
 }
 
 export function paintScenery(element, stage, scene) {

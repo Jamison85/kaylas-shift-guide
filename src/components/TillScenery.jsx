@@ -1,8 +1,31 @@
-import { noteTube } from "../till/scenery";
+import { ladderRungs, noteTube } from "../till/scenery";
 import { positionInStage } from "../till/stages";
 
 function propSize(stage, width, height) {
   return { width: `${width / stage.viewBox[2] * 100}%`, height: `${height / stage.viewBox[3] * 100}%` };
+}
+
+function Ladder({ stage }) {
+  const top = ladderRungs.at(-1);
+  const bottom = ladderRungs[0];
+  return (
+    <span className="till-tear__ladder">
+      {ladderRungs.map(({ left, right, y }) => (
+        <span className="till-ladder__rung" key={y} style={positionInStage(stage, [left, y - 6, right - left, 12])} />
+      ))}
+      {["left", "right"].map(side => {
+        const dx = bottom[side] - top[side];
+        const dy = bottom.y - top.y;
+        const lean = Math.atan2(dx, dy) * 180 / Math.PI;
+        return (
+          <span className="till-ladder__rail" key={side} style={{
+            ...positionInStage(stage, [top[side] - 9, top.y - 13, 18, Math.hypot(dx, dy) + 33]),
+            transform: `rotate(${-lean}deg)`,
+          }} />
+        );
+      })}
+    </span>
+  );
 }
 
 export default function TillScenery({ stage, sceneryRef, hasTube }) {
@@ -18,9 +41,11 @@ export default function TillScenery({ stage, sceneryRef, hasTube }) {
             <i />
           </span>
           <span className="till-tear">
+            <i className="till-tear__surface" />
             <i className="till-tear__depth" />
-            <i className="till-tear__lip till-tear__lip--left" />
-            <i className="till-tear__lip till-tear__lip--right" />
+            <Ladder stage={stage} />
+            <i className="till-tear__lip till-tear__lip--far" />
+            <i className="till-tear__lip till-tear__lip--near" />
           </span>
           <span className="till-dust" />
         </>

@@ -1,6 +1,6 @@
 import { Motion } from "./rig.js";
 import { deskY } from "./stages.js";
-import { noteTube, tearHandTarget } from "./scenery.js";
+import { hatchHandTarget, ladderPoint, ladderRungs, noteTube } from "./scenery.js";
 
 const { angle, arm, between, blink, knots, pulse, shift, stance, v } = Motion;
 
@@ -96,156 +96,105 @@ function riseOverEdge(t, { edgeY, restsOnEdge }) {
   return pose;
 }
 
-const prySeconds = 3.4;
-const crawlSeconds = 4.85;
-const climbSeconds = prySeconds + crawlSeconds;
-const exitSeconds = 1.65;
+const climbSeconds = 12.4;
+const exitSeconds = 2.1;
 const awaySeconds = 0.85;
 const roundTripSeconds = exitSeconds + awaySeconds + climbSeconds;
-const crawlViews = ["left", "quarterLeft"];
 
-function pryOpen(t, { edgeY }) {
-  const opening = knots(t, [[0, 0], [0.14, 0.10], [0.34, 0.54], [0.40, 0.53],
-    [0.50, 0.17], [0.58, 0.20], [0.77, 0.77], [1, 0.98]]);
-  const pull = pulse(t, 0.14, 0.32, 0.41, 0.51) + between(t, 0.58, 0.79);
-  const slip = pulse(t, 0.39, 0.49, 0.53, 0.63);
-  const grip = pulse(t, 0.12, 0.25, 0.40, 0.53) + between(t, 0.57, 0.73);
-  const otherGrip = pulse(t, 0.10, 0.21, 0.43, 0.55) + between(t, 0.56, 0.74);
-  const scale = knots(t, [[0, 0.36], [0.34, 0.44], [0.50, 0.39], [0.8, 0.48]]);
-  const head = knots(t, [[0, 422], [0.15, 240], [0.34, 148], [0.50, 253],
-    [0.58, 227], [0.85, 135], [1, 141]]);
-  const x = knots(t, [[0, 0], [0.37, -35], [0.50, 42], [0.72, -20], [1, 0]]);
-  const pose = {
-    bones: {
-      root: { scale: [scale, scale], offset: [x, head - 1434 * (1 - scale)] },
-      chest: { angle: 6.6 * pull - 12 * slip },
-    },
-    armFront: ["left", "right"],
-    socketContacts: [
-      handContact("R", tearHandTarget("left", opening), grip, 66, "ledge", "ledge"),
-      handContact("L", tearHandTarget("right", opening), otherGrip, -59, "ledge", "ledge"),
-    ],
-    scenery: { tear: {
-      opening, behind: true,
-      phase: t < 0.18 ? "opening" : t < 0.43 ? "tugging" : t < 0.58 ? "slipping" : "bracing",
-    } },
-  };
-  look(pose, 8 * pull - 14 * slip, [2 * slip, 3.6 * pull], {
-    mouth: slip > 0.22 ? "open" : "closed", mouthWeight: Math.max(0.77 * pull, 0.9 * slip),
-    brow: 1.8 * pull + 2.7 * slip, blink: blink(t, 0.57, 0.016, 0.031),
-  });
-  const boot = pulse(t, 0.28, 0.38, 0.40, 0.51) * 0.59 + between(t, 0.67, 0.92) * 0.58;
-  if (boot > 0) {
-    const ankle = [525 - 112 * scale + x, head + 1333 * scale];
-    pose.ik = { footR: { target: v(ankle, [423, edgeY - 53], boot), angle: -10 * boot, bend: -1 } };
-  }
-  return pose;
+function ladderReach(time, side, steps) {
+  const index = knots(time, steps);
+  const lower = Math.floor(index);
+  const lift = index - lower;
+  const next = Math.min(lower + 1, ladderRungs.length - 1);
+  const [x, y] = v(ladderPoint(lower, side), ladderPoint(next, side), lift);
+  return [x, y - 18 * Math.sin(Math.PI * lift)];
 }
 
-// Position the hip at the authored point while the body leans around it.
-function crouchRoot(x, y, scale, pitch) {
-  const radians = pitch * Math.PI / 180;
-  const hipToHeel = 689 * scale;
-  return {
-    scale: [scale, scale], angle: pitch,
-    offset: [x - 525 - hipToHeel * Math.sin(radians), y - 1434 + hipToHeel * Math.cos(radians)],
-  };
+function risingPose(x, head, scale, lean = 0) {
+  const radians = lean * Math.PI / 180;
+  const chestToHeel = 1004 * scale;
+  return { bones: { root: {
+    scale: [scale, scale],
+    angle: lean,
+    offset: [x - chestToHeel * Math.sin(radians), head - 1434 * (1 - scale) + chestToHeel * (Math.cos(radians) - 1)],
+  } } };
 }
 
-function crawlOut(time, { edgeY }) {
-  const floor = edgeY - 5;
-  const standingScale = 0.43;
-  const settle = between(time, 4.25, crawlSeconds);
-  const scale = knots(time, [[0, 0.48], [1.8, 0.47], [2.65, standingScale], [4.25, standingScale], [crawlSeconds, 1]]);
-  const pitch = knots(time, [[0, 0], [0.29, -27], [0.64, -62], [1.31, -66], [1.80, -50], [2.18, -29], [2.65, 0]]);
-  const x = knots(time, [[0, 525], [0.65, 511], [1.0, 489], [1.45, 441], [2.03, 432], [4.23, 432], [crawlSeconds, 525]]);
-  const hip = knots(time, [[0, 499], [0.33, 557], [0.72, 617], [1.46, 610], [1.78, 600],
-    [2.08, 546], [2.70, floor - 689 * standingScale], [4.25, floor - 689 * standingScale], [crawlSeconds, 745]]);
-  const pose = {
-    bones: { root: crouchRoot(x, hip, scale, pitch) },
-    scenery: { tear: {
-      opening: knots(time, [[0, 0.98], [0.88, 0.98], [1.6, 0.69], [2.15, 0.12], [2.48, 0]]),
-      behind: time < 0.16,
-      phase: time < 1.86 ? "climbing" : time < 2.78 ? "standing" : time < 4.25 ? "dusting" : "closing",
-    } },
-  };
-
-  if (time < 0.34) {
-    // Let go of each edge in turn and drop the first shoulder toward the ledge.
-    const rip = pose.scenery.tear.opening;
-    const release = between(time, 0.03, 0.29);
-    pose.armFront = ["right", "left"];
-    pose.socketContacts = [
-      handContact("R", v(tearHandTarget("left", rip), [345, 558], release), 1 - release * 0.22, 58, "ledge", "ledge"),
-      handContact("L", v(tearHandTarget("right", rip), [514, 514], release), 1 - release * 0.73, -51, "ledge", "ledge"),
-    ];
-    return pose;
-  }
-
-  if (time < 2.38) {
-    pose.view = "left";
-    const palmL = knots(time, [[0.34, 408], [0.7, 383], [1.0, 383], [1.35, 312], [1.78, 312], [2.38, 413]]);
-    const palmR = knots(time, [[0.34, 486], [0.78, 432], [1.34, 432], [1.65, 368], [1.91, 368], [2.38, 420]]);
-    const lowerL = knots(time, [[0.34, 552], [0.69, floor - 44], [1.0, floor - 44],
-      [1.16, floor - 77], [1.34, floor - 44], [1.79, floor - 44], [2.38, 548]]);
-    const lowerR = knots(time, [[0.34, 523], [0.78, floor - 47], [1.34, floor - 47],
-      [1.48, floor - 74], [1.66, floor - 47], [1.91, floor - 47], [2.38, 548]]);
-    const handRelease = 1 - between(time, 2.12, 2.38);
-    arm(pose, "L", [palmL, lowerL], handRelease, 36 * handRelease);
-    arm(pose, "R", [palmR, lowerR], handRelease, 32 * handRelease);
-    const footL = knots(time, [[0.34, 590], [0.78, 620], [1.22, 620], [1.64, 544], [1.88, 488], [2.38, 468]]);
-    const footR = knots(time, [[0.34, 667], [0.96, 674], [1.47, 644], [1.83, 584], [2.22, 465]]);
-    const nearY = knots(time, [[0.34, floor - 18], [0.78, floor - 28], [1.36, floor - 28], [1.56, floor - 64], [1.88, floor - 45]]);
-    const farY = knots(time, [[0.34, floor - 20], [1.79, floor - 29], [1.97, floor - 65], [2.22, floor - 44]]);
-    const plant = knots(time, [[0.34, 0.8], [0.60, 1], [2.13, 1], [2.38, 0.14]]);
-    pose.ik.footL = { target: [footL, nearY], angle: 26 * (1 - between(time, 1.48, 1.92)), weight: plant, bend: -1 };
-    pose.ik.footR = { target: [footR, farY], angle: 23 * (1 - between(time, 1.73, 2.21)), weight: plant, bend: -1 };
-    return pose;
-  }
-
-  if (time < 2.59) {
-    pose.view = "quarterLeft";
-    return pose;
-  }
-
-  const shirtBrush = pulse(time, 2.79, 3.03, 3.40, 3.58);
-  const jeansBrush = pulse(time, 3.43, 3.61, 3.94, 4.14);
-  const shirtStroke = between(time, 3.06, 3.38);
-  const jeansStroke = between(time, 3.66, 3.93);
-  look(pose, 8 * (shirtBrush - jeansBrush), [-1.1 * shirtBrush, 3.9 * (shirtBrush + jeansBrush)], {
-    blink: blink(time, 4.12, 0.035, 0.065), mouth: "relaxed", mouthWeight: 0.62 * (shirtBrush + jeansBrush),
-  });
-  if (shirtBrush || jeansBrush) {
+function brushOff(time, pose, x, head, scale, edgeY) {
+  const left = pulse(time, 9.55, 9.78, 10.28, 10.48);
+  const right = pulse(time, 10.48, 10.73, 11.22, 11.48);
+  const firstStroke = between(time, 9.90, 10.26);
+  const secondStroke = between(time, 10.85, 11.20);
+  if (left || right) {
     pose.armFront = ["left", "right"];
-    arm(pose, "L", [x - 12 + 76 * shirtStroke, hip - 105 + 114 * shirtStroke], shirtBrush, 16, "open_palm");
-    arm(pose, "R", [x - 45 - 46 * jeansStroke, hip + 15 + 109 * jeansStroke], jeansBrush, -14, "open_palm");
-    const firstSweep = time < 3.56;
-    const dustTime = firstSweep ? between(time, 3.13, 3.56) : between(time, 3.72, 4.17);
-    if (dustTime > 0 && dustTime < 1) {
-      const direction = firstSweep ? 1 : -1;
+    arm(pose, "L", [525 + x - 34 + 146 * firstStroke, head + scale * (448 + 173 * firstStroke)],
+      left, 13, "open_palm");
+    arm(pose, "R", [525 + x + 15 - 143 * secondStroke, head + scale * (450 + 179 * secondStroke)],
+      right, -13, "open_palm");
+    const first = time < 10.48;
+    const flick = first ? between(time, 10.03, 10.47) : between(time, 11.0, 11.50);
+    if (flick > 0 && flick < 1) {
       pose.scenery.dust = {
-        x: x + direction * (56 + 70 * dustTime),
-        y: hip + (firstSweep ? -42 : 88) - 28 * dustTime,
-        light: Math.sin(Math.PI * dustTime),
+        x: 525 + x + (first ? 1 : -1) * (100 + 94 * flick),
+        y: head + 583 * scale - 24 * flick,
+        light: Math.sin(Math.PI * flick),
       };
     }
+  } else {
+    gripEdge(pose, edgeY + 4, between(time, 11.44, 12.27));
   }
-  if (settle > 0) {
-    const step = pulse(time, 4.25, 4.37, 4.40, 4.60);
-    if (step > 0) {
-      const ankle = [x - 112 * scale + 22 * step, hip + 588 * scale - 44 * step];
-      pose.ik = { footR: { target: ankle, angle: -5 * step, bend: -1 } };
-    }
-    angle(pose.bones, "chest", 6 * step);
-    gripEdge(pose, edgeY + 4, between(settle, 0.76, 1));
-  }
-  return pose;
 }
 
-function climbThroughRip(t, context) {
-  const elapsed = t * climbSeconds;
-  if (elapsed < prySeconds) return pryOpen(elapsed / prySeconds, context);
-  return crawlOut(elapsed - prySeconds, context);
+function climbThroughRip(t, { edgeY }) {
+  const time = t * climbSeconds;
+  const opening = knots(time, [[0, 0], [0.48, 0.09], [0.75, 0.035], [1.15, 0.36], [1.62, 1],
+    [8.65, 1], [9.16, 0.78], [9.54, 0]]);
+  const head = knots(time, [[0, 670], [0.68, 610], [1.59, 511], [2.20, 507], [2.82, 478], [3.43, 451],
+    [3.84, 431], [4.08, 474], [4.55, 447], [5.16, 391], [5.67, 343], [6.24, 314], [6.71, 335],
+    [7.34, 211], [8.05, 129], [8.65, 86], [9.55, 58], [11.55, 34], [climbSeconds, 0]]);
+  const scale = knots(time, [[0, 0.18], [1.62, 0.20], [3.82, 0.265], [4.08, 0.246], [5.34, 0.363],
+    [6.77, 0.48], [7.67, 0.57], [8.60, 0.72], [9.6, 0.9], [11.48, 0.94], [climbSeconds, 1]]);
+  const x = knots(time, [[0, 80], [1.5, 76], [2.4, 62], [3.25, 48], [3.83, 24],
+    [4.07, 63], [4.63, 30], [5.45, 8], [6.49, -20], [7.19, -33], [8.51, -39], [climbSeconds, 0]]);
+  const slip = pulse(time, 3.86, 4.08, 4.12, 4.50);
+  const effort = pulse(time, 5.48, 5.92, 6.88, 7.38) + pulse(time, 7.49, 7.76, 8.14, 8.73);
+  const weightShift = pulse(time, 6.19, 6.73, 7.15, 8.39);
+  const pose = risingPose(x, head, scale, -10 * weightShift + 4.2 * slip);
+  pose.scenery = { tear: {
+    opening,
+    behind: time < 5.04,
+    through: time >= 5.04 && time < 9.12,
+    phase: time < 0.92 ? "opening" : time < 1.63 ? "tugging" : time < 3.88 ? "ladder"
+      : time < 4.39 ? "slipping" : time < 5.58 ? "bracing" : time < 8.74 ? "climbing"
+        : time < 9.54 ? "standing" : time < 11.51 ? "dusting" : "closing",
+  } };
+  const ladderLean = pulse(time, 1.68, 2.4, 4.98, 5.51);
+  angle(pose.bones, "chest", -10.8 * effort + 12 * slip - 5 * ladderLean);
+  look(pose, 7 * effort - 8 * slip, [1.7 * slip, -3 + 6 * effort], {
+    mouth: slip > 0.35 ? "open" : "closed", mouthWeight: Math.max(0.79 * effort, 0.95 * slip),
+    brow: slip * 3.5 + effort * 1.6, blink: blink(time, 9.26, 0.035, 0.065),
+  });
+
+  if (time < 9.25) {
+    const right = ladderReach(time, "R", [[0, 0], [2.20, 0], [2.62, 1], [3.25, 1],
+      [3.64, 2], [3.87, 2], [4.10, 1.26], [4.53, 1.26], [5.13, 3]]);
+    const left = ladderReach(time, "L", [[0, 0], [1.71, 0], [2.18, 1], [2.80, 1],
+      [3.20, 2], [4.49, 2], [4.98, 3]]);
+    const reachRight = between(time, 5.47, 6.21);
+    const reachLeft = between(time, 5.93, 6.50);
+    const release = 1 - between(time, 8.53, 9.25);
+    pose.armFront = ["right", "left"];
+    pose.edgeHands = pose.armFront;
+    pose.socketContacts = [
+      handContact("R", v(right, hatchHandTarget("R"), reachRight), release * (1 - slip * 0.77),
+        108 - 86 * reachRight, reachRight > 0.7 ? "ledge" : "grip", reachRight > 0.7 ? "ledge" : "grip"),
+      handContact("L", v(left, hatchHandTarget("L"), reachLeft), release,
+        -95 + 72 * reachLeft, reachLeft > 0.7 ? "ledge" : "grip", reachLeft > 0.7 ? "ledge" : "grip"),
+    ];
+  } else {
+    brushOff(time, pose, x, head, scale, edgeY);
+  }
+  return pose;
 }
 
 function leaveAndReturn(t, context) {
@@ -253,23 +202,20 @@ function leaveAndReturn(t, context) {
   const returnAt = exitSeconds + awaySeconds;
   if (elapsed < exitSeconds) {
     const progress = elapsed / exitSeconds;
-    const retreat = between(progress, 0.03, 0.82);
-    const scale = 1 - 0.64 * retreat;
-    const head = 415 * retreat;
-    const pose = { bones: {
-      root: { scale: [scale, scale], offset: [-18 * retreat, head - 1434 * (1 - scale)] },
-    } };
-    gripEdge(pose, context.edgeY + 4, 1 - between(progress, 0, 0.16));
+    const retreat = between(progress, 0.13, 0.89);
+    const pose = risingPose(48 * retreat, 675 * retreat, 1 - 0.81 * retreat);
+    gripEdge(pose, context.edgeY + 4, 1 - between(progress, 0.04, 0.27));
     pose.scenery = { tear: {
-      opening: pulse(progress, 0, 0.25, 0.51, 0.95),
-      behind: progress > 0.34,
+      opening: pulse(progress, 0, 0.23, 0.66, 0.98),
+      behind: progress > 0.74,
+      through: progress > 0.22 && progress <= 0.74,
       phase: "exiting",
     } };
     return pose;
   }
   if (elapsed >= returnAt) return climbThroughRip((elapsed - returnAt) / climbSeconds, context);
-  const pose = pryOpen(0, context);
-  pose.scenery.tear.phase = "away";
+  const pose = risingPose(67, 681, 0.19);
+  pose.scenery = { tear: { opening: 0, behind: true, phase: "away" } };
   return pose;
 }
 
@@ -481,8 +427,8 @@ function settleShift(t, context) {
 
 const performances = {
   rise_over_edge: { duration: 1.21, fromBehindEdge: true, sample: riseOverEdge },
-  climb_through_rip: { duration: climbSeconds, views: crawlViews, fromBehindEdge: true, sample: climbThroughRip },
-  leave_and_return: { duration: roundTripSeconds, views: crawlViews, sample: leaveAndReturn },
+  climb_through_rip: { duration: climbSeconds, fromBehindEdge: true, sample: climbThroughRip },
+  leave_and_return: { duration: roundTripSeconds, sample: leaveAndReturn },
   lean_in: { duration: 1.62, sample: leanIn },
   follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
   knock_on_edge: { duration: 1.8, sample: knock },

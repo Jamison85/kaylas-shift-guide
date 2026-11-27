@@ -1,16 +1,13 @@
 import frontUrl from "./art/front.webp";
 import quarterUrl from "./art/turn.webp";
 import rightUrl from "./art/right.webp";
-import leftUrl from "./art/left.webp";
 import { RigPlayer } from "./rig.js";
 import { getPerformance, samplePerformance } from "./performances.js";
 
 const viewAssets = {
   front: [frontUrl, () => import("./art/front.json").then(module => module.default)],
   quarter: [quarterUrl, () => import("./art/turn.json").then(module => module.default.right)],
-  quarterLeft: [quarterUrl, () => import("./art/turn.json").then(module => module.default.left)],
   right: [rightUrl, () => import("./art/right.json").then(module => module.default)],
-  left: [leftUrl, () => import("./art/left.json").then(module => module.default)],
 };
 const artwork = new Map();
 

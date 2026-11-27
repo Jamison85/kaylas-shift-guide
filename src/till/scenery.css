@@ -19,12 +19,21 @@
   opacity: var(--tear-light, 0);
 }
 
+.till-tear .till-tear__surface {
+  inset: 53% 14% var(--till-overhang) 12%;
+  z-index: 1;
+  clip-path: polygon(16% 0, 85% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(180deg, #171c2499, #24232a 57%, #35323a 97%, #bb8b5b 98%),
+    linear-gradient(105deg, #82919b33, transparent 80%);
+}
+
 .till-tear__depth {
   z-index: 1;
   clip-path: var(--tear-opening);
   background:
-    radial-gradient(ellipse at 49% 54%, #0a152119 32%, #0a152193 83%),
-    url("./art/till-back-office.webp") center 44% / cover no-repeat,
+    linear-gradient(165deg, #050c14ab, #1016230d 73%, #1915229c),
+    url("./art/till-ceiling-view.webp") 50% 99% / 68% 48% no-repeat,
     #071322;
 }
 
@@ -35,11 +44,36 @@
     linear-gradient(94deg, #82766a 23%, #d2bca0 36%, #f2ddbb 55%, #f6e1c4 65%, #9e8374 81%);
 }
 
-.till-tear__lip--left { clip-path: var(--tear-left-lip); }
-.till-tear__lip--right { clip-path: var(--tear-right-lip); }
+.till-tear__lip--far { clip-path: var(--tear-far-lip); }
+.till-tear__lip--near {
+  clip-path: var(--tear-near-lip);
+  background: linear-gradient(180deg, #b39b7b 65%, #e8cfad 81%, #846648 91%);
+}
 
 .till-stage__art[data-till-behind-tear] .till-stage__actor { clip-path: var(--tear-opening); }
-.till-stage__art[data-till-behind-tear] .till-tear__lip { z-index: 3; }
+.till-stage__art[data-till-through-tear] .till-stage__actor { clip-path: var(--tear-foreground); }
+.till-stage__art:is([data-till-behind-tear], [data-till-through-tear]) .till-tear__lip--near { z-index: 3; }
+
+.till-tear__ladder {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  clip-path: var(--tear-opening);
+  opacity: var(--tear-light, 0);
+}
+
+.till-ladder__rail,
+.till-ladder__rung {
+  position: absolute;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #f0ce8a, #a56d47 70%, #624329);
+  box-shadow: 0 1px 2px #180c08b8;
+}
+
+.till-ladder__rail {
+  transform-origin: center top;
+  background: linear-gradient(90deg, #714b2b, #e5b275 43%, #97613b 81%);
+}
 
 .till-dust {
   position: absolute;
