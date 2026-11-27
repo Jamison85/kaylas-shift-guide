@@ -41,7 +41,7 @@ html {
 
 body {
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   background: var(--navy);
 }
@@ -1359,8 +1359,13 @@ summary:focus-visible {
 .start-sheet { box-shadow: 0 24px 60px rgba(1, 8, 18, 0.28), inset 0 1px rgba(255, 255, 255, 0.78); }
 .start-meta b { min-height: 38px; display: inline-flex; align-items: center; }
 
-.shell--task .content { padding-bottom: 174px; }
-.task-focus { position: relative; }
+.task-focus {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  grid-template: minmax(0, 1fr) auto / minmax(0, 1fr);
+  gap: 8px;
+}
 .task-card {
   --panel-x: clamp(18px, 4.5vw, 34px);
   padding-bottom: var(--space-5);
@@ -1498,18 +1503,13 @@ summary:focus-visible {
 .contacts summary { min-height: 46px; padding: 13px 15px; }
 
 .task-focus > .guided-footer {
-  position: fixed;
   z-index: 26;
-  right: auto;
-  bottom: max(75px, calc(66px + env(safe-area-inset-bottom)));
-  left: 50%;
   display: grid;
-  width: min(calc(100% - 32px), 688px);
+  width: min(calc(100% - 8px), 688px);
   grid-template-columns: minmax(84px, 0.42fr) 1fr;
   gap: var(--space-2);
-  margin: 0;
+  margin: 0 auto;
   padding: 8px;
-  transform: translateX(-50%);
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 18px;
   background: rgba(255, 250, 240, 0.9);
@@ -1620,6 +1620,14 @@ summary:focus-visible {
   filter: saturate(0.78);
 }
 
+.shell--task {
+  display: grid;
+  height: 100dvh;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.shell--task .mini { position: relative; }
+
 .mini {
   min-height: 64px;
   padding-top: 9px;
@@ -1627,15 +1635,22 @@ summary:focus-visible {
 }
 
 .shell--task .content {
-  min-height: calc(100dvh - 64px);
-  padding-top: 12px;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  display: grid;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  padding-block: 12px max(10px, env(safe-area-inset-bottom));
 }
 
 .task-card {
   --ink-soft: #505968;
+  max-height: 100%;
+  align-self: start;
   padding-bottom: 20px;
+  overflow: auto;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: 12px;
   border-radius: 26px 12px 26px 26px;
+  animation: none;
 }
 
 .task-card::before { background-image: none; }
@@ -1669,8 +1684,6 @@ summary:focus-visible {
   min-width: 0;
 }
 
-.task-intro--with-till .task-intro__copy { padding-right: 120px; }
-
 .task-intro__summary {
   margin: 0 0 6px;
   color: var(--orange-dark);
@@ -1683,6 +1696,7 @@ summary:focus-visible {
   max-width: 500px;
   font-size: clamp(1.95rem, 7.8vw, 3.15rem);
   line-height: 0.98;
+  text-wrap: balance;
 }
 
 .task-location-line {
@@ -1789,8 +1803,6 @@ summary:focus-visible {
 .step-detail p { font-size: 0.91rem; line-height: 1.56; }
 
 .task-focus > .guided-footer {
-  bottom: max(10px, env(safe-area-inset-bottom));
-  width: min(calc(100% - 24px), 688px);
   grid-template-columns: auto minmax(0, 1fr);
   gap: 6px;
   padding: 6px;
@@ -1867,7 +1879,6 @@ summary:focus-visible {
   .mini__brand i { height: 28px; }
   .shell--task .content { padding-right: 8px; padding-left: 8px; }
   .task-card { --panel-x: 17px; }
-  .task-intro--with-till .task-intro__copy { padding-right: 96px; }
   .task-intro h1 { font-size: clamp(1.82rem, 8.3vw, 2.5rem); }
 
   .explanation-head { min-height: 122px; padding-right: 116px; }
@@ -1881,8 +1892,6 @@ summary:focus-visible {
 }
 
 @media (max-width: 350px) {
-  .task-intro--with-till .task-intro__copy { padding-right: 82px; }
-
   .explanation-head { padding-right: 102px; }
   .explanation-head::after { width: 106px; }
 
@@ -1919,9 +1928,6 @@ dialog::backdrop { background: transparent; }
 .bottom-nav button:focus-visible { outline-color: #ffbf92; }
 .step-toggle:focus-visible, .contacts summary:focus-visible { outline-offset: -3px; }
 .finish__copy h1, .home-head > small { overflow-wrap: anywhere; }
-.task-why-link, .step-toggle, .contacts summary {
-  scroll-margin-block: calc(80px + env(safe-area-inset-top)) calc(82px + env(safe-area-inset-bottom));
-}
 .storage-warning {
   position: relative;
   padding: 10px 16px;
@@ -1938,8 +1944,5 @@ dialog::backdrop { background: transparent; }
 @media (orientation: landscape) {
   .content, .shell--task .content {
     padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
-  }
-  .task-focus > .guided-footer {
-    width: min(calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)), 688px);
   }
 }

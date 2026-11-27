@@ -156,13 +156,51 @@ test("decision help uses the saved branch and keeps critical actions outside the
   await page.locator(".start").click();
   const box = await page.locator(actor("task")).boundingBox();
   const link = await page.locator(".task-why-link").boundingBox();
-  expect(box.y + box.height).toBeLessThan(link.y);
+  const decisionButtons = await page.locator(".decision-buttons").boundingBox();
+  expect(link.x + link.width).toBeLessThan(box.x);
+  expect(box.y + box.height).toBeLessThan(decisionButtons.y);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   const decision = await page.locator(".bubble").locator("b").innerText();
   await page.locator(".task-why-link").click();
   await expect(page.getByRole("dialog").getByText(decision, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Got it, Till" }).click();
   await expect(page.locator(".task-why-link")).toBeFocused();
+});
+
+test("phone task titles stay together and the next task opens at the top of its card", async ({ page }) => {
+  await openGuide(page, { completed: ["store-walk"], answers: { "register-two": "no" } });
+  await page.setViewportSize({ width: 390, height: 676 });
+  await page.locator(".start").click();
+  const card = page.locator(".task-card");
+  const title = card.locator("h1");
+  await expect(title).toHaveText("Open and Fund Register 2");
+  await page.evaluate(() => document.fonts.ready);
+  expect(await title.evaluate(heading => {
+    const label = heading.firstChild;
+    const range = document.createRange();
+    range.setStart(label, label.textContent.indexOf("Register"));
+    range.setEnd(label, label.length);
+    return range.getClientRects().length;
+  })).toBe(1);
+
+  const top = await page.locator(".mini").boundingBox();
+  const bottom = await page.locator(".guided-footer").boundingBox();
+  const sheet = await card.boundingBox();
+  expect(sheet.y).toBeGreaterThan(top.y + top.height);
+  expect(sheet.y + sheet.height).toBeLessThan(bottom.y);
+  expect(bottom.y + bottom.height).toBeLessThanOrEqual(676);
+
+  await card.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  expect(await card.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await page.locator(".done-next").click();
+  await expect(title).toHaveText("Relieve the Opening Cashier");
+  await expect(title).toBeFocused();
+  expect(await card.evaluate(element => element.scrollTop)).toBe(0);
+  await page.locator(".done-next").click();
+  await expect(title).toHaveText("Collect Yesterday’s Bookwork Sources");
+  expect(await card.evaluate(element => element.scrollTop)).toBe(0);
+  await page.getByRole("button", { name: "Talk to Till" }).click();
+  await expect(card.locator("#task-till-reply")).toContainText("printed source paperwork");
 });
 
 test("the cached app can play Till and open help while offline", async ({ page, context }) => {
@@ -221,7 +259,7 @@ test("visibility changes cancel movement and keep the task available", async ({ 
   const task = page.locator(actor("task"));
   await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
   await page.setViewportSize({ width: 390, height: 460 });
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.locator(".task-card").evaluate(card => { card.scrollTop = card.scrollHeight; });
   await expect(task).toHaveAttribute("data-till-visible", "false");
   await expect(task.locator("canvas")).not.toHaveAttribute("data-ready");
   await expect(page.locator(".done-next")).toBeVisible();

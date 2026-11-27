@@ -182,30 +182,25 @@
   background: radial-gradient(ellipse at 57% 58%, #e6ae7033, transparent 67%);
 }
 
-.task-intro {
+.task-intro__support {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  column-gap: 10px;
-}
-
-.task-intro--with-till {
-  grid-template-columns: minmax(0, 1fr) clamp(86px, 33%, 165px);
   align-items: end;
+  column-gap: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
-.task-intro--with-till .task-intro__copy { padding-right: 0; }
+.task-intro--with-till .task-intro__support {
+  grid-template-columns: minmax(0, 1fr) clamp(86px, 33%, 145px);
+}
+
 .task-intro__copy { padding-bottom: 12px; }
 .task-intro__copy > h1, .explanation-head h2 { overflow-wrap: anywhere; }
 
-.task-intro__context {
-  grid-column: 1 / -1;
-  position: relative;
-  border-top: 1px solid var(--line);
-}
-
-.task-intro__context[data-till-surface]::before {
+.task-intro__support[data-till-surface]::before {
   position: absolute;
-  inset: 0 0 auto auto;
+  inset: auto 0 -8px auto;
   width: 39%;
   height: 8px;
   background: linear-gradient(180deg, #89624425, #89624400);
@@ -213,10 +208,11 @@
   content: "";
 }
 
-.task-intro__context .task-location-line { border: 0; margin: 0; }
+.task-intro__context .task-location-line { border: 0; margin: 0; padding-top: 0; }
+.task-intro__context .task-why-link { margin-top: 4px; }
 
 .task-till-reply {
-  margin: 0 0 5px;
+  margin: 10px 0 5px;
   padding: 10px 12px;
   border-left: 2px solid #d1a379;
   border-radius: 0 6px 6px 0;
@@ -299,10 +295,10 @@
   .home-prelude { grid-template-columns: minmax(0, 1fr) min(42%, 120px); gap: 8px; }
   .home-card-scene .start-meta { gap: 7px; }
   .home-card-scene .start-meta b { min-height: 36px; padding-inline: 9px; }
-  .task-intro--with-till { column-gap: 6px; }
+  .task-intro__support { column-gap: 6px; }
   .explanation-head--with-till { gap: 5px; }
 }
 
 @media (max-height: 440px) and (orientation: landscape) {
-  .task-intro--with-till { grid-template-columns: minmax(0, 1fr) 92px; }
+  .task-intro--with-till .task-intro__support { grid-template-columns: minmax(0, 1fr) 92px; }
 }

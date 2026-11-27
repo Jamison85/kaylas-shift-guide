@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Modal from "./Modal";
 import TillStage from "./TillStage";
 import { contacts } from "../data/guide";
@@ -157,13 +157,15 @@ function HelpDetails({ task, decisionAnswer, step }) {
 
 export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack, till, tillPaused, tillCue }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
-  const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
+  const [selectedStep, setSelectedStep] = useState();
   const [explanation, setExplanation] = useState(null);
   const [spokenTask, setSpokenTask] = useState(null);
   const [inPlaceCue, setInPlaceCue] = useState(null);
   const explanationTrigger = useRef(null);
   const heading = useRef(null);
+  const taskScroll = useRef(null);
   const steps = task.steps.map(normalizedStep);
+  const expandedStep = selectedStep === undefined && mode === "learn" ? 0 : selectedStep;
   const work = workContext(task);
   const showTill = till.preference !== "off" && (mode === "learn" || tillCue?.kind === "milestone");
   const arrivalCue = work === "critical" && tillCue?.kind === "milestone"
@@ -173,20 +175,21 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const talking = spokenTask === task.id;
   const reply = task.decision
     ? task.decision[`${decisionAnswer}Text`] ?? task.decision.question
-    : steps[expandedStep]?.more ?? steps[expandedStep]?.detail ?? task.purpose;
+    : steps[expandedStep]?.more ?? steps[selectedStep]?.detail ?? task.purpose;
   const displayTitle = task.title.replace(/^Start with (?:the )?/i, "");
   const thingsLabel = `${steps.length} ${steps.length === 1 ? "thing" : "things"} to check`;
   const whyLabel = index === 0 ? "Ask Till why this comes first" : "Ask Till why this matters";
   const completeLabel = displayTitle.length <= 22 ? `Complete ${displayTitle} →` : "Complete this task →";
 
   useEffect(() => {
-    setExpandedStep(mode === "learn" ? 0 : null);
+    setSelectedStep(undefined);
     setExplanation(null);
     setSpokenTask(null);
     setInPlaceCue(null);
   }, [task.id, mode]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    taskScroll.current.scrollTop = 0;
     heading.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [task.id]);
@@ -203,7 +206,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
   const toggleStep = (stepIndex) => {
     const opening = expandedStep !== stepIndex;
-    setExpandedStep(opening ? stepIndex : null);
+    setSelectedStep(opening ? stepIndex : null);
     if (opening && showTill && work !== "critical" && till.preference === "full") {
       setInPlaceCue({ kind: "detail", key: Symbol("detail"), taskId: task.id });
     }
@@ -211,7 +214,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
   return (
     <section className="task-focus">
-      <article className="task-card">
+      <article className="task-card" ref={taskScroll}>
         <div className="task-progress" aria-hidden="true"><span style={{ width: `${taskPercent}%` }} /></div>
         <header>
           <span>Task {index + 1} of {total}</span>
@@ -221,32 +224,34 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         <section className={`task-intro ${showTill ? "task-intro--with-till" : ""}`}>
           <div className="task-intro__copy">
             <p className="task-intro__summary">{task.short}</p>
-            <h1 ref={heading} tabIndex={-1}>{displayTitle}</h1>
+            <h1 ref={heading} tabIndex={-1}>{displayTitle.replace(/\bRegister 2\b/g, "Register\u00a02")}</h1>
+          </div>
+          <div className="task-intro__support" data-till-surface={showTill ? "task" : undefined}>
+            <div className="task-intro__context">
+              {task.location && mode === "learn" && (
+                <div className="task-location-line">
+                  <span>Location</span>
+                  <p>{task.location}</p>
+                </div>
+              )}
+              <button
+                type="button"
+                className="task-why-link"
+                onClick={(event) => openExplanation(event.currentTarget, index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose, steps[expandedStep])}
+              >
+                {whyLabel}<span aria-hidden="true">→</span>
+              </button>
+            </div>
+            {showTill && (
+              <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)}
+                onTalk={talkToTill} talking={talking} replyId="task-till-reply" />
+            )}
           </div>
           {showTill && (
-            <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)}
-              onTalk={talkToTill} talking={talking} replyId="task-till-reply" />
+            <div id="task-till-reply" role="status">
+              {talking && <p className="task-till-reply"><strong>Till</strong>{reply}</p>}
+            </div>
           )}
-          <div className="task-intro__context" data-till-surface={showTill ? "task" : undefined}>
-            {task.location && mode === "learn" && (
-              <div className="task-location-line">
-                <span>Location</span>
-                <p>{task.location}</p>
-              </div>
-            )}
-            <button
-              type="button"
-              className="task-why-link"
-              onClick={(event) => openExplanation(event.currentTarget, index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose, steps[expandedStep])}
-            >
-              {whyLabel}<span aria-hidden="true">→</span>
-            </button>
-            {showTill && (
-              <div id="task-till-reply" role="status">
-                {talking && <p className="task-till-reply"><strong>Till</strong>{reply}</p>}
-              </div>
-            )}
-          </div>
         </section>
 
         <div className="steps-heading">

@@ -22,7 +22,7 @@ export function projectArm(shoulder, restElbow, restWrist, target, weight, outwa
   const depth = (maxReach - reach) * 0.59;
   const distance = Math.hypot(reach, depth);
   const direction = [(wrist[0] - shoulder[0]) / distance, (wrist[1] - shoulder[1]) / distance, depth / distance];
-  const pole = [outward * 0.32, 0.93, -0.62];
+  const pole = [outward * 0.18, 0.93, -0.62];
   const parallel = direction.reduce((sum, component, i) => sum + component * pole[i], 0);
   const perpendicular = pole.map((component, i) => component - direction[i] * parallel);
   const along = (upperLength ** 2 - lowerLength ** 2 + distance ** 2) / (2 * distance);

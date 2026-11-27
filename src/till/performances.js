@@ -77,8 +77,8 @@ function handContact(side, target, weight, angle, hand, point = "grip") {
 function gripEdge(pose, y, weight, rightWeight = 0) {
   pose.armFront = rightWeight > 0 ? ["left", "right"] : ["left"];
   pose.edgeHands = pose.armFront.filter(side => (side === "left" ? weight : rightWeight) > 0.56);
-  pose.socketContacts = [handContact("L", [646, y], weight, 14, "ledge", "ledge")];
-  if (rightWeight > 0) pose.socketContacts.push(handContact("R", [405, y - 1], rightWeight, -19, "ledge", "ledge"));
+  pose.socketContacts = [handContact("L", [683, y], weight, 12, "ledge", "ledge")];
+  if (rightWeight > 0) pose.socketContacts.push(handContact("R", [372, y - 1], rightWeight, -14, "ledge", "ledge"));
 }
 
 function riseOverEdge(t, { edgeY, restsOnEdge }) {
@@ -255,14 +255,15 @@ function handlePaper(t, receipt) {
   const read = pulse(t, 0.14, 0.34, 0.69, 0.91);
   const secondLook = pulse(t, 0.49, 0.58, 0.65, 0.77);
   const pose = stance({ x: 5 * lift, y: 7 * lift, lean: lift });
-  const tip = receipt ? -13 * lift + 20 * secondLook : 6 * lift - 8 * secondLook;
+  const scale = receipt ? 1 : 1.3;
+  const tip = receipt ? -13 * lift + 20 * secondLook : 4 * lift - 6 * secondLook;
   const origin = receipt
     ? [612 - 76 * lift + 15 * secondLook, deskY + 22 - 207 * lift - 19 * secondLook]
-    : [438 + 15 * secondLook, deskY + 21 - 190 * lift + 6 * secondLook];
+    : [414 + 11 * secondLook, deskY + 12 - 148 * lift + 6 * secondLook];
   const radians = tip * Math.PI / 180;
   const attach = (x, y) => [
-    origin[0] + x * Math.cos(radians) - y * Math.sin(radians),
-    origin[1] + x * Math.sin(radians) + y * Math.cos(radians),
+    origin[0] + scale * (x * Math.cos(radians) - y * Math.sin(radians)),
+    origin[1] + scale * (x * Math.sin(radians) + y * Math.cos(radians)),
   ];
   look(pose, 3.1 * read - 4.8 * secondLook, [1.4 * read + 1.2 * secondLook, 3.8 * read], {
     mouth: "closed", mouthWeight: 0.59 * read,
@@ -273,10 +274,10 @@ function handlePaper(t, receipt) {
   pose.socketContacts = receipt
     ? [handContact("L", attach(55, 39), grip, 77, "pinch")]
     : [
-        handContact("R", attach(16, 62), grip, -78, "grip"),
-        handContact("L", attach(157, 55), grip, 81, "grip"),
+        handContact("R", attach(12, 56), grip, -62, "grip"),
+        handContact("L", attach(165, 55), grip, 64, "grip"),
       ];
-  pose.workProp = { name: receipt ? "receipt" : "paperwork", origin, angle: tip, opacity: 1 };
+  pose.workProp = { name: receipt ? "receipt" : "paperwork", origin, angle: tip, scale: [scale, scale], opacity: 1 };
   return pose;
 }
 
