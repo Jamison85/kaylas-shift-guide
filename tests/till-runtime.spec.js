@@ -42,7 +42,7 @@ test("Till greets the opener and performs distinct actions as the shift progress
   await enableMotion(page);
   await openGuide(page);
   const home = page.locator(actor("home"));
-  await expect(home).toHaveAttribute("data-till-motion", "wave_hello");
+  await expect(home).toHaveAttribute("data-till-motion", "rise_over_edge");
   await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
 
@@ -98,13 +98,39 @@ test("quiet suppresses background gestures and off preserves task help through a
   await expect(page.locator("[data-till-anchor]")).toHaveCount(0);
 });
 
+test("Till follows the guide from Home and talks about the step the opener selects", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  const home = page.locator(actor("home"));
+  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await home.locator("canvas").evaluate(canvas => { window.tillCanvas = canvas; });
+  await home.getByRole("button", { name: "Talk to Till" }).click();
+  await expect(page.locator("#home-till-reply")).toContainText("Catch anything urgent");
+  await expect(home).toHaveAttribute("data-till-motion", "lean_in");
+  await page.locator(".start").click();
+  const task = page.locator(actor("task"));
+  await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
+  expect(await task.locator("canvas").evaluate(canvas => canvas === window.tillCanvas)).toBe(true);
+  await page.getByRole("button", { name: /Separate urgent from cosmetic/ }).click();
+  await expect(task).toHaveAttribute("data-till-motion", "follow_detail");
+  await task.getByRole("button", { name: "Talk to Till" }).click();
+  await expect(page.locator("#task-till-reply")).toContainText("Handle real safety");
+  await task.getByRole("button", { name: "Talk to Till" }).click();
+  await expect(page.locator("#task-till-reply")).toBeEmpty();
+  await page.locator(".task-why-link").click();
+  const help = page.locator(actor("help"));
+  await expect(help.locator("canvas")).toHaveAttribute("data-ready", "true");
+  expect(await help.locator("canvas").evaluate(canvas => canvas === window.tillCanvas)).toBe(true);
+  await expect(task.locator("canvas")).toHaveCount(0);
+});
+
 test("decision help uses the saved branch and keeps critical actions outside the actor's space", async ({ page }) => {
   await openGuide(page, { completed: ["store-walk"], answers: { "register-two": "no" } });
   await page.setViewportSize({ width: 320, height: 610 });
   await page.locator(".start").click();
   const box = await page.locator(actor("task")).boundingBox();
   const link = await page.locator(".task-why-link").boundingBox();
-  expect(box.x).toBeGreaterThan(link.x + link.width - 1);
+  expect(box.y + box.height).toBeLessThan(link.y);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   const decision = await page.locator(".bubble").locator("b").innerText();
   await page.locator(".task-why-link").click();

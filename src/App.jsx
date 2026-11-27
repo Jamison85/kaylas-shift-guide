@@ -6,6 +6,7 @@ import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage, useStorageWarning } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 import { createTillSession, getTillPreference } from "./till/director";
+import { createTillResident } from "./till/resident";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
@@ -240,7 +241,10 @@ function DailyGuide({ day }) {
   const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
   const [installMessage, setInstallMessage] = useState("");
   const [tillSession] = useState(createTillSession);
+  const [tillResident] = useState(createTillResident);
   const [tillEvent, setTillEvent] = useState(null);
+  const [homeCue, setHomeCue] = useState(null);
+  const [homeTalking, setHomeTalking] = useState(false);
   const tillEventNumber = useRef(0);
   const profileTriggerRef = useRef(null);
   const launchTimer = useRef(null);
@@ -271,10 +275,12 @@ function DailyGuide({ day }) {
   const percent = Math.round((completedCount / guideTasks.length) * 100);
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
-  const till = { session: tillSession, preference: getTillPreference(profile.tillPreference) };
+  const till = { resident: tillResident, session: tillSession, preference: getTillPreference(profile.tillPreference) };
+  const showTill = till.preference !== "off";
   const behindDialog = showProfile || showResetConfirm;
 
   useEffect(() => () => clearTimeout(launchTimer.current), []);
+  useEffect(() => () => tillResident.dispose(), [tillResident]);
 
   const saveName = (name) => {
     setProfile((current) => ({ ...current, name }));
@@ -292,6 +298,17 @@ function DailyGuide({ day }) {
     setTillEvent({ kind, taskId, key: `shift-${tillEventNumber.current}` });
   };
   const startOrResume = () => go(resumeIndex);
+  const goHome = () => {
+    if (screen !== "home") {
+      setHomeTalking(false);
+      setHomeCue(till.preference === "full" ? { kind: "return", key: Symbol("home") } : null);
+    }
+    setScreen("home");
+  };
+  const talkAtHome = () => {
+    setHomeTalking(talking => !talking);
+    setHomeCue({ kind: "talk", key: Symbol("home-talk") });
+  };
   const startFromHome = () => {
     if (isLaunching) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
@@ -397,7 +414,7 @@ function DailyGuide({ day }) {
   return (
     <div className={`shell shell--${screen}`}>
       <header className="mini">
-        <button type="button" onClick={() => setScreen("home")} className="mini__brand" aria-label="Before the Rush home">
+        <button type="button" onClick={goHome} className="mini__brand" aria-label="Before the Rush home">
           <i />
           <span><b>{APP_NAME}</b><small>Opening guide · 2593</small></span>
         </button>
@@ -423,8 +440,8 @@ function DailyGuide({ day }) {
             <div className="home-head">
               <small>Good morning, {displayName}</small>
               <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
-              <div className="home-head__meta">
-                <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>
+              <div className={`home-head__meta ${showTill ? "home-head__meta--with-till" : ""}`}>
+                {!showTill && <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>}
                 <div className="progress-status" aria-label={`${percent}% complete`}>
                   <span>{completedCount}<small>/{guideTasks.length}</small></span>
                   <em>{percent}% done</em>
@@ -433,9 +450,22 @@ function DailyGuide({ day }) {
             </div>
 
             <div className={`home-stage ${isLaunching ? "is-launching" : ""}`}>
-              <div className={`home-card-scene ${till.preference === "off" ? "" : "home-card-scene--with-till"}`}>
+              <div className={`home-card-scene ${showTill ? "home-card-scene--with-till" : ""}`}>
+                {showTill && (
+                  <div className="home-prelude">
+                    <div className="home-till-reply" id="home-till-reply" role="status">
+                      <span>Till</span>
+                      <p>{homeTalking
+                        ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
+                        : allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom}</p>
+                    </div>
+                    <TillStage {...till} anchor="home" cue={homeCue} paused={behindDialog} leaving={isLaunching}
+                      onTalk={talkAtHome} talking={homeTalking} replyId="home-till-reply" />
+                  </div>
+                )}
                 <button type="button" className="start" onClick={startFromHome}>
                   <div className="start-sheet">
+                    {showTill && <span className="start-edge" aria-hidden="true" data-till-surface="home" />}
                     <div className="start-copy">
                       <div className="start-kicker"><small>{allDone ? "Completed" : completedCount ? "Continue" : "First move"}</small><span>Task {resumeIndex + 1} of {guideTasks.length}</span></div>
                       <strong>{nextTask.title}</strong>
@@ -445,7 +475,6 @@ function DailyGuide({ day }) {
                     <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
                   </div>
                 </button>
-                <TillStage {...till} anchor="home" paused={behindDialog || isLaunching} />
               </div>
             </div>
           </section>
@@ -461,7 +490,7 @@ function DailyGuide({ day }) {
         {screen === "complete" && (
           <section className="finish">
             <div className={`finish__card ${till.preference === "off" ? "no-till" : ""}`}>
-              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={requestReset}>Reset today</button></div></div>
+              <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={goHome}>Back home</button><button type="button" onClick={requestReset}>Reset today</button></div></div>
               <TillStage {...till} anchor="finish" cue={tillEvent} paused={behindDialog} />
             </div>
           </section>
@@ -470,8 +499,8 @@ function DailyGuide({ day }) {
 
       {screen === "home" && (
         <nav className="bottom-nav" aria-label="Primary navigation">
-          <button type="button" aria-current="page" className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}><NavIcon name="home" /><small>Home</small></button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
+          <button type="button" aria-current="page" className={screen === "home" ? "active" : ""} onClick={goHome}><NavIcon name="home" /><small>Home</small></button>
+          <button type="button" className={screen === "task" ? "active" : ""} onClick={startFromHome}><NavIcon name="guide" /><small>Guide</small></button>
         </nav>
       )}
 

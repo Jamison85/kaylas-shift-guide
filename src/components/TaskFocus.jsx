@@ -159,14 +159,21 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const taskPercent = Math.round(((index + 1) / total) * 100);
   const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
   const [explanation, setExplanation] = useState(null);
+  const [spokenTask, setSpokenTask] = useState(null);
+  const [inPlaceCue, setInPlaceCue] = useState(null);
   const explanationTrigger = useRef(null);
   const heading = useRef(null);
   const steps = task.steps.map(normalizedStep);
   const work = workContext(task);
   const showTill = till.preference !== "off" && (mode === "learn" || tillCue?.kind === "milestone");
-  const cue = work === "critical" && tillCue?.kind === "milestone"
+  const arrivalCue = work === "critical" && tillCue?.kind === "milestone"
     ? { ...tillCue, kind: "acknowledgement" }
     : tillCue;
+  const cue = inPlaceCue?.taskId === task.id ? inPlaceCue : arrivalCue;
+  const talking = spokenTask === task.id;
+  const reply = task.decision
+    ? task.decision[`${decisionAnswer}Text`] ?? task.decision.question
+    : steps[expandedStep]?.more ?? steps[expandedStep]?.detail ?? task.purpose;
   const displayTitle = task.title.replace(/^Start with (?:the )?/i, "");
   const thingsLabel = `${steps.length} ${steps.length === 1 ? "thing" : "things"} to check`;
   const whyLabel = index === 0 ? "Ask Till why this comes first" : "Ask Till why this matters";
@@ -175,6 +182,8 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   useEffect(() => {
     setExpandedStep(mode === "learn" ? 0 : null);
     setExplanation(null);
+    setSpokenTask(null);
+    setInPlaceCue(null);
   }, [task.id, mode]);
 
   useEffect(() => {
@@ -185,6 +194,19 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const openExplanation = (trigger, label, title, body, step = null) => {
     explanationTrigger.current = trigger;
     setExplanation({ label, title, body, step, key: Symbol("help") });
+  };
+
+  const talkToTill = () => {
+    setSpokenTask(talking ? null : task.id);
+    setInPlaceCue({ kind: "talk", key: Symbol("talk"), taskId: task.id });
+  };
+
+  const toggleStep = (stepIndex) => {
+    const opening = expandedStep !== stepIndex;
+    setExpandedStep(opening ? stepIndex : null);
+    if (opening && showTill && work !== "critical" && till.preference === "full") {
+      setInPlaceCue({ kind: "detail", key: Symbol("detail"), taskId: task.id });
+    }
   };
 
   return (
@@ -200,6 +222,12 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           <div className="task-intro__copy">
             <p className="task-intro__summary">{task.short}</p>
             <h1 ref={heading} tabIndex={-1}>{displayTitle}</h1>
+          </div>
+          {showTill && (
+            <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)}
+              onTalk={talkToTill} talking={talking} replyId="task-till-reply" />
+          )}
+          <div className="task-intro__context" data-till-surface={showTill ? "task" : undefined}>
             {task.location && mode === "learn" && (
               <div className="task-location-line">
                 <span>Location</span>
@@ -213,10 +241,12 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
             >
               {whyLabel}<span aria-hidden="true">→</span>
             </button>
+            {showTill && (
+              <div id="task-till-reply" role="status">
+                {talking && <p className="task-till-reply"><strong>Till</strong>{reply}</p>}
+              </div>
+            )}
           </div>
-          {showTill && (
-            <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)} />
-          )}
         </section>
 
         <div className="steps-heading">
@@ -237,7 +267,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                       className="step-toggle"
                       aria-expanded={isExpanded}
                       aria-controls={isExpanded ? detailsId : undefined}
-                      onClick={() => setExpandedStep(isExpanded ? null : stepIndex)}
+                      onClick={() => toggleStep(stepIndex)}
                     >
                       <b>{stepIndex + 1}</b>
                       <span><strong>{step.title}</strong><small>{isExpanded ? "Hide detail" : "Show detail"}</small></span>
@@ -286,7 +316,8 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       {explanation && (
         <Modal className="panel-zoom" label={explanation.label} returnFocus={explanationTrigger} onClose={() => setExplanation(null)}>
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
-            <div className={`explanation-head ${till.preference === "off" ? "" : "explanation-head--with-till"}`}>
+            <div className={`explanation-head ${till.preference === "off" ? "" : "explanation-head--with-till"}`}
+              data-till-surface={till.preference !== "off" ? "help" : undefined}>
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
               <TillStage {...till} anchor="help" work={work}
                 cue={{ kind: work === "critical" ? "seriousHelp" : "help", key: explanation.key }} />

@@ -28,13 +28,19 @@ class CharacterPlayer extends RigPlayer {
       const index = layers.findIndex(layer => layer.key.startsWith("hand_"));
       layers.splice(index === -1 ? layers.length : index, 0, { key, opacity: prop.opacity, transform });
     }
+    if (this.edgeY) {
+      for (const layer of layers) {
+        const handOnEdge = layer.key.startsWith("hand_") && this.pose.edgeHands?.includes(layer.key.split("_")[1]);
+        if (!handOnEdge) layer.maxY = this.edgeY;
+      }
+    }
     return layers;
   }
 }
 
 const frameMs = 1000 / 30;
 
-export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
+export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
   let player;
   let frame = 0;
   let generation = 0;
@@ -67,11 +73,14 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
     try {
       action.start ??= now;
       const elapsed = now - action.start;
-      const sampleTime = Math.min(1, elapsed / action.duration);
+      const arriving = elapsed < action.arrivalMs;
+      const sampleTime = Math.max(0, Math.min(1, (elapsed - action.arrivalMs) / action.duration));
       if (elapsed >= action.nextFrame - 1 || sampleTime === 1) {
-        draw(samplePerformance(action.clip, sampleTime, anchor.context));
+        const clip = arriving ? getPerformance("rise_over_edge") : action.clip;
+        const poseTime = arriving ? elapsed / action.arrivalMs : sampleTime;
+        draw(samplePerformance(clip, poseTime, stage.context));
         action.nextFrame = (Math.floor((elapsed + 1) / frameMs) + 1) * frameMs;
-        onFrame(sampleTime);
+        onFrame(poseTime);
       }
       if (sampleTime >= 1) {
         action = null;
@@ -82,16 +91,17 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
     }
   }
 
-  async function play(id) {
+  async function play(id, { arriving = false } = {}) {
     const request = ++generation;
     try {
       const clip = getPerformance(id);
       const data = await loadArtwork();
       if (request !== generation || disposed) return;
       player ||= new CharacterPlayer(canvas, {
-        ...data, viewBox: anchor.viewBox, dprCap: 2, observeResize: false,
+        ...data, viewBox: stage.viewBox, dprCap: 2, observeResize: false,
       });
-      action = { clip, duration: clip.duration * 1000, nextFrame: 0 };
+      player.edgeY = stage.edgeY;
+      action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, nextFrame: 0 };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(tick);
     } catch {
@@ -103,6 +113,14 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
   return {
     play,
     stop,
+    setStage(next) {
+      if (stage === next) return;
+      stage = next;
+      if (!player) return;
+      player.edgeY = stage.edgeY;
+      player.setViewBox(stage.viewBox);
+      player.resize();
+    },
     dispose() {
       disposed = true;
       stop();

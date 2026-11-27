@@ -1,23 +1,24 @@
 // Camera bounds in the approved master image's coordinate system.
 // DOM surfaces and the rig use the same bounds to keep contact aligned on resize.
 export const deskY = 759;
+const cardTop = 690;
 const floorShadow = [275, 1401, 510, 54];
 
 export const stages = {
   home: {
-    viewBox: [29, -45, 936, 1520],
-    context: { direction: "left" },
-    floor: floorShadow,
+    viewBox: [75, -38, 875, 786],
+    edgeY: cardTop,
+    context: { direction: "left", edgeY: cardTop, restsOnEdge: true },
   },
   task: {
     viewBox: [100, -34, 823, 850],
-    context: { direction: "left" },
-    desk: [162, deskY, 731, 57],
+    edgeY: deskY,
+    context: { direction: "left", edgeY: deskY },
   },
   help: {
     viewBox: [100, -41, 825, 857],
-    context: { direction: "left" },
-    desk: [158, deskY, 739, 57],
+    edgeY: deskY,
+    context: { direction: "left", edgeY: deskY },
   },
   finish: {
     viewBox: [65, -52, 920, 1522],
@@ -46,4 +47,14 @@ export function positionInStage(stage, bounds) {
 
 export function posterPosition(stage) {
   return positionInStage(stage, posterBounds);
+}
+
+export function stageLayout(stage) {
+  const [, y, width, height] = stage.viewBox;
+  const surfaceHeight = stage.edgeY ? stage.edgeY - y : height;
+  return {
+    aspectRatio: `${width} / ${surfaceHeight}`,
+    "--till-art-height": `${height / surfaceHeight * 100}%`,
+    "--till-overhang": `${(height - surfaceHeight) / height * 100}%`,
+  };
 }

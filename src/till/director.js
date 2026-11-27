@@ -1,4 +1,4 @@
-const homeBreak = ["peek_from_counter", "adjust_glasses", "check_watch", "quiet_laugh"];
+const homeBreak = ["knock_on_edge", "glance_from_edge"];
 const workMotions = {
   walk: ["check_surroundings", "guide_to_step"],
   register: ["check_watch", "rest_on_counter"],
@@ -9,6 +9,9 @@ const workMotions = {
   inventory: ["jot_a_note", "guide_to_step"],
 };
 const reactions = {
+  return: ["rise_over_edge"],
+  talk: ["lean_in"],
+  detail: ["follow_detail"],
   acknowledgement: ["small_nod"],
   milestone: ["celebrate_thumbs"],
   concern: ["face_concerned"],
@@ -43,7 +46,9 @@ export function directTill({
   session, anchor, work, taskId, cue, preference, play, stop, now = () => performance.now(), random = Math.random,
 }) {
   const full = preference === "full";
-  const entrance = anchor === "task" ? workMotions[work] : ["home", "onboarding"].includes(anchor) ? ["wave_hello"] : null;
+  const entrance = anchor === "task" ? workMotions[work]
+    : anchor === "home" ? ["rise_over_edge"]
+    : anchor === "onboarding" ? ["wave_hello"] : null;
   const group = cue?.kind ?? (anchor === "task" ? work : anchor);
   const occurrence = cue?.key ?? (taskId ? `task-${taskId}` : anchor);
   const options = cue ? reactions[cue.kind] : full && entrance;

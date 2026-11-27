@@ -1,35 +1,54 @@
 import { useEffect, useRef } from "react";
 import poster from "../till/art/poster.webp";
 import { directTill } from "../till/director.js";
-import { positionInStage, posterPosition, stages } from "../till/stages.js";
+import { positionInStage, posterPosition, stageLayout, stages } from "../till/stages.js";
 
 const activityEvents = ["pointerdown", "keydown", "scroll", "focusin"];
 const listenerOptions = { capture: true, passive: true };
-let actorModule;
-
-export default function TillStage({ anchor, session, preference, work, taskId, cue, paused = false }) {
+export default function TillStage({
+  anchor, resident, session, preference, work, taskId, cue, paused = false, leaving = false,
+  onTalk, talking, replyId,
+}) {
   const stageRef = useRef(null);
-  const canvasRef = useRef(null);
+  const artRef = useRef(null);
   const stage = stages[anchor];
   const cueKind = cue?.kind;
   const cueKey = cue?.key;
+  const waitingAtHome = anchor === "home" && (!cueKind || cueKind === "return")
+    && !session.visited.has(cueKey ?? anchor);
+  const waitingAtTask = anchor === "task" && !cueKind && work !== "critical"
+    && !session.visited.has(`task-${taskId}`) && resident.movedTo(stage);
+  const waiting = preference === "full" && (waitingAtHome || waitingAtTask);
 
   useEffect(() => {
     const host = stageRef.current;
-    const canvas = canvasRef.current;
-    if (!host || !canvas || paused || preference === "off") return;
+    const art = artRef.current;
+    if (!host || !art || paused || leaving || preference === "off") return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let inView = typeof IntersectionObserver === "undefined";
     let available = false;
     let failed = false;
     let disposed = false;
-    let actor;
     let request = 0;
+
+    const player = resident.claim(art, stage, {
+      onFrame(progress) {
+        if (progress <= 0) return;
+        delete host.dataset.tillWaiting;
+        director.started();
+      },
+      onFinish() {
+        host.dataset.tillMotion = "rest";
+        delete host.dataset.tillSource;
+        director.finish();
+      },
+      onError: usePoster,
+    });
 
     const stop = () => {
       request += 1;
-      actor?.stop();
+      player.stop();
       host.dataset.tillMotion = "still";
       delete host.dataset.tillSource;
     };
@@ -39,26 +58,10 @@ export default function TillStage({ anchor, session, preference, work, taskId, c
       async play(id, source) {
         const token = ++request;
         try {
-          actorModule ||= import("../till/actor.js").catch(error => {
-            actorModule = null;
-            throw error;
-          });
-          const { createActor } = await actorModule;
-          if (disposed || token !== request || !available) return;
-          actor ||= createActor(canvas, stage, {
-            onFrame(progress) {
-              if (progress > 0) director.started();
-            },
-            onFinish() {
-              host.dataset.tillMotion = "rest";
-              delete host.dataset.tillSource;
-              director.finish();
-            },
-            onError: usePoster,
-          });
+          if (!available) return;
           host.dataset.tillMotion = id;
           host.dataset.tillSource = source;
-          await actor.play(id);
+          await player.play(id, source);
         } catch {
           if (token === request && !disposed) usePoster();
         }
@@ -67,7 +70,7 @@ export default function TillStage({ anchor, session, preference, work, taskId, c
 
     function usePoster() {
       failed = true;
-      delete canvas.dataset.ready;
+      delete host.dataset.tillWaiting;
       sync();
     }
 
@@ -76,7 +79,7 @@ export default function TillStage({ anchor, session, preference, work, taskId, c
       host.dataset.tillVisible = String(available);
       director.setAvailable(available);
       if (!available) {
-        delete canvas.dataset.ready;
+        player.stop();
         host.dataset.tillMotion = "still";
       }
     }
@@ -98,21 +101,27 @@ export default function TillStage({ anchor, session, preference, work, taskId, c
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
       director.dispose();
-      actor?.dispose();
-      delete canvas.dataset.ready;
+      player.release();
       host.dataset.tillVisible = "false";
     };
-  }, [anchor, session, preference, work, taskId, cueKey, cueKind, paused, stage]);
+  }, [anchor, resident, session, preference, work, taskId, cueKey, cueKind, paused, leaving, stage]);
 
   if (preference === "off") return null;
   return (
-    <div ref={stageRef} className={`till-stage till-stage--${anchor}`} aria-hidden="true"
+    <div ref={stageRef} className={`till-stage till-stage--${anchor}`}
       data-till-anchor={anchor} data-till-motion="still"
-      style={{ aspectRatio: `${stage.viewBox[2]} / ${stage.viewBox[3]}` }}>
-      {stage.floor && <span className="till-stage__floor" style={positionInStage(stage, stage.floor)} />}
-      <canvas ref={canvasRef} className="till-stage__actor" />
-      <img className="till-stage__poster" src={poster} alt="" draggable="false" style={posterPosition(stage)} />
-      {stage.desk && <span className="till-stage__desk" style={positionInStage(stage, stage.desk)} />}
+      data-till-waiting={waiting || undefined} data-till-away={paused || undefined}
+      data-till-leaving={leaving || undefined} style={stageLayout(stage)}>
+      <div ref={artRef} className="till-stage__art" aria-hidden="true">
+        {stage.floor && <span className="till-stage__floor" style={positionInStage(stage, stage.floor)} />}
+        <div className="till-stage__still">
+          <img className="till-stage__poster" src={poster} alt="" draggable="false" style={posterPosition(stage)} />
+        </div>
+      </div>
+      {onTalk && <button type="button" className="till-stage__talk" onClick={onTalk}
+        disabled={paused || leaving} aria-label="Talk to Till" aria-expanded={talking} aria-controls={replyId}>
+        <span aria-hidden="true">···</span>
+      </button>}
     </div>
   );
 }

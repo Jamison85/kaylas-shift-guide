@@ -96,14 +96,17 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
     attribute vec2 aUv;
     attribute float aOpacity;
     attribute vec4 aClip;
+    attribute float aCutoff;
     uniform vec4 uView;
     varying vec2 vUv;
     varying float vOpacity;
     varying vec4 vClip;
+    varying float vEdge;
     void main() {
       vec2 uv = (aPosition - uView.xy) / uView.zw;
       gl_Position = vec4(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, 0.0, 1.0);
       vUv = aUv; vOpacity = aOpacity; vClip = aClip;
+      vEdge = aCutoff - aPosition.y;
     }`;
   const fragmentShader = `
     precision mediump float;
@@ -111,7 +114,9 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
     varying vec2 vUv;
     varying float vOpacity;
     varying vec4 vClip;
+    varying float vEdge;
     void main() {
+      if (vEdge < 0.0) discard;
       float clip = 1.0;
       if (vClip.z > -9.0) {
         clip = step(0.0,vClip.z) * step(vClip.z,1.0) * step(0.0,vClip.w) * step(vClip.w,1.0);
@@ -145,7 +150,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
     gl.useProgram(program);
 
     const vertices = gl.createBuffer(), indices = gl.createBuffer(), texture = gl.createTexture();
-    const attributes = [["aPosition", 2, 0], ["aUv", 2, 2], ["aOpacity", 1, 4], ["aClip", 4, 5]]
+    const attributes = [["aPosition", 2, 0], ["aUv", 2, 2], ["aOpacity", 1, 4], ["aClip", 4, 5], ["aCutoff", 1, 9]]
       .map(([name, count, offset]) => [gl.getAttribLocation(program, name), count, offset]);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -168,7 +173,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices);
         for (const [location, count, offset] of attributes) {
           gl.enableVertexAttribArray(location);
-          gl.vertexAttribPointer(location, count, gl.FLOAT, false, 36, 4 * offset);
+          gl.vertexAttribPointer(location, count, gl.FLOAT, false, 40, 4 * offset);
         }
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -229,7 +234,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
       this.meshes = Object.fromEntries(Object.entries(this.atlas.regions).map(([name, region]) =>
         [name, generateMesh(region, this.definition.meshes[name], this.atlas.size)]));
       this.bones = Object.fromEntries(this.definition.bones.map(bone => [bone.id, bone]));
-      this.vertexData = new Float32Array(9 * Object.values(this.meshes).reduce((n, m) => n + m.vertices.length, 0));
+      this.vertexData = new Float32Array(10 * Object.values(this.meshes).reduce((n, m) => n + m.vertices.length, 0));
       this.indexData = new Uint16Array(Object.values(this.meshes).reduce((n, m) => n + m.indices.length, 0));
       this.dprCap = options.dprCap ?? 2;
       this.atlasImage = options.image;
@@ -388,9 +393,10 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
             const volume = 1 / Math.max(0.79,norm);
             px = jx + (px-jx)*volume; py = jy + (py-jy)*volume;
           }
-          const idx = vcount++ * 9;
+          const idx = vcount++ * 10;
           vdata[idx] = px; vdata[idx+1] = py; vdata[idx+2] = u; vdata[idx+3] = v;
           vdata[idx+4] = layer.opacity;
+          vdata[idx+9] = layer.maxY ?? 4096;
           if (clip) {
             const s = (x + layer.delta[0] - clip.origin[0]) / clip.sourceSize[0];
             const t = (y + layer.delta[1] - clip.origin[1]) / clip.sourceSize[1];
@@ -406,7 +412,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
       gl.viewport(0,0,this.canvas.width,this.canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform4fv(view, this.viewport());
-      gl.bufferData(gl.ARRAY_BUFFER, vdata.subarray(0,vcount*9), gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, vdata.subarray(0,vcount*10), gl.DYNAMIC_DRAW);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idata.subarray(0,icount), gl.DYNAMIC_DRAW);
       gl.drawElements(gl.TRIANGLES,icount,gl.UNSIGNED_SHORT,0);
       this.stats = {vertices:vcount, triangles:icount/3, drawCalls:1};

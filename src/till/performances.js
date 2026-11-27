@@ -73,6 +73,63 @@ function handContact(side, target, weight, angle, hand, point = "grip") {
   return { side, target, weight, angle, hand, socket: point, range: 15, bend: side === "L" ? 1 : -1 };
 }
 
+function gripEdge(pose, y, weight, rightWeight = 0) {
+  pose.armFront = rightWeight > 0 ? ["left", "right"] : ["left"];
+  pose.edgeHands = pose.armFront.filter(side => (side === "left" ? weight : rightWeight) > 0.56);
+  pose.socketContacts = [handContact("L", [646, y], weight, 14, "ledge", "ledge")];
+  if (rightWeight > 0) pose.socketContacts.push(handContact("R", [405, y - 1], rightWeight, -19, "ledge", "ledge"));
+}
+
+function riseOverEdge(t, { edgeY, restsOnEdge }) {
+  const rise = between(t, 0.02, 0.63);
+  const grip = pulse(t, 0.49, 0.65, 0.75, 0.99);
+  const peek = pulse(t, 0.28, 0.46, 0.61, 0.96);
+  const pose = { bones: {} };
+  shift(pose.bones, "root", 18 * (1 - rise), (edgeY + 6) * (1 - rise));
+  angle(pose.bones, "chest", -4.8 * peek);
+  look(pose, 6.4 * peek, [-1.8 * peek, -1.1 * peek], {
+    brow: 2.4 * peek, blink: blink(t, 0.69, 0.042, 0.072),
+  });
+  const rest = restsOnEdge ? between(t, 0.49, 0.67) : 0;
+  gripEdge(pose, edgeY + 4, Math.max(grip, rest), grip);
+  return pose;
+}
+
+function leanIn(t, { edgeY, restsOnEdge }, detail = false) {
+  const listen = pulse(t, 0.025, 0.29, 0.68, 0.995);
+  const nod = pulse(t, 0.47, 0.55, 0.58, 0.71);
+  const pose = stance({ x: -18 * listen, y: 13 * listen, lean: -1.1 * listen });
+  angle(pose.bones, "chest", -4.3 * listen);
+  shift(pose.bones, "neck", -9 * listen, 8 * listen);
+  look(pose, -2.3 * listen + 5.5 * nod, [detail ? -3.2 * listen : -0.7 * listen, detail ? 3.6 * listen : 1.5 * nod], {
+    mouth: "subtle_smile", mouthWeight: 0.48 * listen, brow: 1.43 * listen,
+    blink: blink(t, 0.33, 0.027, 0.051),
+  });
+  gripEdge(pose, edgeY + 4, restsOnEdge ? 1 : listen);
+  return pose;
+}
+
+function knock(t, { edgeY }) {
+  const reach = pulse(t, 0.03, 0.32, 0.72, 0.99);
+  const tap = pulse(t, 0.33, 0.4, 0.43, 0.47) + pulse(t, 0.49, 0.56, 0.59, 0.65);
+  const pose = stance({ x: 9 * reach, y: 6 * reach });
+  look(pose, 4.5 * reach - 3 * tap, [1.5 * reach, 2.8 * reach], {
+    brow: 0.92 * reach, blink: blink(t, 0.5, 0.02, 0.038),
+  });
+  gripEdge(pose, edgeY + 4 - 19 * (reach - tap), 1);
+  return pose;
+}
+
+function glanceFromEdge(t, { edgeY }) {
+  const turn = pulse(t, 0.12, 0.32, 0.58, 0.95);
+  const pose = { bones: {} };
+  look(pose, -3.3 * turn, [-3.2 * turn, 1.7 * turn], {
+    blink: blink(t, 0.68, 0.035, 0.071), brow: 1 * turn,
+  });
+  gripEdge(pose, edgeY + 4, 1);
+  return pose;
+}
+
 function handlePaper(t, receipt) {
   const grip = pulse(t, 0.025, 0.21, 0.87, 0.99);
   const lift = pulse(t, 0.16, 0.38, 0.72, 0.9);
@@ -142,37 +199,8 @@ function restOnCounter(t) {
     blink: blink(t, 0.47, 0.025, 0.06), brow: 1.02 * weight,
   });
   pose.armFront = ["left"];
+  pose.edgeHands = ["left"];
   pose.socketContacts = [handContact("L", [756, deskY + 2], reach, -10, "open_palm")];
-  return pose;
-}
-
-function stepAside(t, from, distance) {
-  const travel = between(t, 0.05, 0.95);
-  const load = Math.sin(Math.PI * travel);
-  const pose = stance({ y: 13 * load, lean: 2.1 * Math.sign(distance) * load });
-  shift(pose.bones, "root", from + distance * travel, 0);
-  const lead = distance > 0 ? "L" : "R";
-  for (const side of ["R", "L"]) {
-    const first = side === lead;
-    const phase = between(t, first ? 0.01 : 0.48, first ? 0.51 : 0.98);
-    const foot = pose.ik["foot" + side];
-    foot.target[0] += from + distance * phase;
-    foot.target[1] -= 42 * Math.sin(Math.PI * phase);
-    angle(pose.bones, "upperArm" + side, (first ? -1 : 1) * load * 5);
-  }
-  return pose;
-}
-
-function peek(t) {
-  const distance = 132;
-  if (t < 0.29) return stepAside(t / 0.29, 0, distance);
-  if (t > 0.68) return stepAside((t - 0.68) / 0.32, distance, -distance);
-  const lean = pulse(t, 0.29, 0.44, 0.57, 0.68);
-  const pose = stepAside(1, 0, distance);
-  angle(pose.bones, "chest", -11.6 * lean);
-  look(pose, 7.1 * lean, [-4.4 * lean, 0.25 * lean], {
-    blink: blink(t, 0.51, 0.02, 0.045), browByEye: { right: 1.7 * lean, left: 0.65 * lean },
-  });
   return pose;
 }
 
@@ -187,6 +215,11 @@ function settleShift(t, context) {
 }
 
 const performances = {
+  rise_over_edge: { duration: 1.21, fromBehindEdge: true, sample: riseOverEdge },
+  lean_in: { duration: 1.62, sample: leanIn },
+  follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
+  knock_on_edge: { duration: 1.8, sample: knock },
+  glance_from_edge: { duration: 2.1, sample: glanceFromEdge },
   wave_hello: { duration: 2.75, sample: greet },
   guide_to_step: { duration: 2.15, sample: t => orient(t) },
   check_surroundings: { duration: 2.55, sample: scan },
@@ -197,7 +230,6 @@ const performances = {
   jot_a_note: { duration: 3.18, sample: (t, context) => makeNote(t, context, true) },
   follow_line: { duration: 2.65, sample: followLine },
   rest_on_counter: { duration: 3.05, sample: restOnCounter },
-  peek_from_counter: { duration: 4.05, sample: peek },
   offer_help: { duration: 2.35, sample: t => orient(t, { palm: true }) },
   emphasize_detail: { duration: 2.05, sample: t => orient(t, { emphasis: true }) },
   wrap_shift: { duration: 2.85, sample: settleShift },
@@ -210,5 +242,8 @@ export function getPerformance(id) {
 }
 
 export function samplePerformance(clip, time, context) {
-  return time > 0 && time < 1 ? clip.sample(time, context) : {};
+  if (time < 1 && (time > 0 || clip.fromBehindEdge)) return clip.sample(time, context);
+  const pose = {};
+  if (context.restsOnEdge) gripEdge(pose, context.edgeY + 4, 1);
+  return pose;
 }
