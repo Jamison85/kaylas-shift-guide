@@ -1,4 +1,5 @@
-const homeBreak = ["knock_on_edge", "glance_from_edge"];
+const homeBreak = ["send_tube_note", "coffee_break", "fly_paper_airplane", "knock_on_edge", "glance_from_edge"];
+const workBreak = ["coffee_break", "fly_paper_airplane"];
 const workMotions = {
   walk: ["check_surroundings", "guide_to_step"],
   register: ["check_watch", "rest_on_counter"],
@@ -12,6 +13,7 @@ const reactions = {
   return: ["rise_over_edge"],
   talk: ["lean_in"],
   detail: ["follow_detail"],
+  tube: ["send_tube_note"],
   acknowledgement: ["small_nod"],
   milestone: ["celebrate_thumbs"],
   concern: ["face_concerned"],
@@ -52,8 +54,8 @@ export function directTill({
   const group = cue?.kind ?? (anchor === "task" ? work : anchor);
   const occurrence = cue?.key ?? (taskId ? `task-${taskId}` : anchor);
   const options = cue ? reactions[cue.kind] : full && entrance;
-  const ambient = full && (anchor === "home" ? homeBreak : anchor === "task" && workMotions[work]);
-  const idleDelay = anchor === "home" ? 8200 : 16800;
+  const ambient = full && (anchor === "home" ? homeBreak : anchor === "task" && workMotions[work] && workBreak);
+  const idleDelay = anchor === "home" ? 5800 : 13900;
   let pending = Boolean(options && !session.visited.has(occurrence));
   let enabled = false;
   let active = null;
@@ -89,7 +91,11 @@ export function directTill({
       }
       const recent = session.recent.slice(-(ambient.length - 1));
       const choices = ambient.filter(id => !recent.includes(id));
-      begin(choices[Math.floor(random() * choices.length)], "ambient");
+      const firstHomeBreak = anchor === "home" && !session.choices.has("home-break");
+      const id = firstHomeBreak && choices.includes("send_tube_note")
+        ? "send_tube_note"
+        : choices[Math.floor(random() * choices.length)];
+      begin(id, "ambient");
     }, delay);
   }
 
@@ -106,6 +112,10 @@ export function directTill({
     },
     noteActivity() {
       lastActivity = now();
+      if (active?.source === "ambient") {
+        active = null;
+        stop();
+      }
       if (!active && !pending) queue();
     },
     started() {
@@ -113,6 +123,7 @@ export function directTill({
       active.started = true;
       session.recent = [...session.recent.filter(id => id !== active.id), active.id].slice(-3);
       if (active.source === "ambient") {
+        if (anchor === "home") session.choices.set("home-break", 1);
         session.nextAmbient = now() + 16500 + random() * 9500;
       } else {
         pending = false;

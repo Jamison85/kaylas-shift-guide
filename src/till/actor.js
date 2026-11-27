@@ -54,6 +54,20 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
     canvas.dataset.ready = "true";
   }
 
+  function placeScenery(scenery) {
+    const prop = scenery?.prop;
+    if (!prop) return scenery;
+    if (prop.held) {
+      const grip = player.getAnchor(prop.held.anchor);
+      action.propOffset = grip.map((value, i) => value + prop.held.offset[i] - (i === 0 ? prop.x : prop.y));
+    }
+    if (!action.propOffset || !prop.releaseBlend) return scenery;
+    const [x, y] = action.propOffset;
+    return { ...scenery, prop: {
+      ...prop, x: prop.x + x * prop.releaseBlend, y: prop.y + y * prop.releaseBlend,
+    } };
+  }
+
   function stop() {
     generation += 1;
     cancelAnimationFrame(frame);
@@ -78,9 +92,10 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
       if (elapsed >= action.nextFrame - 1 || sampleTime === 1) {
         const clip = arriving ? getPerformance("rise_over_edge") : action.clip;
         const poseTime = arriving ? elapsed / action.arrivalMs : sampleTime;
-        draw(samplePerformance(clip, poseTime, stage.context));
+        const pose = samplePerformance(clip, poseTime, stage.context);
+        draw(pose);
         action.nextFrame = (Math.floor((elapsed + 1) / frameMs) + 1) * frameMs;
-        onFrame(poseTime);
+        onFrame(poseTime, placeScenery(pose.scenery));
       }
       if (sampleTime >= 1) {
         action = null;

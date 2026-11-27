@@ -1,5 +1,6 @@
 import { Motion } from "./rig.js";
 import { deskY } from "./stages.js";
+import { noteTube } from "./scenery.js";
 
 const { angle, arm, between, blink, knots, pulse, shift, stance, v } = Motion;
 
@@ -130,6 +131,78 @@ function glanceFromEdge(t, { edgeY }) {
   return pose;
 }
 
+function sendTubeNote(t, { edgeY }) {
+  const tube = noteTube;
+  const carrying = pulse(t, 0.025, 0.16, 0.44, 0.57);
+  const watch = pulse(t, 0.21, 0.39, 0.84, 0.99);
+  const flight = Math.max(0, Math.min(1, (t - 0.56) / 0.28));
+  const x = knots(t, [[0, 633], [0.17, 674], [0.3, 746], [0.44, tube.x]]);
+  const y = flight > 0
+    ? tube.hatchY + (tube.exitY - tube.hatchY) * flight ** 1.55
+    : knots(t, [[0, edgeY + 61], [0.19, 547], [0.33, 494], [0.44, tube.hatchY]]);
+  const pose = stance({ x: 25 * watch, y: 8 * watch, lean: 1.2 * watch });
+  angle(pose.bones, "chest", 2.9 * watch);
+  look(pose, 3 * watch - 8.5 * flight * watch, [4.6 * watch, (3.1 - 7.5 * flight) * watch], {
+    blink: blink(t, 0.48, 0.017, 0.04),
+    browByEye: { right: 0.55 * watch, left: 2 * watch * flight },
+    mouth: "subtle_smile", mouthWeight: 0.44 * watch,
+  });
+  if (carrying > 0) {
+    pose.armFront = ["left"];
+    const palm = knots(t, [[0, 1], [0.17, -49], [0.35, -72], [0.5, -51]]);
+    pose.socketContacts = [handContact("L", [x - 23, y + 15], carrying, palm, "grip")];
+  } else {
+    gripEdge(pose, edgeY + 4, 1);
+  }
+  const tubePhase = t < 0.32 ? "idle" : t < 0.48 ? "loading" : t < 0.56 ? "sealed" : t < 0.84 ? "firing" : "idle";
+  pose.scenery = { tubePhase };
+  if (t < 0.85) pose.scenery.prop = { name: "capsule", x, y, angle: 26 * (1 - between(t, 0.25, 0.44)) };
+  return pose;
+}
+
+function coffeeBreak(t, { edgeY, restsOnEdge }) {
+  const holdCup = pulse(t, 0.035, 0.2, 0.84, 0.995);
+  const toast = pulse(t, 0.21, 0.44, 0.65, 0.92);
+  const x = knots(t, [[0, 383], [0.2, 407], [0.45, 414], [0.64, 418], [0.85, 404], [1, 383]]);
+  const y = knots(t, [[0, edgeY + 67], [0.2, 562], [0.45, 444], [0.58, 449], [0.85, 571], [1, edgeY + 67]]);
+  const pose = stance({ x: -13 * toast, y: 6 * toast, lean: -1.2 * toast });
+  look(pose, -5.1 * toast, [-2.1 * holdCup, 1.6 * holdCup], {
+    mouth: "subtle_smile", mouthWeight: 0.45 * toast, blink: blink(t, 0.52, 0.045, 0.075),
+    brow: 1.85 * toast,
+  });
+  if (restsOnEdge) gripEdge(pose, edgeY + 4, 1);
+  pose.armFront = [...(pose.armFront || []), "right"];
+  pose.socketContacts = [...(pose.socketContacts || []), handContact("R", [x - 37, y + 18], holdCup, -92, "grip")];
+  pose.scenery = { prop: { name: "mug", x, y, angle: -8 * toast } };
+  return pose;
+}
+
+function flyPaperAirplane(t, { edgeY, restsOnEdge }) {
+  const release = 0.46;
+  const holdPlane = pulse(t, 0.025, 0.15, release, 0.65);
+  const aim = pulse(t, 0.18, 0.31, 0.77, 0.98);
+  const wrist = [
+    knots(t, [[0, 350], [0.23, 302], [0.36, 300], [release, 274], [0.53, 263], [0.7, 343]]),
+    knots(t, [[0, edgeY + 95], [0.23, 575], [0.36, 528], [release, 501], [0.53, 523], [0.7, 669]]),
+  ];
+  const x = knots(t, [[0, 333], [0.23, 268], [0.36, 266], [release, 232], [0.59, 150], [0.72, 178], [0.86, 245], [1, 293]]);
+  const y = knots(t, [[0, edgeY + 70], [0.23, 550], [0.36, 501], [release, 472], [0.59, 361], [0.72, 438], [0.86, 564], [1, edgeY + 72]]);
+  const pose = stance({ x: -12 * aim, y: 6 * aim, lean: -1.4 * aim });
+  look(pose, -4.4 * aim, [-4.2 * aim, (y - 450) / 95 * aim], {
+    browByEye: { right: 1.9 * aim, left: 0.85 * aim }, blink: blink(t, 0.83, 0.018, 0.04),
+  });
+  if (restsOnEdge) gripEdge(pose, edgeY + 4, 1);
+  pose.armFront = [...(pose.armFront || []), "right"];
+  arm(pose, "R", wrist, holdPlane, 110, t < release ? "grip" : "open_palm");
+  const angle = knots(t, [[0, -3], [release, 10], [0.58, 22], [0.74, -33], [0.93, -84]]);
+  const held = t < release ? { anchor: "gripR", offset: [-16, -19] } : null;
+  pose.scenery = { prop: {
+    name: "airplane", x, y, angle, held,
+    releaseBlend: 1 - between(t, release, 0.61),
+  } };
+  return pose;
+}
+
 function handlePaper(t, receipt) {
   const grip = pulse(t, 0.025, 0.21, 0.87, 0.99);
   const lift = pulse(t, 0.16, 0.38, 0.72, 0.9);
@@ -220,6 +293,9 @@ const performances = {
   follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
   knock_on_edge: { duration: 1.8, sample: knock },
   glance_from_edge: { duration: 2.1, sample: glanceFromEdge },
+  send_tube_note: { duration: 3.55, sample: sendTubeNote },
+  coffee_break: { duration: 3.48, sample: coffeeBreak },
+  fly_paper_airplane: { duration: 3.2, sample: flyPaperAirplane },
   wave_hello: { duration: 2.75, sample: greet },
   guide_to_step: { duration: 2.15, sample: t => orient(t) },
   check_surroundings: { duration: 2.55, sample: scan },

@@ -8,6 +8,8 @@ The scene loads its renderer when it first needs motion. The player only draws f
 
 Tapping Till opens an inline reply from the current task or selected step. The longer Ask Till explanation continues to use the guide’s existing help dialog and decision context.
 
+The Home tube can play during a pause or send a note on demand. A frame describes the position of each prop and the condition of the tube, so the sleeve, capsule, and hand follow the same motion. Coffee and paper airplanes also appear during quiet moments on noncritical Learn screens. Ambient performances yield to interaction.
+
 Operational copy lives in `src/data/guide.js`. The service worker precaches the hashed rig, still, and textures alongside the app. Its existing update cycle lets open shifts finish on their current build.
 
 The pre-overhaul production revision is on `backup/pre-till-animation-overhaul-2026-11-26`.

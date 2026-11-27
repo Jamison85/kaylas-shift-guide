@@ -124,6 +124,30 @@ test("Till follows the guide from Home and talks about the step the opener selec
   await expect(task.locator("canvas")).toHaveCount(0);
 });
 
+test("the tube delivers a note with touch or keyboard and works with reduced motion", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page, { preference: "quiet" });
+  const home = page.locator(actor("home"));
+  const trigger = home.getByRole("button", { name: "Send a tube note" });
+  const scenery = home.locator(".till-scenery");
+  await trigger.press("Enter");
+  await expect(home).toHaveAttribute("data-till-motion", "send_tube_note");
+  await expect(scenery).toHaveAttribute("data-till-prop", "capsule");
+  await expect(scenery).toHaveAttribute("data-tube-phase", "firing");
+  await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(scenery).toHaveAttribute("data-till-prop", "");
+  await page.setViewportSize({ width: 320, height: 610 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await trigger.click();
+  await expect(page.locator("#home-till-reply")).toContainText("a working pen");
+  await expect(home).toHaveAttribute("data-till-motion", "still");
+  const launch = await page.locator(".start-meta b").boundingBox();
+  const nav = await page.locator(".bottom-nav").boundingBox();
+  expect(launch.y + launch.height).toBeLessThan(nav.y);
+  await page.locator(".start").click();
+  await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
+});
+
 test("decision help uses the saved branch and keeps critical actions outside the actor's space", async ({ page }) => {
   await openGuide(page, { completed: ["store-walk"], answers: { "register-two": "no" } });
   await page.setViewportSize({ width: 320, height: 610 });

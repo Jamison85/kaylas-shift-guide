@@ -1,16 +1,19 @@
 import { useEffect, useRef } from "react";
 import poster from "../till/art/poster.webp";
+import TillScenery from "./TillScenery";
 import { directTill } from "../till/director.js";
+import { paintScenery } from "../till/scenery.js";
 import { positionInStage, posterPosition, stageLayout, stages } from "../till/stages.js";
 
 const activityEvents = ["pointerdown", "keydown", "scroll", "focusin"];
 const listenerOptions = { capture: true, passive: true };
 export default function TillStage({
   anchor, resident, session, preference, work, taskId, cue, paused = false, leaving = false,
-  onTalk, talking, replyId,
+  onTalk, talking, replyId, onSendTube, onReceiveNote,
 }) {
   const stageRef = useRef(null);
   const artRef = useRef(null);
+  const sceneryRef = useRef(null);
   const stage = stages[anchor];
   const cueKind = cue?.kind;
   const cueKey = cue?.key;
@@ -31,14 +34,24 @@ export default function TillStage({
     let failed = false;
     let disposed = false;
     let request = 0;
+    let sending = false;
+    const scenery = sceneryRef.current;
+
+    function deliverNote() {
+      if (!sending) return;
+      sending = false;
+      onReceiveNote?.();
+    }
 
     const player = resident.claim(art, stage, {
-      onFrame(progress) {
+      onFrame(progress, frame) {
+        paintScenery(scenery, stage, frame);
         if (progress <= 0) return;
         delete host.dataset.tillWaiting;
         director.started();
       },
       onFinish() {
+        deliverNote();
         host.dataset.tillMotion = "rest";
         delete host.dataset.tillSource;
         director.finish();
@@ -48,6 +61,8 @@ export default function TillStage({
 
     const stop = () => {
       request += 1;
+      sending = false;
+      paintScenery(scenery, stage);
       player.stop();
       host.dataset.tillMotion = "still";
       delete host.dataset.tillSource;
@@ -61,6 +76,7 @@ export default function TillStage({
           if (!available) return;
           host.dataset.tillMotion = id;
           host.dataset.tillSource = source;
+          sending = id === "send_tube_note";
           await player.play(id, source);
         } catch {
           if (token === request && !disposed) usePoster();
@@ -69,12 +85,14 @@ export default function TillStage({
     });
 
     function usePoster() {
+      if (cueKind === "tube") deliverNote();
       failed = true;
       delete host.dataset.tillWaiting;
       sync();
     }
 
     function sync() {
+      if (motion.matches && cueKind === "tube") deliverNote();
       available = inView && document.visibilityState !== "hidden" && !motion.matches && !failed;
       host.dataset.tillVisible = String(available);
       director.setAvailable(available);
@@ -104,23 +122,31 @@ export default function TillStage({
       player.release();
       host.dataset.tillVisible = "false";
     };
-  }, [anchor, resident, session, preference, work, taskId, cueKey, cueKind, paused, leaving, stage]);
+  }, [anchor, resident, session, preference, work, taskId, cueKey, cueKind, paused, leaving, stage, onReceiveNote]);
 
   if (preference === "off") return null;
   return (
     <div ref={stageRef} className={`till-stage till-stage--${anchor}`}
       data-till-anchor={anchor} data-till-motion="still"
       data-till-waiting={waiting || undefined} data-till-away={paused || undefined}
-      data-till-leaving={leaving || undefined} style={stageLayout(stage)}>
+      data-till-leaving={leaving || undefined} data-till-tube={Boolean(onSendTube) || undefined} style={stageLayout(stage)}>
       <div ref={artRef} className="till-stage__art" aria-hidden="true">
         {stage.floor && <span className="till-stage__floor" style={positionInStage(stage, stage.floor)} />}
         <div className="till-stage__still">
           <img className="till-stage__poster" src={poster} alt="" draggable="false" style={posterPosition(stage)} />
         </div>
+        {(onSendTube || anchor === "task") && <TillScenery stage={stage} sceneryRef={sceneryRef} hasTube={Boolean(onSendTube)} />}
       </div>
       {onTalk && <button type="button" className="till-stage__talk" onClick={onTalk}
         disabled={paused || leaving} aria-label="Talk to Till" aria-expanded={talking} aria-controls={replyId}>
         <span aria-hidden="true">···</span>
+      </button>}
+      {onSendTube && <button type="button" className="till-tube-trigger" disabled={paused || leaving}
+        aria-label="Send a tube note" aria-controls={replyId} onClick={() => {
+          const { tillMotion, tillVisible } = stageRef.current.dataset;
+          if (tillMotion !== "send_tube_note") onSendTube(tillVisible === "true");
+        }}>
+        <span aria-hidden="true">↑</span>
       </button>}
     </div>
   );

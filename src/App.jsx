@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Modal from "./components/Modal";
 import TillStage from "./components/TillStage";
 import TaskFocus from "./components/TaskFocus";
@@ -7,6 +7,7 @@ import { useLocalStorage, useStorageWarning } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
 import { createTillSession, getTillPreference } from "./till/director";
 import { createTillResident } from "./till/resident";
+import { tubeNotes } from "./till/scenery";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
@@ -245,6 +246,8 @@ function DailyGuide({ day }) {
   const [tillEvent, setTillEvent] = useState(null);
   const [homeCue, setHomeCue] = useState(null);
   const [homeTalking, setHomeTalking] = useState(false);
+  const [homeNote, setHomeNote] = useState(null);
+  const nextTubeNote = useRef(0);
   const tillEventNumber = useRef(0);
   const profileTriggerRef = useRef(null);
   const launchTimer = useRef(null);
@@ -301,13 +304,24 @@ function DailyGuide({ day }) {
   const goHome = () => {
     if (screen !== "home") {
       setHomeTalking(false);
+      setHomeNote(null);
       setHomeCue(till.preference === "full" ? { kind: "return", key: Symbol("home") } : null);
     }
     setScreen("home");
   };
   const talkAtHome = () => {
+    setHomeNote(null);
     setHomeTalking(talking => !talking);
     setHomeCue({ kind: "talk", key: Symbol("home-talk") });
+  };
+  const receiveTubeNote = useCallback(() => {
+    setHomeTalking(false);
+    setHomeNote(tubeNotes[nextTubeNote.current % tubeNotes.length]);
+    nextTubeNote.current += 1;
+  }, []);
+  const sendTubeNote = (animated) => {
+    if (animated) setHomeCue({ kind: "tube", key: Symbol("tube") });
+    else receiveTubeNote();
   };
   const startFromHome = () => {
     if (isLaunching) return;
@@ -453,14 +467,15 @@ function DailyGuide({ day }) {
               <div className={`home-card-scene ${showTill ? "home-card-scene--with-till" : ""}`}>
                 {showTill && (
                   <div className="home-prelude">
-                    <div className="home-till-reply" id="home-till-reply" role="status">
-                      <span>Till</span>
+                    <div className="home-till-reply" id="home-till-reply" role="status" data-tube-note={homeNote ? true : undefined}>
+                      <span>{homeNote ? "Tube note from Till" : "Till"}</span>
                       <p>{homeTalking
                         ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
-                        : allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom}</p>
+                        : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom)}</p>
                     </div>
                     <TillStage {...till} anchor="home" cue={homeCue} paused={behindDialog} leaving={isLaunching}
-                      onTalk={talkAtHome} talking={homeTalking} replyId="home-till-reply" />
+                      onTalk={talkAtHome} talking={homeTalking} replyId="home-till-reply"
+                      onSendTube={sendTubeNote} onReceiveNote={receiveTubeNote} />
                   </div>
                 )}
                 <button type="button" className="start" onClick={startFromHome}>

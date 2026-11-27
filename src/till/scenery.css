@@ -1,0 +1,216 @@
+.till-scenery,
+.till-scenery__props {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.till-scenery__props {
+  z-index: 3;
+  clip-path: inset(0 0 var(--till-overhang));
+}
+
+.till-tube__shaft,
+.till-tube__hatch {
+  position: absolute;
+  z-index: 1;
+  display: block;
+}
+
+.till-tube__shaft {
+  border-inline: 1px solid #acd1d293;
+  border-radius: 6px 6px 1px 1px;
+  background: linear-gradient(90deg, #123345bb, #5d9caa26 24%, #a7dfe844 29%, #a7dfe805 47%, #a1d0d64d 81%, #1a4050b8);
+  box-shadow: inset 1px 0 #d6f3ef52, inset -2px 0 #192c3b9c, 2px 0 9px #030c14a8;
+}
+
+.till-tube__shaft::before,
+.till-tube__shaft::after {
+  position: absolute;
+  inset-inline: -2px;
+  height: 6px;
+  border-radius: 2px;
+  background: linear-gradient(#758d9c, #b4c3c4 25%, #68737a 33%, #243747 82%);
+  box-shadow: 0 1px 3px #061421;
+  content: "";
+}
+
+.till-tube__shaft::before { top: 10%; }
+.till-tube__shaft::after { bottom: 0; }
+
+.till-tube__hatch {
+  border: 1px solid #d5ac77ad;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(90deg, #483425, #9c764f 19%, #654b37 77%, #2d2829);
+  box-shadow: 0 2px 7px #07111d80, inset 0 1px #f2d09b75;
+}
+
+.till-tube__hatch i {
+  position: absolute;
+  inset: 9% 8% 32%;
+  border: 1px solid #c8d4cc7d;
+  border-radius: 3px;
+  background: linear-gradient(105deg, #b1d5d073, #254550 35%, #0d2633 80%);
+  box-shadow: inset 0 0 4px #00111c;
+  transform-origin: right center;
+  transition: transform 120ms ease-out, box-shadow 100ms ease-out;
+}
+
+.till-scenery[data-tube-phase="loading"] .till-tube__hatch i {
+  transform: perspective(36px) rotateY(-60deg);
+}
+
+.till-scenery[data-tube-phase="firing"] .till-tube__shaft {
+  box-shadow: inset 0 0 7px #bfe9ec88, 0 0 10px #77d9e86b;
+}
+
+.till-scenery[data-tube-phase="firing"] .till-tube__hatch i {
+  box-shadow: inset 0 0 6px #ffdf9dcc;
+}
+
+.till-prop {
+  position: absolute;
+  display: none;
+  top: var(--prop-y);
+  left: var(--prop-x);
+  transform: translate(-50%, -50%) rotate(var(--prop-angle));
+}
+
+.till-scenery[data-till-prop="capsule"] .till-prop--capsule,
+.till-scenery[data-till-prop="airplane"] .till-prop--airplane,
+.till-scenery[data-till-prop="mug"] .till-prop--mug { display: block; }
+
+.till-prop--capsule {
+  border: 1px solid #eaf5edb0;
+  border-radius: 33%;
+  background: linear-gradient(90deg, #6e959b, #c5ded488 28%, #f2ffed36 57%, #a6c7c4c9);
+  box-shadow: 0 2px 3px #03091180, inset 0 2px #a95643, inset 0 -2px #883f37;
+}
+
+.till-prop--capsule i {
+  position: absolute;
+  inset: 21% 21% 18%;
+  border-radius: 1px;
+  background: repeating-linear-gradient(#f8e5bb 0 2px, #b48c59 2px 3px);
+  transform: rotate(-10deg);
+}
+
+.till-prop--airplane {
+  filter: drop-shadow(1px 2px 2px #091a2b73);
+}
+
+.till-prop--airplane::before,
+.till-prop--airplane i {
+  position: absolute;
+  inset: 0;
+  background: #ffefcf;
+  clip-path: polygon(0 23%, 100% 2%, 74% 63%, 56% 65%, 46% 98%);
+  content: "";
+}
+
+.till-prop--airplane i {
+  background: #a87f59;
+  clip-path: polygon(0 23%, 77% 46%, 47% 97%, 39% 61%);
+}
+
+.till-prop--mug {
+  filter: drop-shadow(1px 2px 2px #09162769);
+}
+
+.till-prop--mug::before,
+.till-prop--mug::after {
+  position: absolute;
+  content: "";
+}
+
+.till-prop--mug::before {
+  inset: 28% 62% 26% 1%;
+  border: 2px solid #c79665;
+  border-radius: 40% 20% 31% 47%;
+}
+
+.till-prop--mug::after {
+  inset: 3% 0 0 22%;
+  border-radius: 25% 24% 37% 40%;
+  background: linear-gradient(90deg, #a36c48, #e7b183 32%, #ffdbad 58%, #be805a),
+    #d79d68;
+  box-shadow: inset 0 2px #ffe8be, inset 0 5px #593b2b;
+}
+
+.till-prop--mug i {
+  position: absolute;
+  z-index: 1;
+  top: -49%;
+  left: 43%;
+  width: 26%;
+  height: 53%;
+  border-right: 1px solid #f3f7f1d9;
+  border-radius: 45%;
+  animation: till-steam 1.35s ease-out infinite;
+}
+
+@keyframes till-steam {
+  from { opacity: 0.68; transform: translateY(15%) rotate(-12deg); }
+  to { opacity: 0; transform: translateY(-91%) rotate(18deg); }
+}
+
+.till-stage--home[data-till-tube] .till-stage__talk { inset-inline: 11% 44px; }
+.till-stage--home[data-till-tube] .till-stage__talk span { inset-inline: 0 auto; top: 40%; }
+
+.till-tube-trigger {
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 0 auto;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #412c1f;
+  background: transparent;
+  pointer-events: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.till-tube-trigger span {
+  position: absolute;
+  right: 6px;
+  bottom: 1%;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid #ffe1ac;
+  border-radius: 50%;
+  background: #dfa85d;
+  box-shadow: 0 1px 5px #051221b3, inset 0 1px #ffeac6;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.till-tube-trigger:hover span { background: #f3cc8b; }
+.till-tube-trigger:active span { transform: translateY(1px); }
+.till-stage[data-till-away] .till-tube-trigger,
+.till-stage[data-till-leaving] .till-tube-trigger { visibility: hidden; }
+.till-stage[data-till-motion="send_tube_note"] .till-tube-trigger span { background: #f9db9c; }
+
+.home-till-reply[data-tube-note],
+.home-till-reply[data-tube-note]::after {
+  border-color: #ddc6a4;
+  background: #f8ebd1;
+}
+
+.home-till-reply[data-tube-note] span { color: #805529; }
+.home-till-reply[data-tube-note] p { color: #372c22; }
+
+@media (max-height: 690px) {
+  .home-head:has(.home-head__meta--with-till) { position: relative; min-height: 0; }
+  .home-head:has(.home-head__meta--with-till) > small { padding-right: 109px; min-height: 24px; }
+  .home-head__meta--with-till { position: absolute; top: 0; right: 0; margin: 0; }
+  .home-head:has(.home-head__meta--with-till) h1 { font-size: clamp(1.7rem, 7vw, 2.35rem); }
+  .home:has([data-till-tube]) .home-stage { padding-top: 4px; }
+  .home-prelude .home-till-reply { margin-block: 4px 8px; }
+  .home-card-scene--with-till .start-copy { padding-block: 12px; }
+}

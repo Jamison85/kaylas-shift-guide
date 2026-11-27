@@ -35,7 +35,7 @@ export function createTillResident() {
             slot.prepend(canvas);
           }
           actor ||= createActor(canvas, stage, {
-            onFrame(progress) { current?.callbacks.onFrame(progress); },
+            onFrame(progress, scenery) { current?.callbacks.onFrame(progress, scenery); },
             onFinish() { current?.callbacks.onFinish(); },
             onError() { current?.callbacks.onError(); },
           });
