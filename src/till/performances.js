@@ -1,6 +1,6 @@
 import { Motion } from "./rig.js";
 import { deskY } from "./stages.js";
-import { noteTube } from "./scenery.js";
+import { noteTube, tearHandTarget } from "./scenery.js";
 
 const { angle, arm, between, blink, knots, pulse, shift, stance, v } = Motion;
 
@@ -93,6 +93,52 @@ function riseOverEdge(t, { edgeY, restsOnEdge }) {
   });
   const rest = restsOnEdge ? between(t, 0.49, 0.67) : 0;
   gripEdge(pose, edgeY + 4, Math.max(grip, rest), grip);
+  return pose;
+}
+
+function climbThroughRip(t, { edgeY }) {
+  const opening = between(t, 0.08, 0.39) * (1 - between(t, 0.63, 0.98));
+  const push = pulse(t, 0.14, 0.28, 0.46, 0.67);
+  const climb = pulse(t, 0.27, 0.48, 0.58, 0.76);
+  const scale = knots(t, [[0, 0.38], [0.28, 0.43], [0.44, 0.48], [0.68, 0.78], [1, 1]]);
+  const head = knots(t, [[0, 416], [0.15, 235], [0.3, 126], [0.49, 77], [0.76, 19], [1, 0]]);
+  const x = knots(t, [[0, 0], [0.26, -29], [0.43, -6], [0.66, 23], [1, 0]]);
+  const pose = { bones: {
+    root: { scale: [scale, scale], offset: [x, head - 1434 * (1 - scale)] },
+    chest: { angle: -8.3 * climb + 2.9 * push },
+  } };
+  look(pose, 7.6 * push - 4.5 * climb, [-2.1 * climb, 3.1 * push], {
+    brow: 2.3 * push, blink: blink(t, 0.76, 0.024, 0.042),
+    mouth: "subtle_smile", mouthWeight: 0.58 * climb,
+  });
+  if (climb > 0) {
+    const ankle = [525 + (413 - 525) * scale + x, head + 1333 * scale];
+    pose.ik = { footR: {
+      target: v(ankle, [427 + 15 * x / 23, edgeY - 52], climb),
+      angle: -9 * climb, bend: -1,
+    } };
+  }
+  if (push > 0.001) {
+    pose.armFront = ["left", "right"];
+    pose.socketContacts = [
+      handContact("R", tearHandTarget("left", opening), push, 66, "ledge", "ledge"),
+      handContact("L", tearHandTarget("right", opening), push, -59, "ledge", "ledge"),
+    ];
+  } else {
+    gripEdge(pose, edgeY + 4, between(t, 0.67, 0.95));
+  }
+  pose.scenery = { tear: {
+    opening, behind: t < 0.48,
+    phase: t < 0.3 ? "opening" : t < 0.68 ? "climbing" : "closing",
+  } };
+  return pose;
+}
+
+function leaveAndReturn(t, context) {
+  if (t < 0.38) return climbThroughRip(1 - t / 0.38, context);
+  if (t >= 0.56) return climbThroughRip((t - 0.56) / 0.44, context);
+  const pose = climbThroughRip(0, context);
+  pose.scenery.tear.phase = "away";
   return pose;
 }
 
@@ -289,6 +335,8 @@ function settleShift(t, context) {
 
 const performances = {
   rise_over_edge: { duration: 1.21, fromBehindEdge: true, sample: riseOverEdge },
+  climb_through_rip: { duration: 1.94, fromBehindEdge: true, sample: climbThroughRip },
+  leave_and_return: { duration: 4.15, sample: leaveAndReturn },
   lean_in: { duration: 1.62, sample: leanIn },
   follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
   knock_on_edge: { duration: 1.8, sample: knock },

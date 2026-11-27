@@ -40,7 +40,8 @@ export function createTillResident() {
             onError() { current?.callbacks.onError(); },
           });
           actor.setStage(stage);
-          const arriving = source === "arrival" && stage !== previousStage && stage.edgeY && id !== "rise_over_edge";
+          const arriving = source === "arrival" && stage !== previousStage && stage.edgeY
+            && id !== "rise_over_edge" && id !== "climb_through_rip";
           previousStage = stage;
           await actor.play(id, { arriving });
         },

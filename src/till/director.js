@@ -1,4 +1,4 @@
-const homeBreak = ["send_tube_note", "coffee_break", "fly_paper_airplane", "knock_on_edge", "glance_from_edge"];
+const homeBreak = ["send_tube_note", "leave_and_return", "coffee_break", "fly_paper_airplane", "knock_on_edge", "glance_from_edge"];
 const workBreak = ["coffee_break", "fly_paper_airplane"];
 const workMotions = {
   walk: ["check_surroundings", "guide_to_step"],
@@ -10,7 +10,7 @@ const workMotions = {
   inventory: ["jot_a_note", "guide_to_step"],
 };
 const reactions = {
-  return: ["rise_over_edge"],
+  return: ["rise_over_edge", "climb_through_rip"],
   talk: ["lean_in"],
   detail: ["follow_detail"],
   tube: ["send_tube_note"],
@@ -49,7 +49,7 @@ export function directTill({
 }) {
   const full = preference === "full";
   const entrance = anchor === "task" ? workMotions[work]
-    : anchor === "home" ? ["rise_over_edge"]
+    : anchor === "home" ? ["climb_through_rip"]
     : anchor === "onboarding" ? ["wave_hello"] : null;
   const group = cue?.kind ?? (anchor === "task" ? work : anchor);
   const occurrence = cue?.key ?? (taskId ? `task-${taskId}` : anchor);
@@ -91,10 +91,9 @@ export function directTill({
       }
       const recent = session.recent.slice(-(ambient.length - 1));
       const choices = ambient.filter(id => !recent.includes(id));
-      const firstHomeBreak = anchor === "home" && !session.choices.has("home-break");
-      const id = firstHomeBreak && choices.includes("send_tube_note")
-        ? "send_tube_note"
-        : choices[Math.floor(random() * choices.length)];
+      const homeBreaksSeen = session.choices.get("home-break") ?? 0;
+      const earlyHomeBreak = anchor === "home" && homeBreaksSeen < 2 ? homeBreak[homeBreaksSeen] : null;
+      const id = choices.includes(earlyHomeBreak) ? earlyHomeBreak : choices[Math.floor(random() * choices.length)];
       begin(id, "ambient");
     }, delay);
   }
@@ -123,7 +122,7 @@ export function directTill({
       active.started = true;
       session.recent = [...session.recent.filter(id => id !== active.id), active.id].slice(-3);
       if (active.source === "ambient") {
-        if (anchor === "home") session.choices.set("home-break", 1);
+        if (anchor === "home") session.choices.set("home-break", (session.choices.get("home-break") ?? 0) + 1);
         session.nextAmbient = now() + 16500 + random() * 9500;
       } else {
         pending = false;

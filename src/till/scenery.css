@@ -5,6 +5,41 @@
   pointer-events: none;
 }
 
+.till-tear {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.till-scenery[data-till-tear] .till-tear { display: block; }
+
+.till-tear i {
+  position: absolute;
+  inset: 0;
+  opacity: var(--tear-light, 0);
+}
+
+.till-tear__depth {
+  z-index: 1;
+  clip-path: var(--tear-opening);
+  background:
+    radial-gradient(ellipse at 58% 76%, #1b4d58 0, #122532 28%, #020913 63%),
+    #071322;
+}
+
+.till-tear__lip {
+  z-index: 1;
+  background:
+    repeating-linear-gradient(119deg, #f4daba1c 0 1px, transparent 1px 3px),
+    linear-gradient(94deg, #82766a 23%, #d2bca0 36%, #f2ddbb 55%, #f6e1c4 65%, #9e8374 81%);
+}
+
+.till-tear__lip--left { clip-path: var(--tear-left-lip); }
+.till-tear__lip--right { clip-path: var(--tear-right-lip); }
+
+.till-stage__art[data-till-behind-tear] .till-stage__actor { clip-path: var(--tear-opening); }
+.till-stage__art[data-till-behind-tear] .till-tear__lip { z-index: 3; }
+
 .till-scenery__props {
   z-index: 3;
   clip-path: inset(0 0 var(--till-overhang));

@@ -39,6 +39,7 @@ class CharacterPlayer extends RigPlayer {
 }
 
 const frameMs = 1000 / 30;
+const maxFrameAdvance = 100;
 
 export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
   let player;
@@ -85,8 +86,11 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
   function tick(now) {
     if (!action) return;
     try {
-      action.start ??= now;
-      const elapsed = now - action.start;
+      // Keep the movement legible through a graphics stall during the first draw.
+      const delta = now - (action.lastFrame ?? now);
+      action.elapsed += Math.min(delta, maxFrameAdvance);
+      action.lastFrame = now;
+      const elapsed = action.elapsed;
       const arriving = elapsed < action.arrivalMs;
       const sampleTime = Math.max(0, Math.min(1, (elapsed - action.arrivalMs) / action.duration));
       if (elapsed >= action.nextFrame - 1 || sampleTime === 1) {
@@ -116,7 +120,7 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
         ...data, viewBox: stage.viewBox, dprCap: 2, observeResize: false,
       });
       player.edgeY = stage.edgeY;
-      action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, nextFrame: 0 };
+      action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, elapsed: 0, nextFrame: 0 };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(tick);
     } catch {

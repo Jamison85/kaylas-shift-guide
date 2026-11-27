@@ -10,6 +10,8 @@ Tapping Till opens an inline reply from the current task or selected step. The l
 
 The Home tube can play during a pause or send a note on demand. A frame describes the position of each prop and the condition of the tube, so the sleeve, capsule, and hand follow the same motion. Coffee and paper airplanes also appear during quiet moments on noncritical Learn screens. Ambient performances yield to interaction.
 
+`arms.js` projects close reaches forward so elbows stay rounded and wrists remain attached. The renderer blends the outline around the elbow pivot. The Home tear uses one contour for its opening, the foreground folds, and Till’s hand contacts. The actor stays masked behind the opening until he climbs past it.
+
 Operational copy lives in `src/data/guide.js`. The service worker precaches the hashed rig, still, and textures alongside the app. Its existing update cycle lets open shifts finish on their current build.
 
 The pre-overhaul production revision is on `backup/pre-till-animation-overhaul-2026-11-26`.

@@ -17,6 +17,11 @@ export default function TillScenery({ stage, sceneryRef, hasTube }) {
           <span className="till-tube__hatch" style={positionInStage(stage, [x - 68, hatchTop, 136, stage.edgeY - hatchTop - 8])}>
             <i />
           </span>
+          <span className="till-tear">
+            <i className="till-tear__depth" />
+            <i className="till-tear__lip till-tear__lip--left" />
+            <i className="till-tear__lip till-tear__lip--right" />
+          </span>
         </>
       )}
       <div className="till-scenery__props">

@@ -1,3 +1,5 @@
+import { projectArm } from "./arms.js";
+
 // Till's approved Step 4.5 weighted mesh rig and motion authoring.
 // Sourced from Till_Production_Assets_V2.zip. The app owns scheduling and scene layout.
 let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
@@ -35,22 +37,62 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
     return [a, b, e, d, x - a * x - e * y + offset[0], y - b * x - d * y + offset[1]];
   }
 
+  function limbProjection(start, end, projectedStart, projectedEnd, width) {
+    const bound = angle(start, end);
+    const facing = angle(projectedStart, projectedEnd);
+    const lengthScale = distance(projectedStart, projectedEnd) / distance(start, end);
+    const u = Math.cos(bound), v = Math.sin(bound);
+    const x = Math.cos(facing), y = Math.sin(facing);
+    const a = x * lengthScale * u + y * width * v;
+    const b = y * lengthScale * u - x * width * v;
+    const c = x * lengthScale * v - y * width * u;
+    const d = y * lengthScale * v + x * width * u;
+    return [a, b, c, d, projectedStart[0] - a * start[0] - c * start[1],
+      projectedStart[1] - b * start[0] - d * start[1]];
+  }
+
   function createSkeleton(rig) {
     const bones = Object.fromEntries(rig.bones.map(bone => [bone.id, bone]));
     let state = {};
     let matrices = {};
+    let projected = {};
 
     function calculate() {
       for (const bone of rig.bones) {
         const control = state[bone.id] || {};
         const degrees = clamp(control.angle || 0, bone.limits[0], bone.limits[1]);
-        matrices[bone.id] = multiply(matrices[bone.parent] || identity,
+        matrices[bone.id] = projected[bone.id] || multiply(matrices[bone.parent] || identity,
           around(bone.pivot, degrees, control.scale, control.offset));
       }
     }
 
+    function solveArm(upper, lower, hand, control) {
+      const weight = clamp(control.weight ?? 1, 0, 1);
+      if (weight <= 0) return;
+      const shoulder = point(matrices[upper.id], ...upper.pivot);
+      const oldElbow = point(matrices[lower.id], ...lower.pivot);
+      const oldWrist = point(matrices[hand.id], ...hand.pivot);
+      const parent = matrices[upper.parent];
+      const width = Math.hypot(parent[0], parent[1]);
+      const oldHandAngle = rotation(matrices[hand.id]);
+      const { elbow, wrist } = projectArm(shoulder, oldElbow, oldWrist, control.target, weight, hand.id === "handR" ? -1 : 1);
+      projected[upper.id] = limbProjection(upper.pivot, lower.pivot, shoulder, elbow, width);
+      projected[lower.id] = limbProjection(lower.pivot, hand.pivot, elbow, wrist, width);
+      const direction = wrap(angle(elbow, wrist) - angle(lower.pivot, hand.pivot));
+      const requested = Number.isFinite(control.angle) ? control.angle * RAD : direction;
+      const handAngle = oldHandAngle + wrap(requested - oldHandAngle) * weight;
+      const turn = clamp(wrap(handAngle - direction) / RAD, hand.limits[0], hand.limits[1]);
+      projected[hand.id] = around(hand.pivot, direction / RAD + turn, [width, width],
+        wrist.map((value, i) => value - hand.pivot[i]));
+      calculate();
+    }
+
     function solve(chain, control) {
       const [upper, lower, effector] = chain.map(id => bones[id]);
+      if (effector.id.startsWith("hand")) {
+        solveArm(upper, lower, effector, control);
+        return;
+      }
       const parent = matrices[upper.parent] || identity;
       const base = point(parent, ...upper.pivot);
       const lengths = [
@@ -82,6 +124,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
       set(pose = {}) {
         state = { ...pose.bones };
         matrices = {};
+        projected = {};
         calculate();
         for (const [name, control] of Object.entries(pose.ik || {})) {
           if (rig.chains[name] && control.target) solve(rig.chains[name], control);
@@ -385,13 +428,21 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
           let [px,py] = point(matrices[a] || mx, x,y);
           if (w && b) {
             const [qx,qy] = point(matrices[b], x,y);
-            px = mix(px,qx,w); py = mix(py,qy,w);
-            // Compensate for shrinking at elbows and knees as two rotation matrices mix.
             const child = this.bones[a].parent === b ? a : b;
             const [jx,jy] = pivots[child];
-            const norm = Math.sqrt(1 - 2*w*(1-w)*(1 - Math.cos(rotations[a]-rotations[b])));
-            const volume = 1 / Math.max(0.79,norm);
-            px = jx + (px-jx)*volume; py = jy + (py-jy)*volume;
+            if (a.startsWith("upperArm") && b.startsWith("forearm")) {
+              // Blend around the shared elbow pivot to preserve the rounded edge.
+              const first = Math.atan2(py - jy, px - jx);
+              const second = Math.atan2(qy - jy, qx - jx);
+              const heading = first + wrap(second - first) * w;
+              const radius = mix(Math.hypot(px - jx, py - jy), Math.hypot(qx - jx, qy - jy), w);
+              px = jx + Math.cos(heading) * radius;
+              py = jy + Math.sin(heading) * radius;
+            } else {
+              const norm = Math.sqrt(1 - 2*w*(1-w)*(1 - Math.cos(rotations[a]-rotations[b])));
+              const volume = 1 / Math.max(0.79,norm);
+              px = jx + (mix(px,qx,w)-jx)*volume; py = jy + (mix(py,qy,w)-jy)*volume;
+            }
           }
           const idx = vcount++ * 10;
           vdata[idx] = px; vdata[idx+1] = py; vdata[idx+2] = u; vdata[idx+3] = v;
@@ -1210,7 +1261,7 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
   TillPosePlayer={PosePlayer,Views};
 })(globalThis);
 
-/* A bounded, deterministic 2D socket solver on the existing weighted skeleton. */
+/* A bounded socket solver on the existing weighted skeleton. */
 (function contactRuntime(global){
   "use strict";
   const M=TillMotion, D=Math.PI/180, I=[1,0,0,1,0,0];
@@ -1243,36 +1294,33 @@ let TillRig, TillValidationClips, TillMotion, TillPosePlayer, TillV2;
     const target=Array.isArray(task.target)?task.target:anatomicalAnchor(player,existing,p,task.target);
     if(!target)return;
     const pivot=player.bones[hand].pivot;
-    const delta=sub(socket,pivot);
-    const bend=task.bend??(side==="R"?1:-1);
+    const scale=Math.hypot(existing[hand][0],existing[hand][1]);
+    const delta=sub(socket,pivot).map(value=>value*scale);
     const width=task.range??19;
     const preferred=task.angle??0;
     const ik=p.ik;
     const initial=ik[hand];
     const w=M.between(task.weight,0,.973);
-    // Treat the desired wrist axis as a soft preference. Evaluate the exact
-    // skeleton at a few bounded angles, including the previous optimum range.
-    function score(orientation,arc){
+    // The arm has a single elbow path. Try a few nearby wrist angles for contact.
+    function score(orientation){
       const aim=sub(target,turn(delta,orientation));
-      const candidate={target:aim,angle:orientation,bend:arc,weight:1};
+      const candidate={target:aim,angle:orientation,weight:1};
       ik[hand]=candidate;
       const result=player.skeleton.set(p);
       const contact=transform(result[hand],socket);
       const e=dist(contact,target);
       const a=angle(result[hand]);
-      const loss=e+.044*Math.abs(wrap(orientation-preferred))+.018*Math.abs(wrap(a-orientation))
-        +(arc===bend?0:2.25);
+      const loss=e+.082*Math.abs(wrap(orientation-preferred))+.034*Math.abs(wrap(a-orientation));
       return {candidate,orientation,contact,loss};
     }
     let best;
-    const evaluate=(x,b)=>{
-      const sample=score(x,b);
+    const evaluate=x=>{
+      const sample=score(x);
       if(!best||sample.loss<best.loss)best=sample;
     };
-    for(const offset of [0,-width/3,width/3,-2*width/3,2*width/3,-width,width])evaluate(preferred+offset,bend);
-    if(best.loss>6&&task.allowAlternate)for(const offset of [0,-width/2,width/2,-width,width])evaluate(preferred+offset,-bend);
-    const steer=best.orientation,arc=best.candidate.bend;
-    for(const d of [-2,2])evaluate(steer+d,arc);
+    for(const offset of [0,-width/3,width/3,-2*width/3,2*width/3,-width,width])evaluate(preferred+offset);
+    const steer=best.orientation;
+    for(const d of [-2,2])evaluate(steer+d);
     ik[hand]={...best.candidate,weight:w};
     if(initial&&w<.02)ik[hand]=initial;
     p.hands[anatomical(side)]=task.hand;

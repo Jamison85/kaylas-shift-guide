@@ -42,9 +42,11 @@ test("Till greets the opener and performs distinct actions as the shift progress
   await enableMotion(page);
   await openGuide(page);
   const home = page.locator(actor("home"));
-  await expect(home).toHaveAttribute("data-till-motion", "rise_over_edge");
+  await expect(home).toHaveAttribute("data-till-motion", "climb_through_rip");
   await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "climbing");
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
+  await expect(home.locator(".till-stage__art")).not.toHaveAttribute("data-till-behind-tear");
 
   await page.locator(".start").click();
   const task = page.locator(actor("task"));
