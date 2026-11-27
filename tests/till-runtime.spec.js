@@ -44,6 +44,9 @@ test("Till greets the opener and performs distinct actions as the shift progress
   const home = page.locator(actor("home"));
   await expect(home).toHaveAttribute("data-till-motion", "climb_through_rip");
   await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "tugging");
+  await expect(home.locator(".till-tear__depth")).toHaveCSS("background-image", /till-back-office-/);
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "bracing");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "climbing");
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
   await expect(home.locator(".till-stage__art")).not.toHaveAttribute("data-till-behind-tear");
@@ -136,7 +139,10 @@ test("the tube delivers a note with touch or keyboard and works with reduced mot
   await expect(home).toHaveAttribute("data-till-motion", "send_tube_note");
   await expect(scenery).toHaveAttribute("data-till-prop", "capsule");
   await expect(scenery).toHaveAttribute("data-tube-phase", "firing");
+  await expect(home.locator("canvas")).toHaveAttribute("data-view", "right");
+  await expect(page.locator("#home-till-reply")).not.toContainText("receiving snacks");
   await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(home.locator("canvas")).toHaveAttribute("data-view", "front");
   await expect(scenery).toHaveAttribute("data-till-prop", "");
   await page.setViewportSize({ width: 320, height: 610 });
   await page.emulateMedia({ reducedMotion: "reduce" });

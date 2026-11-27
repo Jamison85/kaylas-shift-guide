@@ -96,47 +96,60 @@ function riseOverEdge(t, { edgeY, restsOnEdge }) {
   return pose;
 }
 
+const climbSeconds = 5.2;
+const exitSeconds = 1.65;
+const awaySeconds = 0.85;
+const roundTripSeconds = exitSeconds + awaySeconds + climbSeconds;
+
 function climbThroughRip(t, { edgeY }) {
-  const opening = between(t, 0.08, 0.39) * (1 - between(t, 0.63, 0.98));
-  const push = pulse(t, 0.14, 0.28, 0.46, 0.67);
-  const climb = pulse(t, 0.27, 0.48, 0.58, 0.76);
-  const scale = knots(t, [[0, 0.38], [0.28, 0.43], [0.44, 0.48], [0.68, 0.78], [1, 1]]);
-  const head = knots(t, [[0, 416], [0.15, 235], [0.3, 126], [0.49, 77], [0.76, 19], [1, 0]]);
-  const x = knots(t, [[0, 0], [0.26, -29], [0.43, -6], [0.66, 23], [1, 0]]);
+  // The first pull gives way. He regains his footing before the seam opens wide.
+  const opening = knots(t, [[0, 0], [0.12, 0.11], [0.26, 0.44], [0.36, 0.31],
+    [0.50, 0.72], [0.61, 0.78], [0.70, 1], [0.79, 0.91], [0.99, 0]]);
+  const grip = pulse(t, 0.08, 0.18, 0.68, 0.78);
+  const strain = pulse(t, 0.12, 0.25, 0.29, 0.37) + pulse(t, 0.41, 0.54, 0.68, 0.77);
+  const boot = knots(t, [[0.28, 0], [0.41, 0.49], [0.47, 0.25], [0.62, 0.85], [0.73, 0.87], [0.9, 0]]);
+  const scale = knots(t, [[0, 0.36], [0.26, 0.44], [0.36, 0.40], [0.54, 0.47], [0.63, 0.52], [0.8, 0.89], [0.99, 1]]);
+  const head = knots(t, [[0, 422], [0.13, 248], [0.25, 157], [0.36, 212], [0.53, 127], [0.63, 103], [0.8, 20], [0.99, 0]]);
+  const x = knots(t, [[0, 0], [0.25, -24], [0.36, 14], [0.54, -21], [0.72, 25], [0.96, 0]]);
   const pose = { bones: {
     root: { scale: [scale, scale], offset: [x, head - 1434 * (1 - scale)] },
-    chest: { angle: -8.3 * climb + 2.9 * push },
+    chest: { angle: 4.8 * strain - 9.5 * boot },
   } };
-  look(pose, 7.6 * push - 4.5 * climb, [-2.1 * climb, 3.1 * push], {
-    brow: 2.3 * push, blink: blink(t, 0.76, 0.024, 0.042),
-    mouth: "subtle_smile", mouthWeight: 0.58 * climb,
+  look(pose, 4.7 * strain - 5.1 * boot, [-1.4 * boot, 3.8 * strain], {
+    brow: 1.75 * strain, blink: blink(t, 0.352, 0.015, 0.026) + blink(t, 0.82, 0.017, 0.029),
+    mouth: "closed", mouthWeight: 0.92 * strain,
   });
-  if (climb > 0) {
+  if (boot > 0) {
     const ankle = [525 + (413 - 525) * scale + x, head + 1333 * scale];
     pose.ik = { footR: {
-      target: v(ankle, [427 + 15 * x / 23, edgeY - 52], climb),
-      angle: -9 * climb, bend: -1,
+      target: v(ankle, [421 + x * 0.55, edgeY - 53], boot),
+      angle: -13 * boot, bend: -1,
     } };
   }
-  if (push > 0.001) {
+  if (grip > 0.001) {
     pose.armFront = ["left", "right"];
     pose.socketContacts = [
-      handContact("R", tearHandTarget("left", opening), push, 66, "ledge", "ledge"),
-      handContact("L", tearHandTarget("right", opening), push, -59, "ledge", "ledge"),
+      handContact("R", tearHandTarget("left", opening), grip, 66, "ledge", "ledge"),
+      handContact("L", tearHandTarget("right", opening), grip, -59, "ledge", "ledge"),
     ];
   } else {
-    gripEdge(pose, edgeY + 4, between(t, 0.67, 0.95));
+    gripEdge(pose, edgeY + 4, between(t, 0.78, 0.96));
   }
   pose.scenery = { tear: {
-    opening, behind: t < 0.48,
-    phase: t < 0.3 ? "opening" : t < 0.68 ? "climbing" : "closing",
+    opening, behind: t < 0.65,
+    phase: t < 0.15 ? "opening" : t < 0.43 ? "tugging" : t < 0.64 ? "bracing" : t < 0.83 ? "climbing" : "closing",
   } };
   return pose;
 }
 
 function leaveAndReturn(t, context) {
-  if (t < 0.38) return climbThroughRip(1 - t / 0.38, context);
-  if (t >= 0.56) return climbThroughRip((t - 0.56) / 0.44, context);
+  const elapsed = t * roundTripSeconds;
+  const returnAt = exitSeconds + awaySeconds;
+  if (elapsed < exitSeconds) {
+    const exit = knots(elapsed / exitSeconds, [[0, 1], [0.55, 0.64], [0.84, 0.19], [1, 0]]);
+    return climbThroughRip(exit, context);
+  }
+  if (elapsed >= returnAt) return climbThroughRip((elapsed - returnAt) / climbSeconds, context);
   const pose = climbThroughRip(0, context);
   pose.scenery.tear.phase = "away";
   return pose;
@@ -179,30 +192,44 @@ function glanceFromEdge(t, { edgeY }) {
 
 function sendTubeNote(t, { edgeY }) {
   const tube = noteTube;
-  const carrying = pulse(t, 0.025, 0.16, 0.44, 0.57);
-  const watch = pulse(t, 0.21, 0.39, 0.84, 0.99);
-  const flight = Math.max(0, Math.min(1, (t - 0.56) / 0.28));
-  const x = knots(t, [[0, 633], [0.17, 674], [0.3, 746], [0.44, tube.x]]);
+  const reach = pulse(t, 0.20, 0.35, 0.50, 0.65);
+  const lean = pulse(t, 0.13, 0.39, 0.54, 0.81);
+  const flight = Math.max(0, Math.min(1, (t - 0.59) / 0.18));
+  const x = knots(t, [[0.16, 644], [0.31, 713], [0.42, 761], [0.49, tube.x]]);
   const y = flight > 0
-    ? tube.hatchY + (tube.exitY - tube.hatchY) * flight ** 1.55
-    : knots(t, [[0, edgeY + 61], [0.19, 547], [0.33, 494], [0.44, tube.hatchY]]);
-  const pose = stance({ x: 25 * watch, y: 8 * watch, lean: 1.2 * watch });
-  angle(pose.bones, "chest", 2.9 * watch);
-  look(pose, 3 * watch - 8.5 * flight * watch, [4.6 * watch, (3.1 - 7.5 * flight) * watch], {
-    blink: blink(t, 0.48, 0.017, 0.04),
-    browByEye: { right: 0.55 * watch, left: 2 * watch * flight },
-    mouth: "subtle_smile", mouthWeight: 0.44 * watch,
-  });
-  if (carrying > 0) {
-    pose.armFront = ["left"];
-    const palm = knots(t, [[0, 1], [0.17, -49], [0.35, -72], [0.5, -51]]);
-    pose.socketContacts = [handContact("L", [x - 23, y + 15], carrying, palm, "grip")];
+    ? tube.hatchY + (tube.exitY - tube.hatchY) * flight ** 1.65
+    : knots(t, [[0.16, edgeY + 67], [0.33, 583], [0.41, 526], [0.49, tube.hatchY]]);
+  const profile = t >= 0.22 && t < 0.79;
+  const quarter = !profile && t >= 0.14 && t < 0.87;
+  const pose = { bones: {} };
+  if (profile) {
+    pose.view = "right";
+    shift(pose.bones, "root", -16 + 43 * lean, -9 + 7 * lean);
+    angle(pose.bones, "chest", 4.2 * lean);
+    angle(pose.bones, "head", 10 * reach - 13 * flight);
+    arm(pose, "R", [x - 34, y + 31], reach, knots(t, [[0.22, -29], [0.42, -58], [0.54, -46]]));
+  } else if (quarter) {
+    pose.view = "quarter";
+    shift(pose.bones, "root", 16 * lean, -9 * lean);
+    angle(pose.bones, "root", 0.9 * lean);
   } else {
-    gripEdge(pose, edgeY + 4, 1);
+    const glance = pulse(t, 0.01, 0.11, 0.15, 0.20);
+    const nod = pulse(t, 0.88, 0.92, 0.94, 0.99);
+    look(pose, 5 * glance + 4 * nod, [4.6 * glance, 0.7 * nod], {
+      mouth: "relaxed", mouthWeight: 0.68 * nod, brow: 1.15 * nod, blink: blink(t, 0.96, 0.012, 0.026),
+    });
+    gripEdge(pose, edgeY + 4, 1 - glance * 0.85);
   }
-  const tubePhase = t < 0.32 ? "idle" : t < 0.48 ? "loading" : t < 0.56 ? "sealed" : t < 0.84 ? "firing" : "idle";
+  const tubePhase = t < 0.36 ? "idle" : t < 0.51 ? "loading" : t < 0.59 ? "sealed"
+    : t < 0.77 ? "firing" : t < 0.91 ? "idle" : "address";
   pose.scenery = { tubePhase };
-  if (t < 0.85) pose.scenery.prop = { name: "capsule", x, y, angle: 26 * (1 - between(t, 0.25, 0.44)) };
+  if (t >= 0.20 && t < 0.77) {
+    pose.scenery.prop = {
+      name: "capsule", x, y, angle: 36 * (1 - between(t, 0.33, 0.49)),
+      held: profile && t < 0.49 ? { anchor: "wristR", offset: [31, -25] } : null,
+      releaseBlend: between(t, 0.24, 0.32) * (1 - between(t, 0.42, 0.49)),
+    };
+  }
   return pose;
 }
 
@@ -336,13 +363,13 @@ function settleShift(t, context) {
 
 const performances = {
   rise_over_edge: { duration: 1.21, fromBehindEdge: true, sample: riseOverEdge },
-  climb_through_rip: { duration: 1.94, fromBehindEdge: true, sample: climbThroughRip },
-  leave_and_return: { duration: 4.15, sample: leaveAndReturn },
+  climb_through_rip: { duration: climbSeconds, fromBehindEdge: true, sample: climbThroughRip },
+  leave_and_return: { duration: roundTripSeconds, sample: leaveAndReturn },
   lean_in: { duration: 1.62, sample: leanIn },
   follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
   knock_on_edge: { duration: 1.8, sample: knock },
   glance_from_edge: { duration: 2.1, sample: glanceFromEdge },
-  send_tube_note: { duration: 3.55, sample: sendTubeNote },
+  send_tube_note: { duration: 4.35, views: ["quarter", "right"], sample: sendTubeNote },
   coffee_break: { duration: 3.48, sample: coffeeBreak },
   fly_paper_airplane: { duration: 3.2, sample: flyPaperAirplane },
   wave_hello: { duration: 2.75, sample: greet },

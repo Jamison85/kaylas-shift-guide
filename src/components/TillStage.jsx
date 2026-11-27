@@ -46,6 +46,7 @@ export default function TillStage({
     const player = resident.claim(art, stage, {
       onFrame(progress, frame) {
         paintScenery(scenery, stage, frame);
+        if (frame?.tubePhase === "address") deliverNote();
         if (progress <= 0) return;
         delete host.dataset.tillWaiting;
         director.started();

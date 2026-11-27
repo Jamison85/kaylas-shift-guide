@@ -23,7 +23,8 @@
   z-index: 1;
   clip-path: var(--tear-opening);
   background:
-    radial-gradient(ellipse at 58% 76%, #1b4d58 0, #122532 28%, #020913 63%),
+    radial-gradient(ellipse at 49% 54%, #0a152119 32%, #0a152193 83%),
+    url("./art/till-back-office.webp") center 44% / cover no-repeat,
     #071322;
 }
 

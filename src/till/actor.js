@@ -1,17 +1,26 @@
 import frontUrl from "./art/front.webp";
+import quarterUrl from "./art/turn.webp";
+import rightUrl from "./art/right.webp";
 import { RigPlayer } from "./rig.js";
 import { getPerformance, samplePerformance } from "./performances.js";
 
-let artwork;
-function loadArtwork() {
-  if (!artwork) {
+const viewAssets = {
+  front: [frontUrl, () => import("./art/front.json").then(module => module.default)],
+  quarter: [quarterUrl, () => import("./art/turn.json").then(module => module.default.right)],
+  right: [rightUrl, () => import("./art/right.json").then(module => module.default)],
+};
+const artwork = new Map();
+
+function loadArtwork(view) {
+  if (!artwork.has(view)) {
+    const [url, loadRig] = viewAssets[view];
     const image = new Image();
-    image.src = frontUrl;
-    artwork = Promise.all([import("./art/front.json"), image.decode()])
-      .then(([data]) => ({ ...data.default, image }));
-    artwork.catch(() => { artwork = null; });
+    image.src = url;
+    const loading = Promise.all([loadRig(), image.decode()]).then(([data]) => ({ ...data, image }));
+    loading.catch(() => { artwork.delete(view); });
+    artwork.set(view, loading);
   }
-  return artwork;
+  return artwork.get(view);
 }
 
 class CharacterPlayer extends RigPlayer {
@@ -42,6 +51,7 @@ const frameMs = 1000 / 30;
 const maxFrameAdvance = 100;
 
 export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
+  const players = new Map();
   let player;
   let frame = 0;
   let generation = 0;
@@ -51,7 +61,10 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
   resize.observe(canvas);
 
   function draw(pose) {
+    const view = pose.view ?? "front";
+    player = players.get(view);
     player.setPose(pose);
+    if (canvas.dataset.view !== view) canvas.dataset.view = view;
     canvas.dataset.ready = "true";
   }
 
@@ -114,12 +127,17 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
     const request = ++generation;
     try {
       const clip = getPerformance(id);
-      const data = await loadArtwork();
+      const views = ["front", ...(clip.views ?? [])];
+      const assets = await Promise.all(views.map(loadArtwork));
       if (request !== generation || disposed) return;
-      player ||= new CharacterPlayer(canvas, {
-        ...data, viewBox: stage.viewBox, dprCap: 2, observeResize: false,
+      views.forEach((view, index) => {
+        if (players.has(view)) return;
+        const rig = new CharacterPlayer(canvas, {
+          ...assets[index], viewBox: stage.viewBox, dprCap: 2, observeResize: false,
+        });
+        rig.edgeY = stage.edgeY;
+        players.set(view, rig);
       });
-      player.edgeY = stage.edgeY;
       action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, elapsed: 0, nextFrame: 0 };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(tick);
@@ -135,17 +153,19 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
     setStage(next) {
       if (stage === next) return;
       stage = next;
-      if (!player) return;
-      player.edgeY = stage.edgeY;
-      player.setViewBox(stage.viewBox);
-      player.resize();
+      for (const rig of players.values()) {
+        rig.edgeY = stage.edgeY;
+        rig.setViewBox(stage.viewBox);
+      }
+      player?.resize();
     },
     dispose() {
       disposed = true;
       stop();
       resize.disconnect();
       canvas.removeEventListener("webglcontextlost", loseContext);
-      player?.dispose();
+      for (const rig of players.values()) rig.dispose();
+      players.clear();
     },
   };
 }
