@@ -1,36 +1,33 @@
 // Camera bounds in the approved master image's coordinate system.
 // DOM surfaces and the rig use the same bounds to keep contact aligned on resize.
-export const floorY = 1435;
-export const seat = [618, 1022];
-export const deskY = 793;
+export const deskY = 759;
+const floorShadow = [275, 1401, 510, 54];
 
 export const stages = {
   home: {
-    viewBox: [-90, -57, 1230, 1530],
-    context: { direction: "right" },
-    floor: floorY,
-    bench: { x: 575, y: seat[1], width: 302, height: floorY - seat[1] },
-    counterEdge: [894, 177, 246, 1258],
+    viewBox: [29, -45, 936, 1520],
+    context: { direction: "left" },
+    floor: floorShadow,
   },
   task: {
-    viewBox: [-75, -45, 1200, 875],
-    context: { direction: "left", target: [98, 466] },
-    desk: deskY,
+    viewBox: [100, -34, 823, 850],
+    context: { direction: "left" },
+    desk: [162, deskY, 731, 57],
   },
   help: {
-    viewBox: [-115, -48, 1280, 881],
-    context: { direction: "left", target: [96, 420] },
-    desk: deskY,
+    viewBox: [100, -41, 825, 857],
+    context: { direction: "left" },
+    desk: [158, deskY, 739, 57],
   },
   finish: {
-    viewBox: [-145, -68, 1340, 1545],
+    viewBox: [65, -52, 920, 1522],
     context: { direction: "left" },
-    floor: floorY,
+    floor: floorShadow,
   },
   onboarding: {
-    viewBox: [-70, -56, 1195, 1525],
+    viewBox: [65, -52, 920, 1522],
     context: { direction: "left" },
-    floor: floorY,
+    floor: floorShadow,
   },
 };
 

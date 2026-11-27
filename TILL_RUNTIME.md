@@ -1,8 +1,8 @@
 # Till in Before the Rush
 
-The approved 11461.png supplies the front rig and still artwork. The side rigs use the corrected leg textures from the Step 4.5 package. The runtime artwork and anchors are under `src/till/art`.
+The approved 11461.png supplies the rig and still artwork. Till uses a single continuous view during app gestures. The runtime artwork and anchors are under `src/till/art`.
 
-`director.js` makes decisions from the active screen, task category, progress, and reading activity. It runs finite gestures with cooldowns and keeps recent gestures in memory for the current shift. Critical screens stay quiet unless a user event calls for a brief response. `performances.js` handles movement and prop contact. `stages.js` defines the spaces reserved for Till, including the floor, seat, and desk used by the animation. Keep the actor inside these spaces when adding a new performance.
+`director.js` picks task arrivals, help gestures, and occasional actions from the active screen, task category, progress, and reading activity. Critical screens stay quiet unless a user event calls for a brief response. `performances.js` handles movement and prop contact. `stages.js` places Till and his work surfaces using the same coordinates as the rig.
 
 The scene loads its renderer when it first needs motion. The player only draws frames during a gesture and pauses when the scene leaves the viewport or the window is hidden. The approved still appears under the system reduced-motion preference or if the graphics context fails. Profile settings can quiet movement or hide Till. Help remains available in Learn and Quick.
 

@@ -38,7 +38,7 @@ test("reduced motion shows the approved still and keeps the launch control usabl
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
 
-test("the home wave settles and frontend cues follow the real task workflow", async ({ page }) => {
+test("Till greets the opener and performs distinct actions as the shift progresses", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page);
   const home = page.locator(actor("home"));
@@ -47,15 +47,21 @@ test("the home wave settles and frontend cues follow the real task workflow", as
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
 
   await page.locator(".start").click();
+  const task = page.locator(actor("task"));
+  await expect(task).toHaveAttribute("data-till-motion", "check_surroundings");
   await page.locator(".done-next").click();
   await expect(page.getByRole("heading", { name: "Open and Fund Register 2" })).toBeVisible();
-  const task = page.locator(actor("task"));
-  await expect(task).toHaveAttribute("data-till-motion", /^(small_nod|satisfied_smile|approve_nod)$/);
-  await expect(task).toHaveAttribute("data-till-source", "event");
+  await expect(task).toHaveAttribute("data-till-motion", "still");
+  await page.getByRole("button", { name: "No", exact: true }).click();
+  await page.locator(".done-next").click();
+  await expect(task).toHaveAttribute("data-till-motion", "check_watch");
+  await expect(task).toHaveAttribute("data-till-source", "arrival");
+  await page.locator(".done-next").click();
+  await expect(task).toHaveAttribute("data-till-motion", "straighten_reports");
+  await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(task).toHaveAttribute("data-till-motion", "still");
   await expect(task.locator("canvas")).not.toHaveAttribute("data-ready");
-  await page.getByRole("button", { name: "No", exact: true }).click();
   await expect(page.locator(".done-next")).toBeEnabled();
 });
 
@@ -70,8 +76,15 @@ test("quiet suppresses background gestures and off preserves task help through a
   await page.locator(".start").click();
   await page.getByRole("button", { name: "Quick", exact: true }).click();
   await page.locator(".task-why-link").click();
-  await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");
+  const help = page.locator(actor("help"));
+  await expect(help).toHaveAttribute("data-till-motion", "offer_help");
+  await expect(help.locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(page.getByRole("dialog")).toContainText("Before you move on");
+  await page.getByRole("button", { name: "Got it, Till" }).click();
+  await page.getByRole("button", { name: "Before the Rush home" }).click();
+  await page.locator(".start").click();
+  await page.locator(".task-why-link").click();
+  await expect(help).toHaveAttribute("data-till-motion", "emphasize_detail");
   await page.getByRole("button", { name: "Got it, Till" }).click();
 
   await page.locator(".profile-button").click();
@@ -107,7 +120,7 @@ test("the cached app can play Till and open help while offline", async ({ page, 
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   const cacheUrls = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async key =>
     (await (await caches.open(key)).keys()).map(request => new URL(request.url).pathname)))).flat());
-  for (const asset of ["/poster-", "/front-", "/left-", "/right-", "/turn-", "/actor-"]) {
+  for (const asset of ["/poster-", "/front-", "/actor-"]) {
     expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
   }
   await context.setOffline(true);

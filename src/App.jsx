@@ -336,10 +336,8 @@ function DailyGuide({ day }) {
       currentIndex: finished ? index : nextIndex,
     }));
     if (finished) reactWithTill("finish", task.id);
-    else if (!completed.has(task.id)) {
-      const milestone = Math.floor(nextCompleted.size / 5) > Math.floor(completed.size / 5);
-      const kind = milestone ? "milestone" : "acknowledgement";
-      reactWithTill(till.preference === "quiet" && !milestone ? null : kind, guideTasks[nextIndex].id);
+    else if (Math.floor(nextCompleted.size / 5) > Math.floor(completed.size / 5)) {
+      reactWithTill("milestone", guideTasks[nextIndex].id);
     } else setTillEvent(null);
     setScreen(finished ? "complete" : "task");
   };

@@ -7,7 +7,7 @@ const activityEvents = ["pointerdown", "keydown", "scroll", "focusin"];
 const listenerOptions = { capture: true, passive: true };
 let actorModule;
 
-export default function TillStage({ anchor, session, preference, work, cue, paused = false }) {
+export default function TillStage({ anchor, session, preference, work, taskId, cue, paused = false }) {
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
   const stage = stages[anchor];
@@ -35,7 +35,7 @@ export default function TillStage({ anchor, session, preference, work, cue, paus
     };
 
     const director = directTill({
-      session, anchor, work, cue: cueKind ? { kind: cueKind, key: cueKey } : null, preference, stop,
+      session, anchor, work, taskId, cue: cueKind ? { kind: cueKind, key: cueKey } : null, preference, stop,
       async play(id, source) {
         const token = ++request;
         try {
@@ -46,7 +46,9 @@ export default function TillStage({ anchor, session, preference, work, cue, paus
           const { createActor } = await actorModule;
           if (disposed || token !== request || !available) return;
           actor ||= createActor(canvas, stage, {
-            onFrame() { director.started(); },
+            onFrame(progress) {
+              if (progress > 0) director.started();
+            },
             onFinish() {
               host.dataset.tillMotion = "rest";
               delete host.dataset.tillSource;
@@ -98,24 +100,19 @@ export default function TillStage({ anchor, session, preference, work, cue, paus
       director.dispose();
       actor?.dispose();
       delete canvas.dataset.ready;
+      host.dataset.tillVisible = "false";
     };
-  }, [anchor, session, preference, work, cueKey, cueKind, paused, stage]);
+  }, [anchor, session, preference, work, taskId, cueKey, cueKind, paused, stage]);
 
   if (preference === "off") return null;
-  const [x, , width] = stage.viewBox;
-  const floorPosition = stage.floor && positionInStage(stage, [x, stage.floor, width, 35]);
-  const deskPosition = stage.desk && positionInStage(stage, [x + 138, stage.desk, width - 276, 66]);
-  const bench = stage.bench;
   return (
     <div ref={stageRef} className={`till-stage till-stage--${anchor}`} aria-hidden="true"
       data-till-anchor={anchor} data-till-motion="still"
       style={{ aspectRatio: `${stage.viewBox[2]} / ${stage.viewBox[3]}` }}>
-      {floorPosition && <span className="till-stage__floor" style={floorPosition} />}
-      {bench && <span className="till-stage__bench" style={positionInStage(stage, [bench.x, bench.y, bench.width, bench.height])} />}
+      {stage.floor && <span className="till-stage__floor" style={positionInStage(stage, stage.floor)} />}
       <canvas ref={canvasRef} className="till-stage__actor" />
       <img className="till-stage__poster" src={poster} alt="" draggable="false" style={posterPosition(stage)} />
-      {deskPosition && <span className="till-stage__desk" style={deskPosition} />}
-      {stage.counterEdge && <span className="till-stage__edge" style={positionInStage(stage, stage.counterEdge)} />}
+      {stage.desk && <span className="till-stage__desk" style={positionInStage(stage, stage.desk)} />}
     </div>
   );
 }

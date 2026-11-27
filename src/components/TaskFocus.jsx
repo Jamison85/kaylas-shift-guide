@@ -160,7 +160,6 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
   const [explanation, setExplanation] = useState(null);
   const explanationTrigger = useRef(null);
-  const helpNumber = useRef(0);
   const heading = useRef(null);
   const steps = task.steps.map(normalizedStep);
   const work = workContext(task);
@@ -185,8 +184,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
   const openExplanation = (trigger, label, title, body, step = null) => {
     explanationTrigger.current = trigger;
-    helpNumber.current += 1;
-    setExplanation({ label, title, body, step, key: `help-${task.id}-${helpNumber.current}` });
+    setExplanation({ label, title, body, step, key: Symbol("help") });
   };
 
   return (
@@ -217,7 +215,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
             </button>
           </div>
           {showTill && (
-            <TillStage {...till} anchor="task" work={work} cue={cue} paused={tillPaused || Boolean(explanation)} />
+            <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)} />
           )}
         </section>
 

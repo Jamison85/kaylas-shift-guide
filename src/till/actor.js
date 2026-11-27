@@ -1,31 +1,17 @@
 import frontUrl from "./art/front.webp";
-import leftUrl from "./art/left.webp";
-import rightUrl from "./art/right.webp";
-import turnUrl from "./art/turn.webp";
 import { RigPlayer } from "./rig.js";
 import { getPerformance, samplePerformance } from "./performances.js";
 
-const sources = {
-  front: [frontUrl, () => import("./art/front.json")],
-  left: [leftUrl, () => import("./art/left.json")],
-  right: [rightUrl, () => import("./art/right.json")],
-  quarterLeft: [turnUrl, () => import("./art/turn.json"), "left"],
-  quarterRight: [turnUrl, () => import("./art/turn.json"), "right"],
-};
-
-const loadPromises = new Map();
-function loadView(name) {
-  if (!loadPromises.has(name)) {
-    const [url, load, view] = sources[name];
+let artwork;
+function loadArtwork() {
+  if (!artwork) {
     const image = new Image();
-    image.src = url;
-    const pending = Promise.all([load(), image.decode()]).then(([data]) => ({
-      ...(view ? data.default[view] : data.default), image,
-    }));
-    loadPromises.set(name, pending);
-    pending.catch(() => loadPromises.delete(name));
+    image.src = frontUrl;
+    artwork = Promise.all([import("./art/front.json"), image.decode()])
+      .then(([data]) => ({ ...data.default, image }));
+    artwork.catch(() => { artwork = null; });
   }
-  return loadPromises.get(name);
+  return artwork;
 }
 
 class CharacterPlayer extends RigPlayer {
@@ -46,34 +32,20 @@ class CharacterPlayer extends RigPlayer {
   }
 }
 
-const frameMs = 1000 / 24;
+const frameMs = 1000 / 30;
 
 export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
-  let view;
   let player;
   let frame = 0;
   let generation = 0;
   let action;
-  let loaded = {};
   let disposed = false;
-  const players = new Map();
   const resize = new ResizeObserver(() => player?.resize());
   resize.observe(canvas);
 
   function draw(pose) {
-    const nextView = pose.view || "front";
-    if (view !== nextView) {
-      if (!players.has(nextView)) {
-        players.set(nextView, new CharacterPlayer(canvas, {
-          ...loaded[nextView], viewBox: anchor.viewBox, dprCap: 2, observeResize: false,
-        }));
-      }
-      player = players.get(nextView);
-      view = nextView;
-    }
     player.setPose(pose);
     canvas.dataset.ready = "true";
-    canvas.dataset.tillView = nextView;
   }
 
   function stop() {
@@ -97,7 +69,7 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
       const elapsed = now - action.start;
       const sampleTime = Math.min(1, elapsed / action.duration);
       if (elapsed >= action.nextFrame - 1 || sampleTime === 1) {
-        draw(samplePerformance(action.clip, sampleTime, action.context));
+        draw(samplePerformance(action.clip, sampleTime, anchor.context));
         action.nextFrame = (Math.floor((elapsed + 1) / frameMs) + 1) * frameMs;
         onFrame(sampleTime);
       }
@@ -110,18 +82,16 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
     }
   }
 
-  async function play(id, timing = {}) {
+  async function play(id) {
     const request = ++generation;
     try {
       const clip = getPerformance(id);
-      const entries = clip.profiles ? Object.keys(sources) : ["front"];
-      const views = await Promise.all(entries.map(loadView));
+      const data = await loadArtwork();
       if (request !== generation || disposed) return;
-      loaded = { ...loaded, ...Object.fromEntries(entries.map((name, index) => [name, views[index]])) };
-      action = {
-        clip, duration: (timing.duration ?? clip.duration) * 1000, nextFrame: 0,
-        context: { ...anchor.context, views: loaded },
-      };
+      player ||= new CharacterPlayer(canvas, {
+        ...data, viewBox: anchor.viewBox, dprCap: 2, observeResize: false,
+      });
+      action = { clip, duration: clip.duration * 1000, nextFrame: 0 };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(tick);
     } catch {
@@ -138,9 +108,7 @@ export function createActor(canvas, anchor, { onFrame, onFinish, onError }) {
       stop();
       resize.disconnect();
       canvas.removeEventListener("webglcontextlost", loseContext);
-      for (const instance of players.values()) instance.dispose();
-      players.clear();
-      loaded = {};
+      player?.dispose();
     },
   };
 }
