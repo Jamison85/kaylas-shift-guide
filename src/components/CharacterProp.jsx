@@ -1,107 +1,82 @@
-const poseFiles = {
-  hold: "characters-approved/prop-hold.webp",
-  wave: "characters-approved/prop-wave.webp",
-  celebrate: "characters-approved/prop-celebrate.webp",
-};
+import { useEffect, useRef, useState } from "react";
 
-const actionFiles = {
-  walk: "characters-approved/till-action-walk-v1.webp",
-  register: "characters-approved/till-action-register-v1.webp",
-  paperwork: "characters-approved/till-action-paperwork-v1.webp",
-  computer: "characters-approved/till-action-computer-v1.webp",
-  lottery: "characters-approved/till-action-lottery-v1.webp",
-  reconcile: "characters-approved/till-action-reconcile-v1.webp",
-  inventory: "characters-approved/till-action-inventory-v1.webp",
-};
+// Rendered from the V2 weighted Till rig; no canvas or GPU requirement.
+// Each intentional gesture plays once, then settles into quiet breathing/blinking.
+const durations = { wave: 2646, point: 2646, explain: 4235, nod: 1300, thumbs: 2332, celebrate: 3294, clipboard: 3780 };
+const workPoses = new Set(["walk","register","paperwork","computer","lottery","reconcile","inventory"]);
+const clipboardPoses = new Set(["paperwork","lottery","reconcile","inventory"]);
 
-const introFiles = {
-  aisleIntro: "characters-approved/till-action-aisle-intro-v2.webp",
-};
-
-const actionDurations = {
-  walk: "3.2s",
-  register: "3.6s",
-  paperwork: "4.2s",
-  computer: "3.8s",
-  lottery: "4.1s",
-  reconcile: "4.4s",
-  inventory: "4s",
-};
-
-const actionMoments = {
-  walk: { working: "0% 100%", explaining: "0% 100%" },
-  register: { working: "0% 100%", explaining: "100% 100%" },
-  paperwork: { working: "100% 0%", explaining: "0% 100%" },
-  computer: { working: "100% 0%", explaining: "0% 100%" },
-  lottery: { working: "0% 100%", explaining: "100% 0%" },
-  reconcile: { working: "100% 0%", explaining: "100% 100%" },
-  inventory: { working: "100% 0%", explaining: "100% 100%" },
-};
-
-const spritePoses = {
-  carry: "0% 0%",
-  push: "33.333% 0%",
-  point: "66.667% 0%",
-  sit: "100% 0%",
-  climb: "0% 100%",
-  peek: "33.333% 100%",
-  compare: "66.667% 100%",
-};
+function selectClip(pose, moment) {
+  if (moment === "explaining") return "explain";
+  if (moment === "working") return clipboardPoses.has(pose) ? "clipboard" : "nod";
+  if (pose === "celebrate") return "celebrate";
+  if (pose === "wave" || pose === "aisleIntro") return "wave";
+  if (pose === "point" || pose === "push") return "point";
+  if (pose === "thumbs") return "thumbs";
+  if (clipboardPoses.has(pose)) return "clipboard";
+  return "idle";
+}
 
 export default function CharacterProp({ pose = "hold", className = "", motion = "loop", moment = null }) {
-  const base = import.meta.env.BASE_URL;
-  const actionFile = actionFiles[pose];
-  const introFile = introFiles[pose];
-  const spritePosition = spritePoses[pose];
-  const actionPosition = moment ? actionMoments[pose]?.[moment] : null;
-  const motionClass = actionPosition ? "character-prop--still" : motion === "once" ? "character-prop--once" : "";
-  const momentClass = actionPosition ? `character-prop--moment-${moment}` : "";
+  const host = useRef(null);
+  const timer = useRef(null);
+  const played = useRef(false);
+  const selection = selectClip(pose, moment);
+  const [active, setActive] = useState(false);
+  const [clip, setClip] = useState("still");
+  const [unavailable, setUnavailable] = useState(false);
+  const base = import.meta.env.BASE_URL + "characters-approved/till-runtime-v2/";
 
-  if (introFile) {
-    return (
-      <div className={`character-prop character-prop--intro character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
-        <span
-          className="character-prop__intro"
-          style={{ backgroundImage: `url("${base}${introFile}")` }}
-        />
-      </div>
-    );
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let visible = typeof IntersectionObserver === "undefined";
+    const update = () => setActive(visible && !document.hidden && !media.matches && motion !== "none");
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      update();
+    });
+    if (host.current) observer?.observe(host.current);
+    document.addEventListener("visibilitychange", update);
+    media.addEventListener("change", update);
+    update();
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener("visibilitychange", update);
+      media.removeEventListener("change", update);
+    };
+  }, [motion]);
+
+  useEffect(() => {
+    played.current = false;
+    setUnavailable(false);
+  }, [selection]);
+
+  useEffect(() => {
+    clearTimeout(timer.current);
+    if (!active || unavailable) setClip("still");
+    else if (!played.current) {
+      played.current = true;
+      setClip(selection);
+    } else setClip(motion === "once" ? "still" : "idle");
+    return () => clearTimeout(timer.current);
+  }, [active, selection, motion, unavailable]);
+
+  function onLoad() {
+    clearTimeout(timer.current);
+    if (active && durations[clip]) {
+      timer.current = setTimeout(() => setClip(motion === "once" ? "still" : "idle"), durations[clip] + 50);
+    }
   }
 
-  if (actionFile) {
-    return (
-      <div className={`character-prop character-prop--action character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
-        <span
-          className="character-prop__action"
-          style={{
-            backgroundImage: `url("${base}${actionFile}")`,
-            backgroundPosition: actionPosition || "0 0",
-            "--till-action-duration": actionDurations[pose],
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (spritePosition) {
-    return (
-      <div className={`character-prop character-prop--sprite character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
-        <span
-          className="character-prop__sprite"
-          style={{
-            backgroundImage: `url("${base}characters-approved/coworker-action-sprites-v1.webp")`,
-            backgroundPosition: spritePosition,
-          }}
-        />
-      </div>
-    );
-  }
-
-  const file = poseFiles[pose] || poseFiles.hold;
-
+  const action = workPoses.has(pose) || !!moment;
   return (
-    <div className={`character-prop character-prop--${pose} ${motionClass} ${momentClass} ${className}`.trim()} aria-hidden="true">
-      <img src={`${base}${file}`} alt="" draggable="false" decoding="async" />
+    <div ref={host}
+      className={`character-prop character-prop--runtime ${action ? "character-prop--action" : ""} character-prop--${pose} ${className}`.trim()}
+      data-till-runtime="v2" data-till-clip={clip} aria-hidden="true"
+      style={{ aspectRatio: action ? "1" : "3 / 4", overflow: "hidden" }}>
+      <img key={clip} src={base + clip + ".webp"} alt="" draggable="false" decoding="async"
+        onLoad={onLoad} onError={() => { clearTimeout(timer.current); setUnavailable(true); setClip("still"); }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom", filter: "none" }} />
     </div>
   );
 }

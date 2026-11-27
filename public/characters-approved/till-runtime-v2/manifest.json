@@ -1,0 +1,82 @@
+{
+  "idle": {
+    "clip": "idle_breathe",
+    "frames": 108,
+    "durationMs": 6048,
+    "size": 409622,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "wave": {
+    "clip": "wave_hello",
+    "frames": 49,
+    "durationMs": 2646,
+    "size": 497942,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "point": {
+    "clip": "point_left",
+    "frames": 49,
+    "durationMs": 2646,
+    "size": 459294,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "explain": {
+    "clip": "explain",
+    "frames": 77,
+    "durationMs": 4235,
+    "size": 814808,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "nod": {
+    "clip": "approve_nod",
+    "frames": 25,
+    "durationMs": 1300,
+    "size": 82544,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "thumbs": {
+    "clip": "thumbs_up",
+    "frames": 44,
+    "durationMs": 2332,
+    "size": 424508,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "celebrate": {
+    "clip": "celebrate_shift",
+    "frames": 61,
+    "durationMs": 3294,
+    "size": 701290,
+    "dimensions": [
+      276,
+      453
+    ]
+  },
+  "clipboard": {
+    "clip": "clipboard_hold_side",
+    "frames": 70,
+    "durationMs": 3780,
+    "size": 663632,
+    "dimensions": [
+      276,
+      453
+    ]
+  }
+}
