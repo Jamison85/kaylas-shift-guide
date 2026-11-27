@@ -379,54 +379,6 @@ summary:focus-visible {
 .start-progress { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 4px; background: rgba(24, 32, 48, 0.08); }
 .start-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: linear-gradient(90deg, var(--orange), #ff9b59); }
 
-.character-prop {
-  position: absolute;
-  z-index: 4;
-  pointer-events: none;
-  user-select: none;
-}
-
-.character-prop img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 18px 16px rgba(3, 8, 16, 0.3));
-}
-
-.character-prop--sprite { aspect-ratio: 3 / 4; }
-
-.character-prop__sprite {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: 400% 200%;
-  filter: drop-shadow(0 16px 13px rgba(3, 8, 16, 0.28));
-}
-
-.character-prop--action { aspect-ratio: 1; }
-
-.character-prop__action {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background-position: 0 0;
-  background-repeat: no-repeat;
-  background-size: 200% 200%;
-  filter: drop-shadow(0 9px 8px rgba(1, 8, 18, 0.18));
-  will-change: background-position;
-  animation: till-action-cycle var(--till-action-duration, 4s) step-end infinite;
-}
-
-@keyframes till-action-cycle {
-  0%, 24.99% { background-position: 0 0; }
-  25%, 49.99% { background-position: 100% 0; }
-  50%, 74.99% { background-position: 0 100%; }
-  75%, 100% { background-position: 100% 100%; }
-}
-
-.home-action { opacity: 1; }
-.home-action--anchor { z-index: 5; right: 28px; bottom: 7px; width: 112px; }
 
 .start-prop {
   right: 2px;
@@ -628,15 +580,6 @@ summary:focus-visible {
   z-index: 2;
 }
 
-.task-location--with-character .character-prop {
-  z-index: 1;
-  right: 7px;
-  bottom: -11px;
-  width: 76px;
-}
-
-.task-location--compare .character-prop { right: 5px; bottom: -9px; width: 73px; }
-.task-location--point .character-prop { right: 3px; bottom: -10px; width: 79px; }
 
 .steps-heading {
   display: flex;
@@ -842,7 +785,7 @@ summary:focus-visible {
 .finish__copy h1 { font-size: clamp(2.45rem, 9vw, 4.6rem); }
 .finish__copy > p { color: var(--ink-soft); font-family: "Fraunces", Georgia, serif; line-height: 1.5; }
 .finish__actions { display: grid; gap: 8px; margin-top: 24px; }
-.finish-prop { right: 0; bottom: 0; width: min(30%, 260px); }
+
 
 .bottom-nav {
   position: fixed;
@@ -886,7 +829,7 @@ summary:focus-visible {
   .start { min-height: 300px; }
   .start-sheet { margin-right: 68px; }
   .start-copy { width: 75%; min-height: 300px; padding: 27px 23px 24px 32px; }
-  .home-action--anchor { right: 44px; width: 142px; }
+
   .task-card > header,
   .title-row,
   .task-card > .purpose,
@@ -901,9 +844,8 @@ summary:focus-visible {
   .guided-footer { margin-right: 34px; margin-left: 34px; }
   .task-location, .move-on-check { width: calc(100% - 68px); }
   .task-location--with-character { padding-right: 108px; }
-  .task-location--with-character .character-prop { right: 12px; bottom: -14px; width: 88px; }
-  .task-location--compare .character-prop { width: 84px; }
-  .task-location--point .character-prop { width: 91px; }
+
+
 }
 
 @media (max-width: 430px) {
@@ -914,7 +856,7 @@ summary:focus-visible {
   .home-card-scene { min-height: 246px; }
   .start { min-height: 246px; }
   .start-sheet { margin-right: 44px; }
-  .home-action--anchor { right: 4px; width: 100px; }
+
   .start-copy { width: 78%; min-height: 246px; padding: 18px 8px 15px 19px; }
   .start-copy > strong { font-size: clamp(1.67rem, 7.6vw, 1.98rem); }
   .coach-bubble { max-width: none; }
@@ -937,7 +879,7 @@ summary:focus-visible {
   .start-meta { gap: 6px; }
   .start-meta > span { font-size: 0.58rem; }
   .start-meta b { padding: 8px 9px; font-size: 0.65rem; }
-  .home-action--anchor { right: 4px; width: 96px; }
+
   .task-card > header,
   .title-row,
   .task-card > .purpose,
@@ -952,15 +894,14 @@ summary:focus-visible {
   .guided-footer { margin-right: 18px; margin-left: 18px; }
   .task-location, .move-on-check { width: calc(100% - 36px); }
   .task-location--with-character { min-height: 96px; padding-right: 76px; }
-  .task-location--with-character .character-prop { right: 2px; bottom: -8px; width: 64px; }
-  .task-location--compare .character-prop { width: 62px; }
-  .task-location--point .character-prop { width: 66px; }
+
+
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-  .character-prop__action { animation: none !important; will-change: auto; }
-  .character-prop--action:not(.character-prop--still) .character-prop__action { background-position: 0 0 !important; }
+
+
 }
 
 /* Before the Rush — final system polish */
@@ -1087,7 +1028,7 @@ summary:focus-visible {
 .name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange-dark); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
 .name-card__actions button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 .name-card__copy > em { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 0.63rem; font-style: normal; }
-.name-prop { right: 0; bottom: 0; width: min(28%, 210px); }
+
 
 .install-card {
   position: relative;
@@ -1259,7 +1200,6 @@ summary:focus-visible {
   font-style: normal;
 }
 
-.install-prop { z-index: 1; right: 0; bottom: 0; width: min(24%, 210px); }
 
 .profile-overlay {
   position: fixed;
@@ -1338,7 +1278,7 @@ summary:focus-visible {
 .name-card--editor { width: min(100%, 540px); min-height: 410px; border-radius: 30px 12px 30px 30px; }
 .name-card--editor .name-card__copy { width: 72%; min-height: 410px; padding: 30px 6px 26px 28px; }
 .name-card--editor h1 { font-size: clamp(2.35rem, 9vw, 3.8rem); }
-.name-card--editor .name-prop { width: min(26%, 150px); }
+
 
 .mini {
   min-height: 72px;
@@ -1477,7 +1417,7 @@ summary:focus-visible {
 .task-location p,
 .move-on-check p { font-size: 0.84rem; }
 .task-location--with-character { min-height: 94px; padding-right: 90px; }
-.task-location--with-character .character-prop--action { right: 2px; bottom: 1px; width: 88px; }
+
 .steps-heading { margin-top: 23px; margin-bottom: 10px; }
 .steps-heading strong { font-size: 1.2rem; }
 
@@ -1591,7 +1531,7 @@ summary:focus-visible {
 }
 .explanation-head { position: relative; min-height: 112px; padding-right: 102px; }
 .explanation-head > div:first-child { position: relative; z-index: 2; }
-.explanation-head .character-prop { position: absolute; z-index: 1; right: -4px; bottom: -9px; width: 94px; }
+
 .panel-zoom .explanation-head h2 { margin-top: 7px; font-size: clamp(1.7rem, 7vw, 2.35rem); }
 .panel-zoom article.explanation-card > p { margin: 12px 0 0; font-size: 0.88rem; line-height: 1.62; }
 .panel-zoom article.explanation-card > button { min-height: var(--control-height); margin-top: 18px; border-radius: 13px; }
@@ -1612,7 +1552,7 @@ summary:focus-visible {
   .start { min-height: 282px; }
   .start-copy { min-height: 282px; }
   .task-location--with-character { padding-right: 106px; }
-  .task-location--with-character .character-prop--action { right: 5px; width: 98px; }
+
 }
 
 @keyframes install-arrive {
@@ -1643,10 +1583,10 @@ summary:focus-visible {
   .start-copy { min-height: 238px; }
   .task-card h1 { font-size: clamp(1.9rem, 9.3vw, 2.72rem); }
   .task-location--with-character { padding-right: 82px; }
-  .task-location--with-character .character-prop--action { right: 1px; bottom: 2px; width: 76px; }
+
   .step-detail { padding-left: 56px; }
   .explanation-head { min-height: 98px; padding-right: 84px; }
-  .explanation-head .character-prop { width: 78px; }
+
   .finish__copy > p,
   .finish__actions { width: 70%; }
 }
@@ -1664,58 +1604,14 @@ summary:focus-visible {
   .mode-toggle button { padding-right: 7px; padding-left: 7px; font-size: 0.66rem; }
   .task-card { --panel-x: 16px; }
   .task-location--with-character { padding-right: 72px; }
-  .task-location--with-character .character-prop--action { width: 68px; }
+
   .step-toggle { gap: 9px; padding: 11px 9px; }
   .step-detail { padding-right: 11px; padding-left: 50px; }
 }
 
-.character-prop--intro { aspect-ratio: 1; }
-
-.character-prop__intro {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background-position: 0 0;
-  background-repeat: no-repeat;
-  background-size: 300% 200%;
-  filter: drop-shadow(0 22px 18px rgba(1, 6, 14, 0.36));
-  will-change: background-position, transform;
-  animation:
-    till-aisle-frames 6s step-end both,
-    till-aisle-step-bob 6s linear both;
-}
-
-@keyframes till-aisle-frames {
-  0%, 21.99% { background-position: 0 0; }
-  22%, 35.99% { background-position: 50% 0; }
-  36%, 49.99% { background-position: 100% 0; }
-  50%, 54.99% { background-position: 0 100%; }
-  55%, 59.99% { background-position: 50% 100%; }
-  60%, 64.99% { background-position: 0 100%; }
-  65%, 69.99% { background-position: 50% 100%; }
-  70%, 74.99% { background-position: 0 100%; }
-  75%, 79.99% { background-position: 50% 100%; }
-  80%, 84.99% { background-position: 0 100%; }
-  85%, 89.99% { background-position: 50% 100%; }
-  90%, 100% { background-position: 100% 100%; }
-}
-
-@keyframes till-aisle-step-bob {
-  0%, 49.99% { transform: translateY(0); }
-  50%, 60%, 70%, 80%, 90%, 100% { transform: translateY(0); }
-  55%, 65%, 75%, 85% { transform: translateY(-0.7%); }
-}
 
 /* Guide hierarchy refinement — calmer task screens, contextual Till, less chrome */
-.character-prop--once .character-prop__action {
-  animation-iteration-count: 1;
-  animation-fill-mode: both;
-}
 
-.character-prop--still .character-prop__action {
-  animation: none;
-  will-change: auto;
-}
 
 .shell--task::before {
   background:
@@ -1838,19 +1734,6 @@ summary:focus-visible {
 .task-why-link:hover span,
 .task-why-link:focus-visible span { transform: translateX(3px); }
 
-.task-intro__till {
-  z-index: 1;
-  right: -18px;
-  bottom: -8px;
-  width: 138px;
-  opacity: 0.98;
-  animation: till-context-in 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
-@keyframes till-context-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
-  to { opacity: 0.98; transform: translateY(0) scale(1); }
-}
 
 .steps-heading {
   align-items: center;
@@ -1956,13 +1839,6 @@ summary:focus-visible {
   content: "";
 }
 
-.explanation-head .character-prop--action {
-  z-index: 1;
-  right: -10px;
-  bottom: -7px;
-  width: 146px;
-  animation: till-context-in 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
 .panel-zoom article.explanation-card > button { font-weight: 850; }
 
 .bottom-nav {
@@ -1993,10 +1869,10 @@ summary:focus-visible {
   .task-card { --panel-x: 17px; }
   .task-intro--with-till .task-intro__copy { padding-right: 96px; }
   .task-intro h1 { font-size: clamp(1.82rem, 8.3vw, 2.5rem); }
-  .task-intro__till { right: -14px; bottom: -4px; width: 112px; }
+
   .explanation-head { min-height: 122px; padding-right: 116px; }
   .explanation-head::after { width: 120px; height: 66px; }
-  .explanation-head .character-prop--action { right: -8px; bottom: -5px; width: 124px; }
+
   .task-location-line { display: block; }
   .task-location-line p { margin-top: 3px; }
   .steps-heading > span { max-width: 92px; }
@@ -2006,10 +1882,10 @@ summary:focus-visible {
 
 @media (max-width: 350px) {
   .task-intro--with-till .task-intro__copy { padding-right: 82px; }
-  .task-intro__till { right: -15px; width: 98px; }
+
   .explanation-head { padding-right: 102px; }
   .explanation-head::after { width: 106px; }
-  .explanation-head .character-prop--action { width: 110px; }
+
   .task-intro__summary { font-size: 0.68rem; }
   .task-location-line p { font-size: 0.69rem; }
 }
