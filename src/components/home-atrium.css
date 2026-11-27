@@ -1,0 +1,187 @@
+.shell--atrium {
+  display: flex;
+  flex-direction: column;
+  background: #09111d;
+}
+
+.shell--atrium::before,
+.shell--atrium::after { content: none; }
+
+.shell--atrium .content {
+  display: flex;
+  flex: 1;
+  max-width: 540px;
+  min-height: 0;
+  padding: 0 0 8px;
+}
+
+.shell--atrium .bottom-nav {
+  position: sticky;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  margin-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.home--atrium {
+  width: 100%;
+  grid-template-rows: minmax(280px, 1fr) auto;
+  gap: 0;
+  animation: none;
+}
+
+.atrium-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  isolation: isolate;
+}
+
+.atrium-media {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atrium-media img,
+.atrium-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 69%;
+}
+
+.atrium-media video {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+[data-welcome="playing"] .atrium-media video {
+  opacity: 1;
+  transition-duration: 160ms;
+}
+
+.atrium-media::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(9, 17, 29, 0.96), rgba(9, 17, 29, 0.58) 80px, transparent 158px);
+  content: "";
+}
+
+.home--atrium .home-head {
+  min-height: 0;
+  padding: 15px 16px 0;
+}
+
+.home--atrium .home-head h1 {
+  max-width: none;
+  font-size: clamp(1.55rem, 6.2vw, 2.5rem);
+  overflow-wrap: anywhere;
+}
+
+.atrium-till {
+  align-self: flex-end;
+  width: min(50%, 228px);
+  margin: 10px 12px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.21);
+  border-radius: 13px;
+  background: rgba(9, 17, 29, 0.94);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  color: white;
+}
+
+[data-welcome="playing"] .atrium-till { visibility: hidden; }
+
+.atrium-till__reply { padding: 8px 10px 6px; }
+.atrium-till__reply span { color: #f6aa77; font-size: 0.7rem; font-weight: 800; }
+.atrium-till__reply p { margin: 2px 0 0; font-size: 0.77rem; line-height: 1.35; }
+
+.atrium-till__actions {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.atrium-till__actions button,
+.atrium-skip {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 0.69rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.atrium-till__actions button { flex: 1; padding: 4px; }
+.atrium-till__actions button + button { border-left: 1px solid rgba(255, 255, 255, 0.14); }
+.atrium-till__actions button[aria-pressed="true"] { color: #f6aa77; }
+
+.atrium-skip {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(9, 17, 29, 0.91);
+}
+
+.start.atrium-start {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: calc(100% - 24px);
+  min-height: 76px;
+  margin: 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #fffdf5;
+  border-radius: 15px;
+  background: var(--paper);
+  color: var(--ink);
+  filter: none;
+}
+
+.home--plain .atrium-start { width: 100%; margin: 0; }
+.home--plain .home-head { min-height: 0; }
+.home--plain .home-head__meta { flex-wrap: wrap; }
+
+.atrium-start__copy { min-width: 0; }
+.atrium-start__copy small {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-soft);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.atrium-start__copy strong {
+  display: block;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.1rem, 4.8vw, 1.5rem);
+  line-height: 1.07;
+  overflow-wrap: anywhere;
+}
+
+.atrium-start__action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: var(--cobalt);
+  color: white;
+  font-size: 0.77rem;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atrium-media video { transition: none; }
+}

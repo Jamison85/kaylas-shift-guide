@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Modal from "./components/Modal";
+import HomeAtrium from "./components/HomeAtrium";
 import TillStage from "./components/TillStage";
 import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
@@ -236,7 +237,6 @@ function DailyGuide({ day }) {
   const fallback = useMemo(() => legacyProgress(day), [day]);
   const [progress, setProgress] = useLocalStorage(`before-rush-${day}`, fallback, normalizeProgress);
   const [requestedScreen, setScreen] = useState("home");
-  const [isLaunching, setIsLaunching] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
@@ -244,13 +244,11 @@ function DailyGuide({ day }) {
   const [tillSession] = useState(createTillSession);
   const [tillResident] = useState(createTillResident);
   const [tillEvent, setTillEvent] = useState(null);
-  const [homeCue, setHomeCue] = useState(null);
   const [homeTalking, setHomeTalking] = useState(false);
   const [homeNote, setHomeNote] = useState(null);
   const nextTubeNote = useRef(0);
   const tillEventNumber = useRef(0);
   const profileTriggerRef = useRef(null);
-  const launchTimer = useRef(null);
   const resetTriggerRef = useRef(null);
   const { canInstall, isStandalone, install } = usePwaInstall();
 
@@ -282,7 +280,6 @@ function DailyGuide({ day }) {
   const showTill = till.preference !== "off";
   const behindDialog = showProfile || showResetConfirm;
 
-  useEffect(() => () => clearTimeout(launchTimer.current), []);
   useEffect(() => () => tillResident.dispose(), [tillResident]);
 
   const saveName = (name) => {
@@ -305,36 +302,18 @@ function DailyGuide({ day }) {
     if (screen !== "home") {
       setHomeTalking(false);
       setHomeNote(null);
-      setHomeCue(till.preference === "full" ? { kind: "return", key: Symbol("home") } : null);
     }
     setScreen("home");
   };
   const talkAtHome = () => {
     setHomeNote(null);
     setHomeTalking(talking => !talking);
-    setHomeCue({ kind: "talk", key: Symbol("home-talk") });
   };
   const receiveTubeNote = useCallback(() => {
     setHomeTalking(false);
     setHomeNote(tubeNotes[nextTubeNote.current % tubeNotes.length]);
     nextTubeNote.current += 1;
   }, []);
-  const sendTubeNote = (animated) => {
-    if (animated) setHomeCue({ kind: "tube", key: Symbol("tube") });
-    else receiveTubeNote();
-  };
-  const startFromHome = () => {
-    if (isLaunching) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      startOrResume();
-      return;
-    }
-    setIsLaunching(true);
-    launchTimer.current = window.setTimeout(() => {
-      setIsLaunching(false);
-      startOrResume();
-    }, 320);
-  };
   const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
   const setDecision = (taskId, answer) => setProgress((current) => {
     if (current.answers[taskId] === answer) return current;
@@ -426,7 +405,7 @@ function DailyGuide({ day }) {
   }
 
   return (
-    <div className={`shell shell--${screen}`}>
+    <div className={`shell shell--${screen}${screen === "home" && showTill ? " shell--atrium" : ""}`}>
       <header className="mini">
         <button type="button" onClick={goHome} className="mini__brand" aria-label="Before the Rush home">
           <i />
@@ -450,48 +429,41 @@ function DailyGuide({ day }) {
 
       <main className="content">
         {screen === "home" && (
-          <section className="home home--compact">
-            <div className="home-head">
-              <small>Good morning, {displayName}</small>
-              <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : "Ready for the first move?"}</h1>
-              <div className={`home-head__meta ${showTill ? "home-head__meta--with-till" : ""}`}>
-                {!showTill && <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>}
-                <div className="progress-status" aria-label={`${percent}% complete`}>
-                  <span>{completedCount}<small>/{guideTasks.length}</small></span>
-                  <em>{percent}% done</em>
+          <section className={`home ${showTill ? "home--atrium" : "home--plain"}`}>
+            <HomeAtrium showTill={showTill} animate={till.preference === "full" && !completedCount} paused={behindDialog}>
+              <div className="home-head">
+                {completedCount > 0 && <small>Good morning, {displayName}</small>}
+                <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : `Good morning, ${displayName}`}</h1>
+                <div className="home-head__meta">
+                  {!showTill && <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>}
+                  <div className="progress-status" aria-label={`${percent}% complete`}>
+                    <span>{completedCount}<small>/{guideTasks.length}</small></span>
+                    <em>{percent}% done</em>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className={`home-stage ${isLaunching ? "is-launching" : ""}`}>
-              <div className={`home-card-scene ${showTill ? "home-card-scene--with-till" : ""}`}>
-                {showTill && (
-                  <div className="home-prelude">
-                    <div className="home-till-reply" id="home-till-reply" role="status" data-tube-note={homeNote ? true : undefined}>
-                      <span>{homeNote ? "Tube note from Till" : "Till"}</span>
-                      <p>{homeTalking
-                        ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
-                        : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom)}</p>
-                    </div>
-                    <TillStage {...till} anchor="home" cue={homeCue} paused={behindDialog} leaving={isLaunching}
-                      onTalk={talkAtHome} talking={homeTalking} replyId="home-till-reply"
-                      onSendTube={sendTubeNote} onReceiveNote={receiveTubeNote} />
+              {showTill && (
+                <aside className="atrium-till" aria-label="Till">
+                  <div className="atrium-till__reply" id="home-till-reply" role="status">
+                    <span>{homeNote ? "Tube note from Till" : "Till"}</span>
+                    <p>{homeTalking
+                      ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
+                      : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom)}</p>
                   </div>
-                )}
-                <button type="button" className="start" onClick={startFromHome}>
-                  <div className="start-sheet">
-                    {showTill && <span className="start-edge" aria-hidden="true" data-till-surface="home" />}
-                    <div className="start-copy">
-                      <div className="start-kicker"><small>{allDone ? "Completed" : completedCount ? "Continue" : "First move"}</small><span>Task {resumeIndex + 1} of {guideTasks.length}</span></div>
-                      <strong>{nextTask.title}</strong>
-                      <p>{nextTask.short}</p>
-                      <div className="start-meta"><span>{nextTask.category}</span><b>{allDone ? "Review task" : "Open task"} <i>→</i></b></div>
-                    </div>
-                    <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
+                  <div className="atrium-till__actions">
+                    <button type="button" onClick={talkAtHome} aria-label="Talk to Till" aria-controls="home-till-reply" aria-pressed={homeTalking}>Ask Till</button>
+                    <button type="button" onClick={receiveTubeNote} aria-label="Send a tube note" aria-controls="home-till-reply">Tube note</button>
                   </div>
-                </button>
-              </div>
-            </div>
+                </aside>
+              )}
+            </HomeAtrium>
+            <button type="button" className="start atrium-start" onClick={startOrResume}>
+              <span className="atrium-start__copy">
+                <small>Task {resumeIndex + 1} of {guideTasks.length}</small>
+                <strong>{nextTask.title}</strong>
+              </span>
+              <span className="atrium-start__action">{allDone ? "Review task" : "Open task"} <span aria-hidden="true">→</span></span>
+            </button>
           </section>
         )}
 
@@ -515,7 +487,7 @@ function DailyGuide({ day }) {
       {screen === "home" && (
         <nav className="bottom-nav" aria-label="Primary navigation">
           <button type="button" aria-current="page" className={screen === "home" ? "active" : ""} onClick={goHome}><NavIcon name="home" /><small>Home</small></button>
-          <button type="button" className={screen === "task" ? "active" : ""} onClick={startFromHome}><NavIcon name="guide" /><small>Guide</small></button>
+          <button type="button" onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
         </nav>
       )}
 

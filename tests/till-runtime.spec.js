@@ -27,60 +27,40 @@ async function enableMotion(page) {
   await page.emulateMedia({ reducedMotion: "no-preference" });
 }
 
-test("reduced motion shows the approved still and keeps the launch control usable", async ({ page }) => {
+test("reduced motion shows the atrium still and keeps the launch control usable", async ({ page }) => {
   await openGuide(page);
-  const home = page.locator(actor("home"));
-  await expect(home).toHaveAttribute("data-till-motion", "still");
-  await expect(home).toHaveCSS("pointer-events", "none");
-  await expect(home.locator(".till-stage__poster")).toBeVisible();
-  await expect.poll(() => home.locator(".till-stage__poster").evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
+  const atrium = page.locator(".atrium-media img");
+  await expect(atrium).toBeVisible();
+  await expect.poll(() => atrium.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.locator(".start").click();
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
 
-test("Till greets the opener and performs distinct actions as the shift progresses", async ({ page }) => {
+test("the welcome plays muted once and fades back to the atrium", async ({ page }) => {
   await enableMotion(page);
-  await page.addInitScript(() => {
-    window.tillEntrancePhases = [];
-    const record = new MutationObserver(entries => {
-      for (const { oldValue, target } of entries) {
-        window.tillEntrancePhases.push(oldValue, target.dataset.tillTear);
-      }
-    });
-    record.observe(document, { subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ["data-till-tear"] });
-  });
   await openGuide(page);
-  const home = page.locator(actor("home"));
-  await expect(home).toHaveAttribute("data-till-motion", "climb_through_rip");
-  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "tugging");
-  const room = home.locator(".till-tear__room");
-  const art = home.locator(".till-stage__art");
-  await expect(room).toHaveCSS("background-image", /peep-office-/);
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "peeking");
-  await expect(home.locator("canvas")).toHaveCSS("opacity", "0");
-  const straightOn = await room.evaluate(node => getComputedStyle(node).transform);
-  await page.evaluate(() => {
-    const tilt = (beta, gamma) => window.dispatchEvent(Object.assign(new Event("deviceorientation"), { beta, gamma }));
-    tilt(26, 2);
-    tilt(37, 16);
-  });
-  await expect(room).not.toHaveCSS("transform", straightOn);
-  const offset = await art.evaluate(node => node.style.getPropertyValue("--peep-x"));
-  expect(Math.abs(Number(offset))).toBeGreaterThan(0.05);
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "ladder");
-  await expect(home.locator(".till-ladder__rung")).toHaveCount(4);
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "bracing");
-  expect(await page.evaluate(() => window.tillEntrancePhases)).toContain("slipping");
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "crossing");
-  await expect.poll(() => art.evaluate(node => Number.parseFloat(node.style.getPropertyValue("--visitor-cross-x")))).toBeGreaterThan(40);
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "standing");
-  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "dusting");
-  await expect(home.locator("canvas")).toHaveAttribute("data-view", "front");
-  await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
-  await expect(art).not.toHaveAttribute("data-till-peeping");
+  const atrium = page.locator(".atrium-window");
+  const video = atrium.locator("video");
+  await expect(atrium).toHaveAttribute("data-welcome", "playing");
+  expect(await video.evaluate(media => media.muted && media.playsInline && !media.loop)).toBe(true);
+  await expect(page.getByRole("button", { name: /Open task/ })).toBeInViewport({ ratio: 1 });
+  await video.evaluate(media => { media.currentTime = media.duration - 0.15; });
+  await expect(atrium).toHaveAttribute("data-welcome", "fading");
+  await expect(atrium).toHaveAttribute("data-welcome", "still");
+  await expect(video).toHaveCount(0);
+  await page.reload();
+  await expect(atrium).toHaveAttribute("data-welcome", "still");
+  await expect(video).toHaveCount(0);
+});
 
-  await page.locator(".start").click();
+test("the opener can leave mid-clip and Till performs distinct actions during the shift", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "playing");
+  await page.getByRole("button", { name: /Open task/ }).click();
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   const task = page.locator(actor("task"));
   await expect(task).toHaveAttribute("data-till-motion", "check_surroundings");
   await page.locator(".done-next").click();
@@ -107,7 +87,7 @@ test("quiet suppresses background gestures and off preserves task help through a
   const settings = page.getByLabel("Till’s movement");
   await settings.selectOption("quiet");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  await expect(page.locator(actor("home"))).toHaveAttribute("data-till-motion", "still");
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   await page.locator(".start").click();
   await page.getByRole("button", { name: "Quick", exact: true }).click();
   await page.locator(".task-why-link").click();
@@ -126,6 +106,7 @@ test("quiet suppresses background gestures and off preserves task help through a
   await settings.selectOption("off");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.reload();
+  await expect(page.locator(".atrium-media")).toHaveCount(0);
   await expect(page.locator("[data-till-anchor]")).toHaveCount(0);
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
@@ -133,19 +114,16 @@ test("quiet suppresses background gestures and off preserves task help through a
   await expect(page.locator("[data-till-anchor]")).toHaveCount(0);
 });
 
-test("Till follows the guide from Home and talks about the step the opener selects", async ({ page }) => {
+test("Till answers from the atrium and follows the step the opener selects", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page);
-  const home = page.locator(actor("home"));
-  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
-  await home.locator("canvas").evaluate(canvas => { window.tillCanvas = canvas; });
-  await home.getByRole("button", { name: "Talk to Till" }).click();
+  await page.getByRole("button", { name: "Skip video" }).click();
+  await page.getByRole("button", { name: "Talk to Till" }).click();
   await expect(page.locator("#home-till-reply")).toContainText("Catch anything urgent");
-  await expect(home).toHaveAttribute("data-till-motion", "lean_in");
   await page.locator(".start").click();
   const task = page.locator(actor("task"));
   await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
-  expect(await task.locator("canvas").evaluate(canvas => canvas === window.tillCanvas)).toBe(true);
+  await task.locator("canvas").evaluate(canvas => { window.tillCanvas = canvas; });
   await page.getByRole("button", { name: /Separate urgent from cosmetic/ }).click();
   await expect(task).toHaveAttribute("data-till-motion", "follow_detail");
   await task.getByRole("button", { name: "Talk to Till" }).click();
@@ -162,24 +140,15 @@ test("Till follows the guide from Home and talks about the step the opener selec
 test("the tube delivers a note with touch or keyboard and works with reduced motion", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page, { preference: "quiet" });
-  const home = page.locator(actor("home"));
-  const trigger = home.getByRole("button", { name: "Send a tube note" });
-  const scenery = home.locator(".till-scenery");
+  const trigger = page.getByRole("button", { name: "Send a tube note" });
   await trigger.press("Enter");
-  await expect(home).toHaveAttribute("data-till-motion", "send_tube_note");
-  await expect(scenery).toHaveAttribute("data-till-prop", "capsule");
-  await expect(scenery).toHaveAttribute("data-tube-phase", "firing");
-  await expect(home.locator("canvas")).toHaveAttribute("data-view", "right");
-  await expect(page.locator("#home-till-reply")).not.toContainText("receiving snacks");
   await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
-  await expect(home.locator("canvas")).toHaveAttribute("data-view", "front");
-  await expect(scenery).toHaveAttribute("data-till-prop", "");
   await page.setViewportSize({ width: 320, height: 610 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await trigger.click();
   await expect(page.locator("#home-till-reply")).toContainText("a working pen");
-  await expect(home).toHaveAttribute("data-till-motion", "still");
-  const launch = await page.locator(".start-meta b").boundingBox();
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
+  const launch = await page.locator(".atrium-start__action").boundingBox();
   const nav = await page.locator(".bottom-nav").boundingBox();
   expect(launch.y + launch.height).toBeLessThan(nav.y);
   await page.locator(".start").click();
@@ -239,34 +208,34 @@ test("phone task titles stay together and the next task opens at the top of its 
   await expect(card.locator("#task-till-reply")).toContainText("printed source paperwork");
 });
 
-test("the cached app can play Till and open help while offline", async ({ page, context }) => {
+test("the atrium still and Till’s task help work offline", async ({ page, context }) => {
   await enableMotion(page);
   await openGuide(page);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   const cacheUrls = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async key =>
     (await (await caches.open(key)).keys()).map(request => new URL(request.url).pathname)))).flat());
-  for (const asset of ["/poster-", "/front-", "/actor-"]) {
+  for (const asset of ["/till-atrium-", "/poster-", "/front-", "/actor-"]) {
     expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
   }
+  expect(cacheUrls.some(path => path.includes("/till-welcome-"))).toBe(false);
+  await page.evaluate(() => sessionStorage.removeItem("before-rush-atrium-welcome"));
   await context.setOffline(true);
   await page.reload();
-  await expect(page.locator(actor("home")).locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
+  await expect.poll(() => page.locator(".atrium-media img").evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
   await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(page.getByRole("dialog")).toContainText("Catch anything urgent");
 });
 
-test("Till moves to the review section for paperwork and shares the resident canvas", async ({ page }) => {
+test("Till moves to the review section for paperwork", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page, { completed: [
     "store-walk", "register-two", "cashier-break", "yesterday-sources", "lottery-refill", "health-dept", "gas-inspection",
   ] });
   await page.setViewportSize({ width: 360, height: 660 });
-  const homeCanvas = page.locator(actor("home")).locator("canvas");
-  await expect(homeCanvas).toHaveAttribute("data-ready", "true");
-  await homeCanvas.evaluate(canvas => { window.initialTillCanvas = canvas; });
   await page.locator(".start").click();
   await expect(page.locator(".task-card h1")).toHaveText("Sort Yesterday’s Receipt Bags");
   await expect(page.locator(".task-intro").locator(actor("task"))).toHaveCount(0);
@@ -277,7 +246,6 @@ test("Till moves to the review section for paperwork and shares the resident can
   await expect(till).toHaveAttribute("data-till-motion", "compare_receipt");
   const canvas = till.locator("canvas");
   await expect(canvas).toHaveAttribute("data-ready", "true");
-  expect(await canvas.evaluate(node => node === window.initialTillCanvas)).toBe(true);
   await expect(page.locator(".done-next")).toBeVisible();
 });
 
@@ -290,9 +258,6 @@ test("WebGL failure leaves the approved still and working guidance", async ({ pa
     };
   });
   await openGuide(page);
-  const home = page.locator(actor("home"));
-  await expect(home).toHaveAttribute("data-till-visible", "false");
-  await expect(home.locator(".till-stage__poster")).toBeVisible();
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
   await expect(page.getByRole("dialog")).toContainText("Where");
@@ -302,16 +267,15 @@ test("WebGL failure leaves the approved still and working guidance", async ({ pa
 test("visibility changes cancel movement and keep the task available", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page);
-  const home = page.locator(actor("home"));
-  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "playing");
   await page.evaluate(() => {
-    Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
     document.dispatchEvent(new Event("visibilitychange"));
   });
-  await expect(home).toHaveAttribute("data-till-motion", "still");
-  await expect(home.locator("canvas")).not.toHaveAttribute("data-ready");
+  await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.evaluate(() => {
-    delete document.visibilityState;
+    delete document.hidden;
     document.dispatchEvent(new Event("visibilitychange"));
   });
   await page.locator(".start").click();
