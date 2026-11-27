@@ -59,8 +59,16 @@ export function paintScenery(element, stage, scene) {
   if (element.dataset.tillProp !== item) element.dataset.tillProp = item;
   const phase = scene?.tubePhase ?? "idle";
   if (element.dataset.tubePhase !== phase) element.dataset.tubePhase = phase;
-  if (!prop) return;
   const [left, top, width, height] = stage.viewBox;
+  const dust = scene?.dust;
+  if (dust) {
+    element.style.setProperty("--dust-x", `${(dust.x - left) / width * 100}%`);
+    element.style.setProperty("--dust-y", `${(dust.y - top) / height * 100}%`);
+    element.style.setProperty("--dust-light", String(dust.light));
+  } else if (element.style.getPropertyValue("--dust-light")) {
+    element.style.removeProperty("--dust-light");
+  }
+  if (!prop) return;
   element.style.setProperty("--prop-x", `${(prop.x - left) / width * 100}%`);
   element.style.setProperty("--prop-y", `${(prop.y - top) / height * 100}%`);
   element.style.setProperty("--prop-angle", `${prop.angle}deg`);

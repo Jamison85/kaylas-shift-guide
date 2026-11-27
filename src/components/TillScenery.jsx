@@ -22,6 +22,7 @@ export default function TillScenery({ stage, sceneryRef, hasTube }) {
             <i className="till-tear__lip till-tear__lip--left" />
             <i className="till-tear__lip till-tear__lip--right" />
           </span>
+          <span className="till-dust" />
         </>
       )}
       <div className="till-scenery__props">

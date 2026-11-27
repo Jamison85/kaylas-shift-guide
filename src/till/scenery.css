@@ -41,6 +41,20 @@
 .till-stage__art[data-till-behind-tear] .till-stage__actor { clip-path: var(--tear-opening); }
 .till-stage__art[data-till-behind-tear] .till-tear__lip { z-index: 3; }
 
+.till-dust {
+  position: absolute;
+  z-index: 3;
+  top: var(--dust-y, 50%);
+  left: var(--dust-x, 50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  opacity: var(--dust-light, 0);
+  background: #eee0bc;
+  box-shadow: -5px -3px 1px #e5c795, 5px -5px 1px #ddd0a9, 10px 2px 1px #f3e2b9ad,
+    -2px 5px 1px #e0d6bb9c, -7px 1px 1px #eadab9a0;
+}
+
 .till-scenery__props {
   z-index: 3;
   clip-path: inset(0 0 var(--till-overhang));
@@ -192,6 +206,9 @@
 
 .till-stage--home[data-till-tube] .till-stage__talk { inset-inline: 11% 44px; }
 .till-stage--home[data-till-tube] .till-stage__talk span { inset-inline: 0 auto; top: 40%; }
+.till-stage--home[data-till-tube]:is([data-till-motion="climb_through_rip"], [data-till-motion="leave_and_return"]) .till-stage__talk span {
+  top: 12%;
+}
 
 .till-tube-trigger {
   position: absolute;

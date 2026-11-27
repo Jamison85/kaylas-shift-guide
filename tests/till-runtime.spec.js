@@ -46,8 +46,13 @@ test("Till greets the opener and performs distinct actions as the shift progress
   await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "tugging");
   await expect(home.locator(".till-tear__depth")).toHaveCSS("background-image", /till-back-office-/);
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "slipping");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "bracing");
   await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "climbing");
+  await expect(home.locator("canvas")).toHaveAttribute("data-view", "left");
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "standing");
+  await expect(home.locator(".till-scenery")).toHaveAttribute("data-till-tear", "dusting");
+  await expect(home.locator("canvas")).toHaveAttribute("data-view", "front");
   await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
   await expect(home.locator(".till-stage__art")).not.toHaveAttribute("data-till-behind-tear");
 
