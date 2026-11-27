@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Modal from "./components/Modal";
-import CharacterProp from "./components/CharacterProp";
+import TillStage from "./components/TillStage";
 import TaskFocus from "./components/TaskFocus";
 import { closingLines, guideTasks, wisdomLines } from "./data/guide";
 import { useLocalStorage, useStorageWarning } from "./hooks/useLocalStorage";
 import { usePwaInstall } from "./hooks/usePwaInstall";
+import { createTillSession, getTillPreference } from "./till/director";
 
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
@@ -60,7 +61,7 @@ function isMobileInstallTarget() {
     || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
 }
 
-function NameCard({ initialName = "", onSave, onCancel, onReset }) {
+function NameCard({ initialName = "", onSave, onCancel, onReset, till, onTillPreferenceChange }) {
   const [draft, setDraft] = useState(initialName);
   const cleanName = draft.trim().replace(/\s+/g, " ");
   const isEditor = Boolean(onCancel);
@@ -72,7 +73,7 @@ function NameCard({ initialName = "", onSave, onCancel, onReset }) {
   };
 
   return (
-    <section className={`name-card ${isEditor ? "name-card--editor" : ""}`} onClick={(event) => event.stopPropagation()}>
+    <section className={`name-card ${isEditor ? "name-card--editor" : ""} ${till.preference === "off" ? "no-till" : ""}`} onClick={(event) => event.stopPropagation()}>
       <div className="name-card__copy">
         <small>{isEditor ? "Profile & settings" : `${APP_NAME} · Store 2593`}</small>
         <h1>{isEditor ? "Make it yours." : "Who’s opening today?"}</h1>
@@ -94,10 +95,21 @@ function NameCard({ initialName = "", onSave, onCancel, onReset }) {
             {isEditor && <button type="button" onClick={onCancel}>Cancel</button>}
           </div>
         </form>
+        {isEditor && (
+          <div className="till-settings">
+            <label htmlFor="till-preference">Till’s movement</label>
+            <select id="till-preference" value={till.preference}
+              onChange={(event) => onTillPreferenceChange(event.target.value)}>
+              <option value="full">On</option>
+              <option value="quiet">Only for help and milestones</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+        )}
         {isEditor && onReset && <button type="button" className="name-card__reset" onClick={onReset}>Reset today’s progress</button>}
         <em>Saved only on this device.</em>
       </div>
-      <CharacterProp pose={isEditor ? "point" : "wave"} className="name-prop" />
+      <TillStage {...till} anchor="onboarding" paused={isEditor} />
     </section>
   );
 }
@@ -113,7 +125,7 @@ function InstallIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v11" /><path d="m7.5 10 4.5 4.5 4.5-4.5" /><path d="M5 18.5h14" /></svg>;
 }
 
-function InstallCard({ canInstall, install, onContinue }) {
+function InstallCard({ canInstall, install, onContinue, till }) {
   const [phase, setPhase] = useState("intro");
   const headingRef = useRef(null);
   const isAppleMobile = /iPad|iPhone|iPod/.test(window.navigator.userAgent)
@@ -181,7 +193,7 @@ function InstallCard({ canInstall, install, onContinue }) {
         </div>
         <em>Set it up once. Then the guide opens like a real app.</em>
       </div>
-      <CharacterProp pose={phase === "installed" ? "celebrate" : "point"} className="install-prop" />
+      <TillStage {...till} anchor="onboarding" cue={phase === "installed" ? { kind: "finish", key: "installed" } : null} />
     </section>
   );
 }
@@ -227,6 +239,9 @@ function DailyGuide({ day }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [installGateSkipped, setInstallGateSkipped] = useState(() => installGateAlreadySkipped());
   const [installMessage, setInstallMessage] = useState("");
+  const [tillSession] = useState(createTillSession);
+  const [tillEvent, setTillEvent] = useState(null);
+  const tillEventNumber = useRef(0);
   const profileTriggerRef = useRef(null);
   const launchTimer = useRef(null);
   const resetTriggerRef = useRef(null);
@@ -256,6 +271,8 @@ function DailyGuide({ day }) {
   const percent = Math.round((completedCount / guideTasks.length) * 100);
   const decisionAnswer = answers[task.id] || null;
   const canComplete = !task.decision || Boolean(decisionAnswer);
+  const till = { session: tillSession, preference: getTillPreference(profile.tillPreference) };
+  const behindDialog = showProfile || showResetConfirm;
 
   useEffect(() => () => clearTimeout(launchTimer.current), []);
 
@@ -267,7 +284,12 @@ function DailyGuide({ day }) {
   const go = (nextIndex) => {
     const safeIndex = Math.max(0, Math.min(nextIndex, guideTasks.length - 1));
     setProgress((current) => ({ ...current, currentIndex: safeIndex }));
+    setTillEvent(null);
     setScreen("task");
+  };
+  const reactWithTill = (kind, taskId) => {
+    tillEventNumber.current += 1;
+    setTillEvent({ kind, taskId, key: `shift-${tillEventNumber.current}` });
   };
   const startOrResume = () => go(resumeIndex);
   const startFromHome = () => {
@@ -313,7 +335,20 @@ function DailyGuide({ day }) {
       completed: [...new Set([...current.completed, task.id, ...answerSkips])],
       currentIndex: finished ? index : nextIndex,
     }));
+    if (finished) reactWithTill("finish", task.id);
+    else if (!completed.has(task.id)) {
+      const milestone = Math.floor(nextCompleted.size / 5) > Math.floor(completed.size / 5);
+      const kind = milestone ? "milestone" : "acknowledgement";
+      reactWithTill(till.preference === "quiet" && !milestone ? null : kind, guideTasks[nextIndex].id);
+    } else setTillEvent(null);
     setScreen(finished ? "complete" : "task");
+  };
+
+  const chooseDecision = (answer) => {
+    setDecision(task.id, answer);
+    const needsAttention = answer === "no" && ["safe-deposit", "lottery-variance"].includes(task.id);
+    if (needsAttention && decisionAnswer !== answer && till.preference === "full") reactWithTill("concern", task.id);
+    else if (decisionAnswer !== answer) setTillEvent(null);
   };
 
   const goBack = () => {
@@ -348,7 +383,7 @@ function DailyGuide({ day }) {
   if (!displayName && isMobileInstallTarget() && !isStandalone && !installGateSkipped) {
     return (
       <main className="name-gate scene-surface">
-        <InstallCard canInstall={canInstall} install={install} onContinue={continueInBrowser} />
+        <InstallCard canInstall={canInstall} install={install} onContinue={continueInBrowser} till={till} />
       </main>
     );
   }
@@ -356,7 +391,7 @@ function DailyGuide({ day }) {
   if (!displayName) {
     return (
       <main className="name-gate scene-surface">
-        <NameCard onSave={saveName} />
+        <NameCard onSave={saveName} till={till} />
       </main>
     );
   }
@@ -400,7 +435,7 @@ function DailyGuide({ day }) {
             </div>
 
             <div className={`home-stage ${isLaunching ? "is-launching" : ""}`}>
-              <div className="home-card-scene">
+              <div className={`home-card-scene ${till.preference === "off" ? "" : "home-card-scene--with-till"}`}>
                 <button type="button" className="start" onClick={startFromHome}>
                   <div className="start-sheet">
                     <div className="start-copy">
@@ -412,21 +447,24 @@ function DailyGuide({ day }) {
                     <div className="start-progress" aria-hidden="true"><span style={{ width: `${percent}%` }} /></div>
                   </div>
                 </button>
-                <CharacterProp pose="push" className="home-action home-action--anchor" />
+                <TillStage {...till} anchor="home" paused={behindDialog || isLaunching} />
               </div>
             </div>
           </section>
         )}
 
         {screen === "task" && (
-          <TaskFocus task={task} index={index} total={guideTasks.length} done={completed.has(task.id)} mode={mode} decisionAnswer={decisionAnswer} canComplete={canComplete} onDecisionChange={(answer) => setDecision(task.id, answer)} onDoneNext={doneAndNext} onBack={goBack} />
+          <TaskFocus task={task} index={index} total={guideTasks.length} done={completed.has(task.id)} mode={mode}
+            decisionAnswer={decisionAnswer} canComplete={canComplete} onDecisionChange={chooseDecision}
+            onDoneNext={doneAndNext} onBack={goBack} till={till} tillPaused={behindDialog}
+            tillCue={tillEvent?.taskId === task.id ? tillEvent : null} />
         )}
 
         {screen === "complete" && (
           <section className="finish">
-            <div className="finish__card">
+            <div className={`finish__card ${till.preference === "off" ? "no-till" : ""}`}>
               <div className="finish__copy"><small>Morning guide complete</small><h1>{displayName}, you survived the paperwork.</h1><p>{closing}</p><div className="finish__actions"><button type="button" className="primary" onClick={() => setScreen("home")}>Back home</button><button type="button" onClick={requestReset}>Reset today</button></div></div>
-              <CharacterProp pose="celebrate" className="finish-prop" />
+              <TillStage {...till} anchor="finish" cue={tillEvent} paused={behindDialog} />
             </div>
           </section>
         )}
@@ -445,6 +483,8 @@ function DailyGuide({ day }) {
             initialName={displayName}
             onSave={saveName}
             onCancel={() => setShowProfile(false)}
+            till={till}
+            onTillPreferenceChange={(preference) => setProfile(current => ({ ...current, tillPreference: preference }))}
             onReset={(event) => {
               setShowProfile(false);
               requestReset(event);

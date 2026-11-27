@@ -20,7 +20,7 @@ export default function Modal({ className, label, labelledBy, onClose, returnFoc
 
   const keepFocus = (event) => {
     if (event.key !== "Tab") return;
-    const controls = ref.current.querySelectorAll("button:enabled, input:enabled, a[href]");
+    const controls = ref.current.querySelectorAll("button:enabled, input:enabled, select:enabled, a[href]");
     const first = controls[0];
     const last = controls[controls.length - 1];
     if (event.shiftKey && document.activeElement === first) {

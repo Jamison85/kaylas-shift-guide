@@ -1,37 +1,200 @@
 import { expect, test } from "@playwright/test";
 
-test("approved master fallback stays visible with reduced motion and never intercepts guide controls", async ({ page }) => {
+const actor = anchor => `[data-till-anchor="${anchor}"]`;
+const viewport = { width: 390, height: 844 };
+
+async function openGuide(page, { preference, mode, completed = [], answers = {} } = {}) {
+  await page.addInitScript(settings => {
+    const date = new Date();
+    const day = [
+      date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+    if (!localStorage.getItem("before-rush-profile")) {
+      localStorage.setItem("before-rush-profile", JSON.stringify({ name: "Kayla", tillPreference: settings.preference }));
+    }
+    if (!localStorage.getItem(`before-rush-${day}`)) {
+      localStorage.setItem(`before-rush-${day}`, JSON.stringify({
+        completed: settings.completed, currentIndex: settings.completed.length,
+        mode: settings.mode || "learn", answers: settings.answers,
+      }));
+    }
+  }, { preference, mode, completed, answers });
+  await page.setViewportSize(viewport);
   await page.goto("./");
-  await page.evaluate(() => localStorage.setItem("before-rush-profile", JSON.stringify({name:"Kayla"})));
-  await page.reload();
-  const till = page.locator('[data-till-runtime="v2"]').first();
-  await expect(till).toHaveAttribute("data-till-clip","still");
-  await expect(till.locator("img")).toHaveAttribute("src", /till-runtime-v2\/still\.webp$/);
-  await expect.poll(() => till.locator("img").evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
-  await expect(till).toHaveCSS("pointer-events","none");
+}
+
+async function enableMotion(page) {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+}
+
+test("reduced motion shows the approved still and keeps the launch control usable", async ({ page }) => {
+  await openGuide(page);
+  const home = page.locator(actor("home"));
+  await expect(home).toHaveAttribute("data-till-motion", "still");
+  await expect(home).toHaveCSS("pointer-events", "none");
+  await expect(home.locator("img")).toBeVisible();
+  await expect.poll(() => home.locator("img").evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await page.locator(".start").click();
-  await expect(page.locator(".task-card")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
 
-test("runtime asset files decode and are available offline after precache", async ({ page }) => {
-  await page.goto("./");
-  const files = ["still","idle","wave","point","explain","nod","thumbs","celebrate","clipboard"];
-  for (const name of files) {
-    const response = await page.request.get("characters-approved/till-runtime-v2/"+name+".webp");
-    expect(response.ok()).toBeTruthy();
-    expect(response.headers()["content-type"]).toContain("image/webp");
-  }
+test("the home wave settles and frontend cues follow the real task workflow", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  const home = page.locator(actor("home"));
+  await expect(home).toHaveAttribute("data-till-motion", "wave_hello");
+  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(home).toHaveAttribute("data-till-motion", "rest", { timeout: 10000 });
+
+  await page.locator(".start").click();
+  await page.locator(".done-next").click();
+  await expect(page.getByRole("heading", { name: "Open and Fund Register 2" })).toBeVisible();
+  const task = page.locator(actor("task"));
+  await expect(task).toHaveAttribute("data-till-motion", /^(small_nod|satisfied_smile|approve_nod)$/);
+  await expect(task).toHaveAttribute("data-till-source", "event");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(task).toHaveAttribute("data-till-motion", "still");
+  await expect(task.locator("canvas")).not.toHaveAttribute("data-ready");
+  await page.getByRole("button", { name: "No", exact: true }).click();
+  await expect(page.locator(".done-next")).toBeEnabled();
 });
 
-test("normal-motion Till plays a single contextual gesture", async ({ page }) => {
-  await page.emulateMedia({reducedMotion:"no-preference"});
-  await page.goto("./");
-  await page.evaluate(()=>localStorage.setItem("before-rush-profile", JSON.stringify({name:"Kayla"})));
+test("quiet suppresses background gestures and off preserves task help through a reload", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  await page.locator(".profile-button").click();
+  const settings = page.getByLabel("Till’s movement");
+  await settings.selectOption("quiet");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(page.locator(actor("home"))).toHaveAttribute("data-till-motion", "still");
+  await page.locator(".start").click();
+  await page.getByRole("button", { name: "Quick", exact: true }).click();
+  await page.locator(".task-why-link").click();
+  await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(page.getByRole("dialog")).toContainText("Before you move on");
+  await page.getByRole("button", { name: "Got it, Till" }).click();
+
+  await page.locator(".profile-button").click();
+  await settings.selectOption("off");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.reload();
-  const till=page.locator('[data-till-runtime="v2"]').first();
-  await expect(till).toHaveAttribute("data-till-clip",/point|idle/);
-  await expect.poll(()=>till.locator("img").evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
-  await expect(till).toHaveAttribute("data-till-clip","idle",{timeout:10000});
-  await page.emulateMedia({reducedMotion:"reduce"});
-  await expect(till).toHaveAttribute("data-till-clip","still");
+  await expect(page.locator("[data-till-anchor]")).toHaveCount(0);
+  await page.locator(".start").click();
+  await page.locator(".task-why-link").click();
+  await expect(page.getByRole("dialog")).toContainText("Guest-facing store areas");
+  await expect(page.locator("[data-till-anchor]")).toHaveCount(0);
+});
+
+test("decision help uses the saved branch and keeps critical actions outside the actor's space", async ({ page }) => {
+  await openGuide(page, { completed: ["store-walk"], answers: { "register-two": "no" } });
+  await page.setViewportSize({ width: 320, height: 610 });
+  await page.locator(".start").click();
+  const box = await page.locator(actor("task")).boundingBox();
+  const link = await page.locator(".task-why-link").boundingBox();
+  expect(box.x).toBeGreaterThan(link.x + link.width - 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  const decision = await page.locator(".bubble").locator("b").innerText();
+  await page.locator(".task-why-link").click();
+  await expect(page.getByRole("dialog").getByText(decision, { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Got it, Till" }).click();
+  await expect(page.locator(".task-why-link")).toBeFocused();
+});
+
+test("the cached app can play Till and open help while offline", async ({ page, context }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  const cacheUrls = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async key =>
+    (await (await caches.open(key)).keys()).map(request => new URL(request.url).pathname)))).flat());
+  for (const asset of ["/poster-", "/front-", "/left-", "/right-", "/turn-", "/actor-"]) {
+    expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
+  }
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator(actor("home")).locator("canvas")).toHaveAttribute("data-ready", "true");
+  await page.locator(".start").click();
+  await page.locator(".task-why-link").click();
+  await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");
+  await expect(page.getByRole("dialog")).toContainText("Catch anything urgent");
+});
+
+test("WebGL failure leaves the approved still and working guidance", async ({ page }) => {
+  await enableMotion(page);
+  await page.addInitScript(() => {
+    const openContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind, options) {
+      return kind === "webgl" ? null : openContext.call(this, kind, options);
+    };
+  });
+  await openGuide(page);
+  const home = page.locator(actor("home"));
+  await expect(home).toHaveAttribute("data-till-visible", "false");
+  await expect(home.locator("img")).toBeVisible();
+  await page.locator(".start").click();
+  await page.locator(".task-why-link").click();
+  await expect(page.getByRole("dialog")).toContainText("Where");
+  await expect(page.locator(actor("help")).locator("img")).toBeVisible();
+});
+
+test("visibility changes cancel movement and keep the task available", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page);
+  const home = page.locator(actor("home"));
+  await expect(home.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(home).toHaveAttribute("data-till-motion", "still");
+  await expect(home.locator("canvas")).not.toHaveAttribute("data-ready");
+  await page.evaluate(() => {
+    delete document.visibilityState;
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.locator(".start").click();
+  const task = page.locator(actor("task"));
+  await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
+  await page.setViewportSize({ width: 390, height: 460 });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(task).toHaveAttribute("data-till-visible", "false");
+  await expect(task.locator("canvas")).not.toHaveAttribute("data-ready");
+  await expect(page.locator(".done-next")).toBeVisible();
+});
+
+test("mobile first run offers installation and standalone opens directly into setup", async ({ browser }) => {
+  const device = {
+    viewport,
+    isMobile: true,
+    hasTouch: true,
+    userAgent: "Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36",
+  };
+  const context = await browser.newContext({ ...device, baseURL: "http://127.0.0.1:4174/kaylas-shift-guide/" });
+  try {
+    const page = await context.newPage();
+    const response = await page.goto("./");
+    const manifest = await page.request.get(new URL("manifest.webmanifest", response.url()).href);
+    expect(await manifest.json()).toMatchObject({ display: "standalone" });
+    await expect(page.getByRole("button", { name: "Continue in browser" })).toBeVisible();
+    await page.getByRole("button", { name: "Continue in browser" }).click();
+    await expect(page.getByRole("heading", { name: "Who’s opening today?" })).toBeVisible();
+  } finally {
+    await context.close();
+  }
+
+  const installed = await browser.newContext({ ...device, baseURL: "http://127.0.0.1:4174/kaylas-shift-guide/" });
+  try {
+    await installed.addInitScript(() => {
+      const matchMedia = window.matchMedia.bind(window);
+      window.matchMedia = query => query === "(display-mode: standalone)" ? { matches: true } : matchMedia(query);
+    });
+    const page = await installed.newPage();
+    await page.goto("./");
+    await expect(page.getByRole("heading", { name: "Who’s opening today?" })).toBeVisible();
+    await page.getByLabel("What should I call you?").fill("Kayla");
+    await page.getByRole("button", { name: "Make it mine" }).click();
+    await expect(page.locator(".home-head")).toContainText("Good morning, Kayla");
+  } finally {
+    await installed.close();
+  }
 });

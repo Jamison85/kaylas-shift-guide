@@ -1,32 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import Modal from "./Modal";
-import CharacterProp from "./CharacterProp";
+import TillStage from "./TillStage";
 import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-
-const taskCharacterActions = {
-  "store-walk": "walk",
-  "register-two": "register",
-  "cashier-break": "register",
-  "yesterday-sources": "paperwork",
-  "lottery-refill": "lottery",
-  "health-dept": "computer",
-  "gas-inspection": "computer",
-  "receipt-sort": "paperwork",
-  "price-server": "computer",
-  "eod-status": "computer",
-  "paperwork-packet": "paperwork",
-  "paperwork-details": "paperwork",
-  "lottery-audit-start": "lottery",
-  "lottery-books": "lottery",
-  "lottery-received-returns": "lottery",
-  "lottery-variance": "lottery",
-  "safe-deposit": "reconcile",
-  "drawer-mismatch": "reconcile",
-  "tender-totals": "reconcile",
-  "finalize-eod": "computer",
-  "power-inventory": "inventory",
-};
+import { workContext } from "../till/director";
 
 function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
@@ -156,14 +133,41 @@ function normalizedStep(step, index) {
   return { title: isDetailed ? step.title : `Step ${index + 1}`, detail: isDetailed ? step.detail : step, more: isDetailed ? step.more : null };
 }
 
-export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack }) {
+function HelpDetails({ task, decisionAnswer, step }) {
+  const decisionText = decisionAnswer && task.decision?.[`${decisionAnswer}Text`];
+  const decisionSteps = decisionAnswer && task.decision?.[`${decisionAnswer}Steps`];
+  const next = step || normalizedStep(task.steps[0], 0);
+  const escalation = task.steps.find(action => /^escalate\b/i.test(action?.title))?.detail;
+  return (
+    <dl className="till-help-details">
+      {task.location && <div><dt>Where</dt><dd>{task.location}</dd></div>}
+      {decisionText ? (
+        <div>
+          <dt>{task.decision[`${decisionAnswer}Title`]}</dt>
+          <dd>{decisionText}
+            {decisionSteps?.length > 0 && <ol>{decisionSteps.map(action => <li key={action}>{action}</li>)}</ol>}
+          </dd>
+        </div>
+      ) : <div><dt>{step ? "What to do" : "Start here"}</dt><dd>{next.detail}</dd></div>}
+      {task.check && <div><dt>Before you move on</dt><dd>{task.check}</dd></div>}
+      {escalation && escalation !== next.detail && <div><dt>Escalation</dt><dd>{escalation}</dd></div>}
+    </dl>
+  );
+}
+
+export default function TaskFocus({ task, index, total, done, mode, decisionAnswer, canComplete, onDecisionChange, onDoneNext, onBack, till, tillPaused, tillCue }) {
   const taskPercent = Math.round(((index + 1) / total) * 100);
   const [expandedStep, setExpandedStep] = useState(mode === "learn" ? 0 : null);
   const [explanation, setExplanation] = useState(null);
   const explanationTrigger = useRef(null);
+  const helpNumber = useRef(0);
   const heading = useRef(null);
   const steps = task.steps.map(normalizedStep);
-  const characterAction = taskCharacterActions[task.id] || null;
+  const work = workContext(task);
+  const showTill = till.preference !== "off" && (mode === "learn" || tillCue?.kind === "milestone");
+  const cue = work === "critical" && tillCue?.kind === "milestone"
+    ? { ...tillCue, kind: "acknowledgement" }
+    : tillCue;
   const displayTitle = task.title.replace(/^Start with (?:the )?/i, "");
   const thingsLabel = `${steps.length} ${steps.length === 1 ? "thing" : "things"} to check`;
   const whyLabel = index === 0 ? "Ask Till why this comes first" : "Ask Till why this matters";
@@ -179,9 +183,10 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [task.id]);
 
-  const openExplanation = (trigger, label, title, body) => {
+  const openExplanation = (trigger, label, title, body, step = null) => {
     explanationTrigger.current = trigger;
-    setExplanation({ label, title, body });
+    helpNumber.current += 1;
+    setExplanation({ label, title, body, step, key: `help-${task.id}-${helpNumber.current}` });
   };
 
   return (
@@ -193,7 +198,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           {done && <span className="task-state task-state--done">✓ Completed</span>}
         </header>
 
-        <section className={`task-intro ${mode === "learn" && characterAction ? "task-intro--with-till" : ""}`}>
+        <section className={`task-intro ${showTill ? "task-intro--with-till" : ""}`}>
           <div className="task-intro__copy">
             <p className="task-intro__summary">{task.short}</p>
             <h1 ref={heading} tabIndex={-1}>{displayTitle}</h1>
@@ -203,18 +208,16 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                 <p>{task.location}</p>
               </div>
             )}
-            {(
-              <button
-                type="button"
-                className="task-why-link"
-                onClick={(event) => openExplanation(event.currentTarget, index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose)}
-              >
-                {whyLabel}<span aria-hidden="true">→</span>
-              </button>
-            )}
+            <button
+              type="button"
+              className="task-why-link"
+              onClick={(event) => openExplanation(event.currentTarget, index === 0 ? "Till explains why this comes first" : "Till explains why this matters", displayTitle, task.purpose, steps[expandedStep])}
+            >
+              {whyLabel}<span aria-hidden="true">→</span>
+            </button>
           </div>
-          {mode === "learn" && characterAction && (
-            <CharacterProp key={`${task.id}-intro`} pose={done ? "thumbs" : characterAction} moment={done ? null : "working"} className="task-intro__till" />
+          {showTill && (
+            <TillStage {...till} anchor="task" work={work} cue={cue} paused={tillPaused || Boolean(explanation)} />
           )}
         </section>
 
@@ -246,7 +249,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                       <div className="step-detail" id={detailsId}>
                         <p>{step.detail}</p>
                         {step.more && (
-                          <button type="button" className="step-more" onClick={(event) => openExplanation(event.currentTarget, `Step ${stepIndex + 1} · Why this matters`, step.title, step.more)}>
+                          <button type="button" className="step-more" onClick={(event) => openExplanation(event.currentTarget, `Step ${stepIndex + 1} · Why this matters`, step.title, step.more, step)}>
                             Ask why <span>→</span>
                           </button>
                         )}
@@ -285,11 +288,13 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
       {explanation && (
         <Modal className="panel-zoom" label={explanation.label} returnFocus={explanationTrigger} onClose={() => setExplanation(null)}>
           <article className="explanation-card" onClick={(event) => event.stopPropagation()}>
-            <div className="explanation-head">
+            <div className={`explanation-head ${till.preference === "off" ? "" : "explanation-head--with-till"}`}>
               <div><small>{explanation.label}</small><h2>{explanation.title}</h2></div>
-              <CharacterProp key={`${task.id}-why`} pose={characterAction || "point"} moment="explaining" />
+              <TillStage {...till} anchor="help" work={work}
+                cue={{ kind: work === "critical" ? "seriousHelp" : "help", key: explanation.key }} />
             </div>
             <p>{explanation.body}</p>
+            <HelpDetails task={task} decisionAnswer={decisionAnswer} step={explanation.step} />
             <button type="button" onClick={() => setExplanation(null)} autoFocus>Got it, Till</button>
           </article>
         </Modal>
