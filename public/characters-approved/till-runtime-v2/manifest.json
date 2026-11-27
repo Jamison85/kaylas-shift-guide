@@ -3,30 +3,51 @@
     "clip": "idle_breathe",
     "frames": 108,
     "durationMs": 6048,
-    "size": 409622,
+    "size": 409722,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 94,
+    "contentBounds": [
+      108,
+      16,
+      228,
+      444
     ]
   },
   "wave": {
     "clip": "wave_hello",
     "frames": 49,
     "durationMs": 2646,
-    "size": 497942,
+    "size": 499396,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 49,
+    "contentBounds": [
+      104,
+      16,
+      325,
+      444
     ]
   },
   "point": {
     "clip": "point_left",
     "frames": 49,
     "durationMs": 2646,
-    "size": 459294,
+    "size": 460470,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 31,
+    "contentBounds": [
+      17,
+      16,
+      228,
+      444
     ]
   },
   "explain": {
@@ -35,8 +56,15 @@
     "durationMs": 4235,
     "size": 814808,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 77,
+    "contentBounds": [
+      34,
+      16,
+      229,
+      444
     ]
   },
   "nod": {
@@ -45,8 +73,15 @@
     "durationMs": 1300,
     "size": 82544,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 25,
+    "contentBounds": [
+      108,
+      15,
+      228,
+      444
     ]
   },
   "thumbs": {
@@ -55,18 +90,32 @@
     "durationMs": 2332,
     "size": 424508,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 29,
+    "contentBounds": [
+      31,
+      16,
+      228,
+      444
     ]
   },
   "celebrate": {
     "clip": "celebrate_shift",
     "frames": 61,
     "durationMs": 3294,
-    "size": 701290,
+    "size": 701588,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 56,
+    "contentBounds": [
+      41,
+      16,
+      311,
+      444
     ]
   },
   "clipboard": {
@@ -75,8 +124,15 @@
     "durationMs": 3780,
     "size": 663632,
     "dimensions": [
-      276,
+      336,
       453
+    ],
+    "encodedFrames": 46,
+    "contentBounds": [
+      108,
+      16,
+      240,
+      444
     ]
   }
 }
