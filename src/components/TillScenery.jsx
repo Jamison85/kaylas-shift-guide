@@ -1,4 +1,4 @@
-import { ladderRungs, noteTube } from "../till/scenery";
+import { glassFlakes, glassFractures, ladderRungs, noteTube } from "../till/scenery";
 import { positionInStage } from "../till/stages";
 import workView from "../till/art/peep-work.webp";
 import reachView from "../till/art/peep-reach.webp";
@@ -43,7 +43,14 @@ export default function TillScenery({ stage, sceneryRef, hasTube }) {
             <i />
           </span>
           <span className="till-tear">
+            {glassFractures.map(({ joint }, index) => (
+              <span className="till-tear__fracture" key={joint} style={{ clipPath: `var(--glass-fracture-${index})` }} />
+            ))}
+            {glassFlakes.map(({ joint }, index) => (
+              <span className="till-tear__flake" key={joint} style={{ clipPath: `var(--glass-flake-${index})` }} />
+            ))}
             <span className="till-tear__rim" />
+            <span className="till-tear__edge" />
             <span className="till-tear__depth">
               <span className="till-tear__room" />
               <Ladder stage={stage} />

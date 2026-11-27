@@ -44,6 +44,13 @@ export function workContext(task) {
   })[task.category] || "computer";
 }
 
+export function taskTillSpot(task, work, preference, mode) {
+  if (preference !== "full" || mode !== "learn") return "right";
+  if (task.check && (["receipt", "lottery", "inventory"].includes(work)
+    || work === "paperwork" && task.category === "Paperwork")) return "check";
+  return ["register", "computer"].includes(work) ? "left" : "right";
+}
+
 export function directTill({
   session, anchor, work, taskId, cue, preference, play, stop, now = () => performance.now(), random = Math.random,
 }) {

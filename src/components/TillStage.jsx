@@ -3,18 +3,18 @@ import poster from "../till/art/poster.webp";
 import TillScenery from "./TillScenery";
 import { directTill } from "../till/director.js";
 import { paintScenery, watchPeepDirection } from "../till/scenery.js";
-import { positionInStage, posterPosition, stageLayout, stages } from "../till/stages.js";
+import { positionInStage, posterPosition, stageLayout, stages, taskStages } from "../till/stages.js";
 
 const activityEvents = ["pointerdown", "keydown", "scroll", "focusin"];
 const listenerOptions = { capture: true, passive: true };
 export default function TillStage({
-  anchor, resident, session, preference, work, taskId, cue, paused = false, leaving = false,
+  anchor, resident, session, preference, work, taskId, cue, spot = "right", paused = false, leaving = false,
   onTalk, talking, replyId, onSendTube, onReceiveNote,
 }) {
   const stageRef = useRef(null);
   const artRef = useRef(null);
   const sceneryRef = useRef(null);
-  const stage = stages[anchor];
+  const stage = anchor === "task" ? taskStages[spot] : stages[anchor];
   const cueKind = cue?.kind;
   const cueKey = cue?.key;
   const waitingAtHome = anchor === "home" && (!cueKind || cueKind === "return")
@@ -131,6 +131,7 @@ export default function TillStage({
   return (
     <div ref={stageRef} className={`till-stage till-stage--${anchor}`}
       data-till-anchor={anchor} data-till-motion="still"
+      data-till-spot={anchor === "task" ? spot : undefined}
       data-till-waiting={waiting || undefined} data-till-away={paused || undefined}
       data-till-leaving={leaving || undefined} data-till-tube={Boolean(onSendTube) || undefined} style={stageLayout(stage)}>
       <div ref={artRef} className="till-stage__art" aria-hidden="true">

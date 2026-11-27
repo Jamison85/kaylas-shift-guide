@@ -81,14 +81,15 @@ function gripEdge(pose, y, weight, rightWeight = 0) {
   if (rightWeight > 0) pose.socketContacts.push(handContact("R", [372, y - 1], rightWeight, -14, "ledge", "ledge"));
 }
 
-function riseOverEdge(t, { edgeY, restsOnEdge }) {
+function riseOverEdge(t, { edgeY, direction, restsOnEdge }) {
+  const side = direction === "right" ? -1 : 1;
   const rise = between(t, 0.02, 0.63);
   const grip = pulse(t, 0.49, 0.65, 0.75, 0.99);
   const peek = pulse(t, 0.28, 0.46, 0.61, 0.96);
   const pose = { bones: {} };
-  shift(pose.bones, "root", 18 * (1 - rise), (edgeY + 6) * (1 - rise));
+  shift(pose.bones, "root", side * 30 * (1 - rise), (edgeY + 6) * (1 - rise));
   angle(pose.bones, "chest", -4.8 * peek);
-  look(pose, 6.4 * peek, [-1.8 * peek, -1.1 * peek], {
+  look(pose, side * 6.4 * peek, [-side * 3.1 * peek, -1.1 * peek], {
     brow: 2.4 * peek, blink: blink(t, 0.69, 0.042, 0.072),
   });
   const rest = restsOnEdge ? between(t, 0.49, 0.67) : 0;
@@ -103,13 +104,48 @@ const roundTripSeconds = exitSeconds + awaySeconds + climbSeconds;
 
 const peepCenter = [505, 365];
 
+// A continuous velocity between keyframes, with zero velocity at holds and reversals.
+function motionCurve(keys) {
+  const slope = index => (keys[index + 1][1] - keys[index][1]) / (keys[index + 1][0] - keys[index][0]);
+  const speeds = keys.map((_, index) => {
+    if (!index || index === keys.length - 1) return 0;
+    const before = slope(index - 1);
+    const after = slope(index);
+    return before * after > 0 ? 2 * before * after / (before + after) : 0;
+  });
+  return time => {
+    if (time <= keys[0][0]) return keys[0][1];
+    const end = keys.findIndex(([at]) => time <= at);
+    if (end < 0) return keys.at(-1)[1];
+    const [startTime, start] = keys[end - 1];
+    const [endTime, finish] = keys[end];
+    const duration = endTime - startTime;
+    const t = (time - startTime) / duration;
+    const eased = t * t * (3 - 2 * t);
+    return start + (finish - start) * eased
+      + duration * t * (1 - t) * ((1 - t) * speeds[end - 1] - t * speeds[end]);
+  };
+}
+
+const peepDepth = motionCurve([[0, 1575], [1.65, 1510], [2.45, 1510], [3.32, 1450], [3.66, 1210],
+  [4.26, 722], [4.56, 956], [4.86, 903], [5.62, 408], [6.00, 317], [6.63, 160],
+  [6.99, 115], [7.65, 0], [8.24, -51], [8.94, -55]]);
+const peepX = motionCurve([[0, 662], [2.34, 662], [2.75, 1150], [3.25, 1785], [3.43, 1785],
+  [3.8, 1110], [4.26, 624], [4.62, 721], [5.62, 572], [6.65, 544], [8.14, 496], [8.90, 522]]);
+const peepY = motionCurve([[0, 686], [2.64, 686], [3.48, 705], [4.26, 533], [4.62, 592],
+  [5.62, 427], [6.63, 346], [7.57, 295], [8.49, 260], [9.15, 218]]);
+const peepRoll = motionCurve([[0, 0], [2.32, -1.8], [2.93, 8.8], [3.55, -3.3], [4.14, -4],
+  [4.56, 11], [5.45, -5], [6.64, -4], [7.68, 3], [8.48, -1.5], [9.15, 0]]);
+const settleScale = motionCurve([[0, 1.13], [9.16, 1.13], [9.88, 0.95], [11.50, 0.95], [climbSeconds, 1]]);
+const settleHead = motionCurve([[0, 14], [9.12, 14], [9.90, 41], [11.15, 33], [climbSeconds, 0]]);
+
 function projectVisitor(x, y, depth, roll, reach, through, opacity) {
   // Depth is measured along the normal to the glass. 0 is the glass plane.
   const zoom = 620 / (620 + depth);
   return {
     x: peepCenter[0] + (x - peepCenter[0]) * zoom,
     y: peepCenter[1] + (y - peepCenter[1]) * zoom,
-    width: 610 * zoom,
+    scale: zoom,
     parallax: Math.max(0.7, Math.min(8, depth / 180)),
     roll, reach, through, opacity,
   };
@@ -155,25 +191,18 @@ function climbThroughRip(t, { edgeY }) {
   const time = t * climbSeconds;
   const opening = knots(time, [[0, 0], [0.59, 0.13], [0.85, 0.08], [1.62, 1],
     [8.98, 1], [9.54, 0.48], [10.02, 0]]);
-  const depth = knots(time, [[0, 1575], [1.65, 1510], [2.67, 1510], [3.24, 1120],
-    [3.53, 1075], [4.26, 722], [4.56, 956], [4.86, 903], [5.62, 408],
-    [6.00, 317], [6.63, 160], [6.99, 115], [7.65, 0], [8.24, -51], [8.94, -55]]);
-  const x = knots(time, [[0, 662], [2.59, 662], [3.45, 719], [4.26, 624],
-    [4.62, 721], [5.62, 572], [6.65, 544], [8.14, 496], [8.90, 522]]);
-  const y = knots(time, [[0, 686], [2.64, 686], [3.54, 576], [4.26, 533], [4.62, 592],
-    [5.62, 427], [6.63, 346], [7.57, 295], [8.49, 260], [9.15, 218]]);
   const slip = pulse(time, 4.21, 4.53, 4.68, 5.07);
-  const rocking = knots(time, [[0, 0], [2.39, -1.8], [3.20, 5], [4.14, -4], [4.56, 14],
-    [5.45, -5], [6.64, -4], [7.68, 3], [8.48, -1.5], [9.15, 0]]);
-  const reach = time >= 2.97 ? 1 : 0;
+  // He rounds the cabinet out of sight to set the clipboard down before reaching up.
+  const behindCabinet = pulse(time, 3.12, 3.29, 3.41, 3.57);
+  const reach = time >= 3.34 ? 1 : 0;
   const through = between(time, 6.71, 8.51);
-  const palmCover = palmPass(time, 8.79, 9.02, 9.12, 9.44);
+  const palmCover = palmPass(time, 8.88, 9.02, 9.09, 9.31);
   const portrait = time >= 9.06 ? 1 : 0;
   const settle = between(time, 9.06, 9.48);
-  const visitor = projectVisitor(x, y, depth, rocking, reach, through,
-    between(time, 0.93, 1.48) * (1 - portrait));
-  const scale = knots(time, [[0, 0.82], [8.93, 0.84], [9.54, 0.93], [11.5, 0.95], [climbSeconds, 1]]);
-  const head = knots(time, [[0, 96], [8.93, 96], [9.50, 42], [11.55, 26], [climbSeconds, 0]]);
+  const visitor = projectVisitor(peepX(time), peepY(time), peepDepth(time), peepRoll(time), reach, through,
+    between(time, 0.93, 1.48) * (1 - portrait) * (1 - behindCabinet));
+  const scale = settleScale(time);
+  const head = settleHead(time);
   const restX = knots(time, [[0, -4], [9.20, -4], [climbSeconds, 0]]);
   const pose = risingPose(restX, head, scale);
   pose.scenery = {
@@ -432,8 +461,8 @@ function settleShift(t, context) {
 
 const performances = {
   rise_over_edge: { duration: 1.21, fromBehindEdge: true, sample: riseOverEdge },
-  climb_through_rip: { duration: climbSeconds, fromBehindEdge: true, sample: climbThroughRip },
-  leave_and_return: { duration: roundTripSeconds, sample: leaveAndReturn },
+  climb_through_rip: { duration: climbSeconds, frameRate: 60, fromBehindEdge: true, sample: climbThroughRip },
+  leave_and_return: { duration: roundTripSeconds, frameRate: 60, sample: leaveAndReturn },
   lean_in: { duration: 1.62, sample: leanIn },
   follow_detail: { duration: 1.2, sample: (t, context) => leanIn(t, context, true) },
   knock_on_edge: { duration: 1.8, sample: knock },

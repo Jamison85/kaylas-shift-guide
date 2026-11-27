@@ -3,7 +3,7 @@ import Modal from "./Modal";
 import TillStage from "./TillStage";
 import { contacts } from "../data/guide";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import { workContext } from "../till/director";
+import { taskTillSpot, workContext } from "../till/director";
 
 function Decision({ decision, answer, onChange }) {
   const steps = answer === "yes" ? decision.yesSteps : decision.noSteps;
@@ -168,6 +168,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
   const expandedStep = selectedStep === undefined && mode === "learn" ? 0 : selectedStep;
   const work = workContext(task);
   const showTill = till.preference !== "off" && (mode === "learn" || tillCue?.kind === "milestone");
+  const spot = taskTillSpot(task, work, till.preference, mode);
+  const atIntro = showTill && spot !== "check";
+  const atCheck = showTill && spot === "check";
   const arrivalCue = work === "critical" && tillCue?.kind === "milestone"
     ? { ...tillCue, kind: "acknowledgement" }
     : tillCue;
@@ -212,6 +215,16 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
     }
   };
 
+  const tillStage = showTill && (
+    <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} spot={spot}
+      paused={tillPaused || Boolean(explanation)} onTalk={talkToTill} talking={talking} replyId="task-till-reply" />
+  );
+  const tillReply = showTill && (
+    <div id="task-till-reply" role="status">
+      {talking && <p className="task-till-reply"><strong>Till</strong>{reply}</p>}
+    </div>
+  );
+
   return (
     <section className="task-focus">
       <article className="task-card" ref={taskScroll}>
@@ -221,12 +234,12 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
           {done && <span className="task-state task-state--done">✓ Completed</span>}
         </header>
 
-        <section className={`task-intro ${showTill ? "task-intro--with-till" : ""}`}>
+        <section className={`task-intro ${atIntro ? "task-intro--with-till" : ""}`}>
           <div className="task-intro__copy">
             <p className="task-intro__summary">{task.short}</p>
             <h1 ref={heading} tabIndex={-1}>{displayTitle.replace(/\bRegister 2\b/g, "Register\u00a02")}</h1>
           </div>
-          <div className="task-intro__support" data-till-surface={showTill ? "task" : undefined}>
+          <div className="task-intro__support" data-till-surface={atIntro ? spot : undefined}>
             <div className="task-intro__context">
               {task.location && mode === "learn" && (
                 <div className="task-location-line">
@@ -242,16 +255,9 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
                 {whyLabel}<span aria-hidden="true">→</span>
               </button>
             </div>
-            {showTill && (
-              <TillStage {...till} anchor="task" taskId={task.id} work={work} cue={cue} paused={tillPaused || Boolean(explanation)}
-                onTalk={talkToTill} talking={talking} replyId="task-till-reply" />
-            )}
+            {atIntro && tillStage}
           </div>
-          {showTill && (
-            <div id="task-till-reply" role="status">
-              {talking && <p className="task-till-reply"><strong>Till</strong>{reply}</p>}
-            </div>
-          )}
+          {atIntro && tillReply}
         </section>
 
         <div className="steps-heading">
@@ -300,8 +306,16 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         {task.decision && <Decision decision={task.decision} answer={decisionAnswer} onChange={onDecisionChange} />}
 
         {task.check && mode === "learn" && (
-          <section className="move-on-check">
-            <small>Before you move on</small><p>{task.check}</p>
+          <section className={`move-on-check${atCheck ? " move-on-check--with-till" : ""}`}>
+            {atCheck ? (
+              <>
+                <div className="move-on-check__scene">
+                  <div><small>Before you move on</small><p>{task.check}</p></div>
+                  {tillStage}
+                </div>
+                {tillReply}
+              </>
+            ) : <><small>Before you move on</small><p>{task.check}</p></>}
           </section>
         )}
 

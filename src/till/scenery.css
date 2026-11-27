@@ -14,6 +14,9 @@
 .till-scenery[data-till-tear] .till-tear { display: block; }
 
 .till-tear__rim,
+.till-tear__edge,
+.till-tear__fracture,
+.till-tear__flake,
 .till-tear__depth,
 .till-peep-visitor {
   position: absolute;
@@ -25,8 +28,27 @@
   clip-path: var(--tear-rim);
   opacity: var(--tear-light, 0);
   background:
-    linear-gradient(114deg, #e7dbcb 1%, #686c73 22%, #b5a599 35%, #e7c8a5 60%, #615457 79%, #dac9ba),
-    #8d7761;
+    radial-gradient(ellipse at 24% 26%, #abc1cdba 0, transparent 44%),
+    linear-gradient(156deg, #283036 11%, #080d15 30%, #181a22 64%, #a48568a3 77%, #0a141d 92%);
+}
+
+.till-tear__edge {
+  z-index: 1;
+  clip-path: var(--tear-edge);
+  opacity: var(--tear-light, 0);
+  background: linear-gradient(129deg, #819cad, #ebd8c0 21%, #38444d 40%, #c3c9c8 68%, #281e19 88%);
+}
+
+.till-tear__fracture {
+  z-index: 1;
+  opacity: var(--fracture-light, 0);
+  background: linear-gradient(149deg, #6f8b9c6e 10%, #a8becbc9 28%, #c2dce1a1 48%, #9a7c607a 72%, #9ea2b763 87%);
+}
+
+.till-tear__flake {
+  z-index: 1;
+  opacity: calc(var(--tear-light, 0) * 0.66);
+  background: linear-gradient(137deg, #c5e9f829 12%, #6e87917d 31%, #cdd8d743 43%, #1f29312c 66%, #a9896c80 82%);
 }
 
 .till-tear__depth {
@@ -46,7 +68,7 @@
   inset: -9% 8% -17%;
   transform: translate(calc(var(--peep-x, 0) * -10%), calc(var(--peep-y, 0) * 9%)) scale(1.13);
   background:
-    radial-gradient(ellipse at 56% 57%, #151a2210 27%, #0a111a75 88%),
+    radial-gradient(ellipse at 54% 57%, #151a2200 23%, #0a111a9a 79%, #080c14e5 97%),
     url("./art/peep-office.webp") center 56% / cover no-repeat;
 }
 
@@ -55,17 +77,25 @@
   opacity: 0.88;
 }
 
+.till-peep-visitor {
+  transform: translate(
+    calc(var(--visitor-x) - var(--peep-x, 0) * var(--visitor-distance) * 1%),
+    calc(var(--visitor-y) + var(--peep-y, 0) * var(--visitor-distance) * 0.85%)
+  );
+}
+
 .till-peep-visitor img {
   --anchor-x: 59%;
   --anchor-y: 34%;
   position: absolute;
-  left: calc(var(--visitor-x) - var(--peep-x, 0) * var(--visitor-distance) * 1%);
-  top: calc(var(--visitor-y) + var(--peep-y, 0) * var(--visitor-distance) * 0.85%);
-  width: var(--visitor-width);
+  left: 0;
+  top: 0;
+  width: 69.71%;
   height: auto;
   max-width: none;
   transform-origin: var(--anchor-x) var(--anchor-y);
-  transform: translate(calc(-1 * var(--anchor-x)), calc(-1 * var(--anchor-y))) rotate(var(--visitor-roll));
+  transform: translate(calc(-1 * var(--anchor-x)), calc(-1 * var(--anchor-y)))
+    rotate(var(--visitor-roll)) scale(var(--visitor-scale));
   opacity: calc(var(--visitor-reach) * var(--visitor-opacity));
 }
 

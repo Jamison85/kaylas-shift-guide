@@ -89,6 +89,7 @@ test("Till greets the opener and performs distinct actions as the shift progress
   await page.getByRole("button", { name: "No", exact: true }).click();
   await page.locator(".done-next").click();
   await expect(task).toHaveAttribute("data-till-motion", "check_watch");
+  await expect(task).toHaveAttribute("data-till-spot", "left");
   await expect(task).toHaveAttribute("data-till-source", "arrival");
   await page.locator(".done-next").click();
   await expect(task).toHaveAttribute("data-till-motion", "straighten_reports");
@@ -255,6 +256,29 @@ test("the cached app can play Till and open help while offline", async ({ page, 
   await page.locator(".task-why-link").click();
   await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");
   await expect(page.getByRole("dialog")).toContainText("Catch anything urgent");
+});
+
+test("Till moves to the review section for paperwork and shares the resident canvas", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page, { completed: [
+    "store-walk", "register-two", "cashier-break", "yesterday-sources", "lottery-refill", "health-dept", "gas-inspection",
+  ] });
+  await page.setViewportSize({ width: 360, height: 660 });
+  const homeCanvas = page.locator(actor("home")).locator("canvas");
+  await expect(homeCanvas).toHaveAttribute("data-ready", "true");
+  await homeCanvas.evaluate(canvas => { window.initialTillCanvas = canvas; });
+  await page.locator(".start").click();
+  await expect(page.locator(".task-card h1")).toHaveText("Sort Yesterday’s Receipt Bags");
+  await expect(page.locator(".task-intro").locator(actor("task"))).toHaveCount(0);
+  const review = page.locator(".move-on-check");
+  const till = review.locator(actor("task"));
+  await expect(till).toHaveAttribute("data-till-spot", "check");
+  await review.scrollIntoViewIfNeeded();
+  await expect(till).toHaveAttribute("data-till-motion", "compare_receipt");
+  const canvas = till.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-ready", "true");
+  expect(await canvas.evaluate(node => node === window.initialTillCanvas)).toBe(true);
+  await expect(page.locator(".done-next")).toBeVisible();
 });
 
 test("WebGL failure leaves the approved still and working guidance", async ({ page }) => {

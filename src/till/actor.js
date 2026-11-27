@@ -47,7 +47,6 @@ class CharacterPlayer extends RigPlayer {
   }
 }
 
-const frameMs = 1000 / 30;
 const maxFrameAdvance = 100;
 
 export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
@@ -63,7 +62,7 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
   function draw(pose) {
     const view = pose.view ?? "front";
     player = players.get(view);
-    player.setPose(pose);
+    if (pose.scenery?.tear?.portrait !== 0) player.setPose(pose);
     if (canvas.dataset.view !== view) canvas.dataset.view = view;
     canvas.dataset.ready = "true";
   }
@@ -111,7 +110,7 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
         const poseTime = arriving ? elapsed / action.arrivalMs : sampleTime;
         const pose = samplePerformance(clip, poseTime, stage.context);
         draw(pose);
-        action.nextFrame = (Math.floor((elapsed + 1) / frameMs) + 1) * frameMs;
+        action.nextFrame = (Math.floor((elapsed + 1) / action.frameMs) + 1) * action.frameMs;
         onFrame(poseTime, placeScenery(pose.scenery));
       }
       if (sampleTime >= 1) {
@@ -138,7 +137,8 @@ export function createActor(canvas, stage, { onFrame, onFinish, onError }) {
         rig.edgeY = stage.edgeY;
         players.set(view, rig);
       });
-      action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, elapsed: 0, nextFrame: 0 };
+      action = { clip, duration: clip.duration * 1000, arrivalMs: arriving ? 460 : 0, elapsed: 0,
+        frameMs: 1000 / (clip.frameRate ?? 30), nextFrame: 0 };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(tick);
     } catch {

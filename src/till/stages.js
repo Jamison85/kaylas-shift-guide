@@ -32,6 +32,16 @@ export const stages = {
   },
 };
 
+export const taskStages = {
+  right: stages.task,
+  left: { ...stages.task, context: { ...stages.task.context, direction: "right" } },
+  check: {
+    viewBox: [116, -25, 790, 841],
+    edgeY: deskY,
+    context: { direction: "left", edgeY: deskY, restsOnEdge: true },
+  },
+};
+
 const posterBounds = [272, 0, 535, 1448];
 
 export function positionInStage(stage, bounds) {
