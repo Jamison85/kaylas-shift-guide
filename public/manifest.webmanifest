@@ -8,8 +8,8 @@
   "scope": "/kaylas-shift-guide/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#08111d",
-  "theme_color": "#07101d",
+  "background_color": "#1b1b2e",
+  "theme_color": "#1b1b2e",
   "categories": ["productivity", "education"],
   "prefer_related_applications": false,
   "icons": [

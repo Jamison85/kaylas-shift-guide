@@ -90,10 +90,10 @@
   width: 1.65rem;
   height: 1.3rem;
   place-items: center;
-  border: 1px solid #ddc6a6;
+  border: 1px solid var(--paper-deep);
   border-radius: 6px 6px 6px 1px;
-  color: #543a2a;
-  background: #fff7e9;
+  color: var(--accent-ink);
+  background: var(--paper);
   box-shadow: 0 2px 5px #30221733;
   font-size: 0.8rem;
   font-weight: 900;
@@ -103,8 +103,8 @@
 .till-stage__talk:active span { transform: translateY(1px); }
 .till-stage__talk[aria-expanded="true"] span {
   color: white;
-  background: var(--orange-dark);
-  border-color: var(--orange-dark);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .home .home-stage {
@@ -134,9 +134,9 @@
   min-width: 0;
   margin: 10px 0 13px;
   padding: 9px 13px 10px;
-  border: 1px solid #f8c99b3d;
+  border: 1px solid color-mix(in srgb, var(--highlight) 24%, transparent);
   border-radius: 10px 10px 2px 10px;
-  background: #101b29ee;
+  background: color-mix(in srgb, var(--chrome) 94%, transparent);
   box-shadow: 0 7px 19px #060a1466;
 }
 
@@ -147,21 +147,21 @@
   width: 8px;
   height: 8px;
   transform: rotate(45deg);
-  border-top: 1px solid #f8c99b3d;
-  border-right: 1px solid #f8c99b3d;
-  background: #101b29;
+  border-top: 1px solid color-mix(in srgb, var(--highlight) 24%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--highlight) 24%, transparent);
+  background: var(--chrome);
   content: "";
 }
 
 .home-till-reply span {
-  color: #f3b57e;
+  color: var(--highlight);
   font-size: 0.66rem;
   font-weight: 850;
 }
 
 .home-till-reply p {
   margin: 2px 0 0;
-  color: #f9eee4;
+  color: var(--paper);
   font-size: 0.76rem;
   line-height: 1.4;
 }
@@ -253,15 +253,15 @@
 .task-till-reply {
   margin: 10px 0 5px;
   padding: 10px 12px;
-  border-left: 2px solid #d1a379;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, var(--paper));
   border-radius: 0 6px 6px 0;
   color: var(--ink);
-  background: #f3e7d580;
+  background: color-mix(in srgb, var(--paper-deep) 50%, transparent);
   font-size: 0.79rem;
   line-height: 1.5;
 }
 
-.task-till-reply strong { display: block; color: #79573c; font-size: 0.68rem; }
+.task-till-reply strong { display: block; color: var(--accent-ink); font-size: 0.68rem; }
 
 .till-stage--task,
 .till-stage--help {
@@ -290,7 +290,7 @@
   gap: 11px;
   margin: 15px 0 18px;
   padding: 0 0 0 13px;
-  border-left: 2px solid #2255c72b;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 17%, transparent);
   color: var(--ink-soft);
   font-size: 0.82rem;
   line-height: 1.45;
@@ -325,7 +325,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--ink);
-  background: #fffaf1;
+  background: var(--paper);
   font: inherit;
   font-size: 0.78rem;
 }

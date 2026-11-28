@@ -13,20 +13,21 @@
 }
 
 :root {
-  color: #172138;
-  background: #08111d;
+  color: var(--ink);
+  background: var(--chrome);
   font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #172138;
-  --ink-soft: #5e6571;
-  --paper: #fffaf0;
-  --paper-deep: #f1e8d8;
-  --line: rgba(38, 44, 56, 0.13);
-  --orange: #f36f2c;
-  --orange-dark: #aa4010;
-  --cobalt: #2255c7;
-  --navy: #08111d;
+  --ink: #29233b;
+  --ink-soft: #5d536b;
+  --paper: #fbf5f2;
+  --paper-deep: #e8dae6;
+  --line: color-mix(in srgb, var(--ink) 13%, transparent);
+  --highlight: #deb89c;
+  --accent-ink: #685277;
+  --accent: #67507e;
+  --primary: #614773;
+  --chrome: #1b1b2e;
   --red: #bd2d34;
   --shadow: 0 26px 70px rgba(1, 8, 18, 0.3), 0 4px 12px rgba(1, 8, 18, 0.13);
 }
@@ -36,14 +37,14 @@
 html {
   min-width: 320px;
   min-height: 100%;
-  background: var(--navy);
+  background: var(--chrome);
 }
 
 body {
   min-width: 320px;
   min-height: 100dvh;
   margin: 0;
-  background: var(--navy);
+  background: var(--chrome);
 }
 
 button, input { font: inherit; }
@@ -53,7 +54,7 @@ button:focus-visible,
 input:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid var(--cobalt);
+  outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -71,7 +72,7 @@ summary:focus-visible {
   z-index: -2;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(5, 13, 25, 0.2) 0%, rgba(5, 13, 25, 0.58) 65%, rgba(5, 13, 25, 0.88) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome) 20%, transparent) 0%, color-mix(in srgb, var(--chrome) 58%, transparent) 65%, color-mix(in srgb, var(--chrome) 88%, transparent) 100%),
     url("/scenes/store-dawn.webp") center 42% / cover no-repeat;
   content: "";
   transform: scale(1.01);
@@ -84,7 +85,7 @@ summary:focus-visible {
   inset: 0;
   background:
     radial-gradient(circle at 50% 15%, transparent 10%, rgba(3, 9, 17, 0.12) 66%, rgba(3, 9, 17, 0.48) 100%),
-    linear-gradient(180deg, rgba(5, 13, 25, 0.1), rgba(5, 13, 25, 0.42));
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome) 10%, transparent), color-mix(in srgb, var(--chrome) 42%, transparent));
   content: "";
   pointer-events: none;
 }
@@ -99,7 +100,7 @@ summary:focus-visible {
 .shell--home::after {
   background:
     radial-gradient(circle at 52% 34%, transparent 0 28%, rgba(3, 9, 17, 0.1) 70%, rgba(3, 9, 17, 0.36) 100%),
-    linear-gradient(180deg, rgba(5, 13, 25, 0.02), rgba(5, 13, 25, 0.22));
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome) 2%, transparent), color-mix(in srgb, var(--chrome) 22%, transparent));
 }
 
 .mini {
@@ -115,7 +116,7 @@ summary:focus-visible {
   margin: 0 auto;
   padding: 12px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(6, 14, 26, 0.78);
+  background: var(--chrome);
   box-shadow: 0 8px 28px rgba(2, 8, 18, 0.16);
   backdrop-filter: blur(18px) saturate(115%);
 }
@@ -138,8 +139,8 @@ summary:focus-visible {
   height: 32px;
   flex: 0 0 auto;
   border-radius: 99px;
-  background: var(--orange);
-  box-shadow: 0 0 18px rgba(243, 111, 44, 0.42);
+  background: var(--highlight);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 42%, transparent);
 }
 
 .mini__brand span { display: grid; min-width: 0; }
@@ -153,7 +154,7 @@ summary:focus-visible {
 }
 .mini__brand small {
   margin-top: 1px;
-  color: rgba(255, 255, 255, 0.54);
+  color: color-mix(in srgb, var(--paper) 68%, var(--chrome));
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -217,7 +218,7 @@ summary:focus-visible {
   text-transform: uppercase;
 }
 
-.home-head small { color: #f6aa77; }
+.home-head small { color: var(--highlight); }
 
 .home-head h1,
 .splash-copy h1,
@@ -244,7 +245,7 @@ summary:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 15px;
   color: white;
-  background: rgba(7, 16, 29, 0.68);
+  background: color-mix(in srgb, var(--chrome) 68%, transparent);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
   text-align: center;
   text-shadow: none;
@@ -252,7 +253,7 @@ summary:focus-visible {
 }
 .progress-status span { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: "Fraunces", Georgia, serif; font-size: 1rem; line-height: 1; }
 .progress-status span small { display: inline; margin: 0 0 0 2px; color: rgba(255, 255, 255, 0.55); font-family: "DM Sans", sans-serif; font-size: 0.62rem; }
-.progress-status em { color: #f6aa77; font-size: 0.54rem; font-style: normal; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.progress-status em { color: var(--highlight); font-size: 0.54rem; font-style: normal; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .home-stage {
   position: relative;
@@ -292,7 +293,7 @@ summary:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.62);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.7), transparent 40%),
-    radial-gradient(circle at 16% 14%, rgba(243, 111, 44, 0.09), transparent 34%),
+    radial-gradient(circle at 16% 14%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 34%),
     var(--paper);
   box-shadow: var(--shadow);
 }
@@ -336,7 +337,7 @@ summary:focus-visible {
   padding: 6px 10px;
   border-radius: 999px;
   color: #fff;
-  background: var(--orange-dark);
+  background: var(--primary);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -373,11 +374,11 @@ summary:focus-visible {
 }
 
 .start-meta > span { color: var(--ink-soft); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-.start-meta b { padding: 9px 12px; border-radius: 11px; color: white; background: var(--cobalt); box-shadow: 0 8px 16px rgba(34, 85, 199, 0.2); font-size: 0.72rem; }
+.start-meta b { padding: 9px 12px; border-radius: 11px; color: white; background: var(--accent); box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 20%, transparent); font-size: 0.72rem; }
 .start-meta i { font-style: normal; }
 
 .start-progress { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 4px; background: rgba(24, 32, 48, 0.08); }
-.start-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: linear-gradient(90deg, var(--orange), #ff9b59); }
+.start-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: var(--highlight); }
 
 
 .start-prop {
@@ -392,15 +393,15 @@ summary:focus-visible {
   margin: 2px 4px 0;
   padding: 13px 15px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-left: 3px solid var(--orange);
+  border-left: 3px solid var(--highlight);
   border-radius: 15px;
   color: white;
-  background: rgba(7, 16, 29, 0.7);
+  background: color-mix(in srgb, var(--chrome) 70%, transparent);
   box-shadow: 0 12px 26px rgba(1, 8, 18, 0.18);
   backdrop-filter: blur(16px);
 }
 
-.coach-bubble span { color: #f6aa77; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.coach-bubble span { color: var(--highlight); font-size: 0.64rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .coach-bubble p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.84); font-size: 0.8rem; line-height: 1.48; }
 
 .splash {
@@ -431,7 +432,7 @@ summary:focus-visible {
   padding: 42px 14px 36px 32px;
 }
 
-.splash-copy > small { color: var(--orange-dark); }
+.splash-copy > small { color: var(--accent-ink); }
 .splash-copy h1 { font-size: clamp(2.7rem, 11vw, 5rem); }
 .splash-copy p { margin: 18px 0 27px; color: var(--ink-soft); font-family: "Fraunces", Georgia, serif; font-size: clamp(1rem, 3vw, 1.18rem); line-height: 1.45; }
 
@@ -454,8 +455,8 @@ summary:focus-visible {
   padding: 0 17px;
   border: 0;
   color: white;
-  background: var(--orange);
-  box-shadow: 0 10px 24px rgba(211, 80, 20, 0.25);
+  background: var(--primary);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .splash-prop {
@@ -472,7 +473,7 @@ summary:focus-visible {
 }
 
 .task-progress { position: relative; z-index: 2; height: 5px; background: rgba(24, 32, 48, 0.1); }
-.task-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: linear-gradient(90deg, var(--orange), #ff9b59); transition: width 360ms ease; }
+.task-progress span { display: block; height: 100%; border-radius: 0 999px 999px 0; background: var(--highlight); transition: width 360ms ease; }
 
 .task-card > header,
 .title-row,
@@ -507,8 +508,8 @@ summary:focus-visible {
 .task-card > header em {
   padding: 5px 9px;
   border-radius: 999px;
-  color: var(--cobalt);
-  background: rgba(34, 85, 199, 0.09);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
   font-style: normal;
 }
 
@@ -521,16 +522,16 @@ summary:focus-visible {
 }
 
 .title-row > div { min-width: 0; }
-.title-row small { display: block; margin-bottom: 7px; color: var(--orange-dark); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
+.title-row small { display: block; margin-bottom: 7px; color: var(--accent-ink); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; }
 .task-card h1 { font-size: clamp(2.15rem, 8vw, 4rem); }
 
 .status {
   flex: 0 0 auto;
   padding: 6px 9px;
-  border: 1px solid rgba(243, 111, 44, 0.25);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   border-radius: 999px;
-  color: var(--orange-dark);
-  background: rgba(243, 111, 44, 0.08);
+  color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   font-size: 0.62rem;
   text-transform: uppercase;
 }
@@ -550,15 +551,15 @@ summary:focus-visible {
   width: calc(100% - 48px);
   margin-top: 24px;
   padding: 18px;
-  border: 1px solid rgba(34, 85, 199, 0.13);
+  border: 1px solid color-mix(in srgb, var(--accent) 13%, transparent);
   border-radius: 18px 7px 18px 18px;
   color: var(--ink);
-  background: rgba(34, 85, 199, 0.055);
+  background: color-mix(in srgb, var(--accent) 5.5%, transparent);
 }
 
 .task-location small,
 .move-on-check small {
-  color: var(--cobalt);
+  color: var(--accent);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -589,7 +590,7 @@ summary:focus-visible {
   margin-bottom: 12px;
 }
 .steps-heading > div { display: grid; gap: 3px; }
-.steps-heading small { color: var(--orange-dark); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.steps-heading small { color: var(--accent-ink); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .steps-heading strong { font-family: "Fraunces", Georgia, serif; font-size: 1.3rem; }
 .steps-heading > span { color: var(--ink-soft); font-size: 0.66rem; font-weight: 700; }
 
@@ -623,10 +624,10 @@ summary:focus-visible {
   align-items: center;
   margin-top: 10px;
   padding: 7px 9px;
-  border: 1px solid rgba(34, 85, 199, 0.16);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
   border-radius: 10px;
-  color: var(--cobalt);
-  background: rgba(34, 85, 199, 0.055);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5.5%, transparent);
   font-size: 0.66rem;
   font-weight: 800;
   cursor: pointer;
@@ -636,11 +637,11 @@ summary:focus-visible {
 .decision {
   margin-top: 24px;
   padding: 21px;
-  border: 1px solid rgba(243, 111, 44, 0.18);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-radius: 23px 8px 23px 23px;
-  background: linear-gradient(150deg, rgba(243, 111, 44, 0.1), rgba(255, 255, 255, 0.44));
+  background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 10%, transparent), rgba(255, 255, 255, 0.44));
 }
-.decision-kicker { margin-bottom: 7px; color: var(--orange-dark); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.decision-kicker { margin-bottom: 7px; color: var(--accent-ink); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .decision > strong { display: block; font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; line-height: 1.25; }
 .decision-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 17px; }
 .decision-buttons button {
@@ -652,14 +653,14 @@ summary:focus-visible {
   font-weight: 800;
   cursor: pointer;
 }
-.decision-buttons button.selected { border-color: var(--cobalt); color: white; background: var(--cobalt); box-shadow: 0 9px 18px rgba(34, 85, 199, 0.2); }
+.decision-buttons button.selected { border-color: var(--accent); color: white; background: var(--accent); box-shadow: 0 9px 18px color-mix(in srgb, var(--accent) 20%, transparent); }
 
 .bubble { position: relative; margin-top: 14px; padding: 17px; border-radius: 7px 17px 17px 17px; color: white; background: var(--ink); animation: bubble-in 300ms ease both; }
 .bubble b { font-family: "Fraunces", Georgia, serif; font-size: 1.1rem; }
 .bubble > p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.72); font-size: 0.8rem; line-height: 1.5; }
 .decision-steps { display: grid; gap: 10px; margin: 14px 0 0; padding: 14px 0 0; border-top: 1px solid rgba(255, 255, 255, 0.12); list-style: none; }
 .decision-steps li { display: grid; grid-template-columns: 23px 1fr; gap: 9px; align-items: start; }
-.decision-steps span { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 7px; color: var(--ink); background: #f8aa73; font-size: 0.68rem; font-weight: 800; }
+.decision-steps span { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 7px; color: var(--ink); background: var(--highlight); font-size: 0.68rem; font-weight: 800; }
 .decision-steps p { margin: 1px 0 0; color: rgba(255, 255, 255, 0.86); font-size: 0.78rem; line-height: 1.45; }
 
 .move-on-check { border-color: rgba(25, 112, 74, 0.14); background: rgba(25, 112, 74, 0.055); }
@@ -668,18 +669,18 @@ summary:focus-visible {
 .task-card > aside {
   margin-top: 20px;
   padding: 16px 18px;
-  border-left: 4px solid var(--orange);
+  border-left: 4px solid var(--highlight);
   border-radius: 3px 14px 14px 3px;
-  background: rgba(243, 111, 44, 0.07);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
 }
 .task-card > aside small,
-.contacts > small { color: var(--orange-dark); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
+.contacts > small { color: var(--accent-ink); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
 .task-card > aside p { margin: 5px 0 0; color: var(--ink-soft); font-size: 0.82rem; line-height: 1.5; }
 
 .contacts { margin-top: 24px; }
 .contacts > div { display: grid; gap: 8px; margin-top: 9px; }
 .contacts details { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.34); }
-.contacts summary { padding: 14px 16px; color: var(--cobalt); font-size: 0.82rem; font-weight: 800; cursor: pointer; }
+.contacts summary { padding: 14px 16px; color: var(--accent); font-size: 0.82rem; font-weight: 800; cursor: pointer; }
 .contacts details section { padding: 0 16px 15px; }
 .contacts details b { font-size: 0.7rem; }
 .contacts details p { margin: 5px 0 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
@@ -702,23 +703,23 @@ summary:focus-visible {
 .contact-add,
 .contact-edit {
   min-height: 42px;
-  border: 1px solid rgba(34, 85, 199, 0.16);
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
   border-radius: 11px;
-  color: var(--cobalt);
-  background: rgba(34, 85, 199, 0.055);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5.5%, transparent);
   font-size: 0.72rem;
   font-weight: 800;
   cursor: pointer;
 }
 .contact-add, .contact-edit { min-height: 44px; }
 .contact-edit { border: 0; background: transparent; }
-.contact-phone form { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: rgba(34, 85, 199, 0.055); }
+.contact-phone form { display: grid; gap: 8px; padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 5.5%, transparent); }
 .contact-phone form label { color: var(--ink); font-size: 0.72rem; font-weight: 800; }
 .contact-phone form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid rgba(23, 33, 56, 0.2); border-radius: 10px; color: var(--ink); background: rgba(255, 255, 255, 0.8); }
-.contact-phone form input:focus { border-color: var(--cobalt); outline: 3px solid rgba(34, 85, 199, 0.14); }
+.contact-phone form input:focus { border-color: var(--accent); outline: 3px solid color-mix(in srgb, var(--accent) 14%, transparent); }
 .contact-phone form > div { display: flex; flex-wrap: wrap; gap: 6px; }
 .contact-phone form button { min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: rgba(255, 255, 255, 0.72); font-size: 0.67rem; font-weight: 800; cursor: pointer; }
-.contact-phone form button[type="submit"] { border-color: transparent; color: white; background: var(--cobalt); }
+.contact-phone form button[type="submit"] { border-color: transparent; color: white; background: var(--accent); }
 .contact-phone form button:disabled { cursor: not-allowed; opacity: 0.42; }
 .contact-phone form button.contact-remove { color: var(--red); }
 .contact-phone form > small { color: var(--ink-soft); font-size: 0.63rem; line-height: 1.4; }
@@ -738,7 +739,7 @@ summary:focus-visible {
 .finish__actions button { border: 1px solid var(--line); color: var(--ink); background: rgba(255, 255, 255, 0.5); }
 .guided-footer button.primary,
 .guided-footer button.complete,
-.finish__actions button.primary { border-color: transparent; color: white; background: var(--orange-dark); box-shadow: 0 10px 20px rgba(211, 80, 20, 0.2); }
+.finish__actions button.primary { border-color: transparent; color: white; background: var(--primary); box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 20%, transparent); }
 .guided-footer button.complete { background: #19704a; }
 .guided-footer button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 
@@ -763,10 +764,10 @@ summary:focus-visible {
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
   animation: zoom-in 240ms ease both;
 }
-.panel-zoom small { color: var(--orange-dark); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.panel-zoom small { color: var(--accent-ink); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .panel-zoom h2 { margin-top: 8px; font-size: 2rem; }
 .panel-zoom p { color: var(--ink-soft); line-height: 1.65; }
-.panel-zoom button { width: 100%; margin-top: 9px; border: 0; color: white; background: var(--cobalt); }
+.panel-zoom button { width: 100%; margin-top: 9px; border: 0; color: white; background: var(--accent); }
 
 .finish {
   display: grid;
@@ -894,7 +895,6 @@ summary:focus-visible {
   --radius-md: 18px;
   --radius-lg: 30px;
   --control-height: 48px;
-  --surface-glass: rgba(7, 16, 29, 0.84);
   --surface-raised: rgba(255, 255, 255, 0.62);
   --shadow-soft: 0 12px 30px rgba(1, 8, 18, 0.16);
   --shadow-deep: 0 30px 80px rgba(1, 8, 18, 0.34), 0 5px 16px rgba(1, 8, 18, 0.14);
@@ -916,7 +916,7 @@ summary:focus-visible {
   border-radius: 36px 16px 36px 36px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.78), transparent 42%),
-    radial-gradient(circle at 18% 12%, rgba(243, 111, 44, 0.12), transparent 34%),
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
     var(--paper);
   box-shadow: var(--shadow-deep);
   animation: sheet-in 620ms cubic-bezier(0.17, 0.84, 0.25, 1) both;
@@ -940,7 +940,7 @@ summary:focus-visible {
 
 .name-card__copy > small {
   display: block;
-  color: var(--orange-dark);
+  color: var(--accent-ink);
   font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -988,8 +988,8 @@ summary:focus-visible {
 }
 
 .name-card input:focus {
-  border-color: var(--cobalt);
-  outline: 3px solid rgba(34, 85, 199, 0.13);
+  border-color: var(--accent);
+  outline: 3px solid color-mix(in srgb, var(--accent) 13%, transparent);
 }
 
 .name-card__actions { display: flex; gap: var(--space-2); margin-top: var(--space-1); }
@@ -1003,7 +1003,7 @@ summary:focus-visible {
   font-weight: 800;
   cursor: pointer;
 }
-.name-card__actions button.primary { border-color: transparent; color: white; background: var(--orange-dark); box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23); }
+.name-card__actions button.primary { border-color: transparent; color: white; background: var(--primary); box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 23%, transparent); }
 .name-card__actions button:disabled { cursor: not-allowed; opacity: 0.42; box-shadow: none; }
 .name-card__copy > em { display: block; margin-top: 10px; color: var(--ink-soft); font-size: 0.63rem; font-style: normal; }
 
@@ -1017,7 +1017,7 @@ summary:focus-visible {
   border-radius: 36px 16px 36px 36px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.8), transparent 42%),
-    radial-gradient(circle at 18% 12%, rgba(34, 85, 199, 0.1), transparent 34%),
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
     var(--paper);
   box-shadow: var(--shadow-deep);
   animation: sheet-in 620ms cubic-bezier(0.17, 0.84, 0.25, 1) both;
@@ -1041,7 +1041,7 @@ summary:focus-visible {
 
 .install-card__copy > small {
   display: block;
-  color: var(--orange-dark);
+  color: var(--accent-ink);
   font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -1054,10 +1054,10 @@ summary:focus-visible {
   align-items: center;
   margin-top: 18px;
   padding: 7px 10px;
-  border: 1px solid rgba(34, 85, 199, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 999px;
-  color: var(--cobalt);
-  background: rgba(34, 85, 199, 0.07);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1076,7 +1076,7 @@ summary:focus-visible {
 
 .install-card h1:focus-visible {
   border-radius: 5px;
-  outline: 3px solid var(--cobalt);
+  outline: 3px solid var(--accent);
   outline-offset: 5px;
 }
 
@@ -1100,7 +1100,7 @@ summary:focus-visible {
   display: grid;
   gap: 2px;
   padding: 10px 12px;
-  border: 1px solid rgba(34, 85, 199, 0.11);
+  border: 1px solid color-mix(in srgb, var(--accent) 11%, transparent);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.52);
 }
@@ -1156,8 +1156,8 @@ summary:focus-visible {
   justify-content: center;
   border: 0;
   color: white;
-  background: var(--orange-dark);
-  box-shadow: 0 10px 22px rgba(211, 80, 20, 0.23);
+  background: var(--primary);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 23%, transparent);
 }
 
 .install-card__actions button.primary svg { width: 18px; height: 18px; }
@@ -1198,14 +1198,14 @@ summary:focus-visible {
   border-radius: 28px 12px 28px 28px;
   color: var(--ink);
   background:
-    radial-gradient(circle at 100% 0%, rgba(243, 111, 44, 0.11), transparent 34%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 34%),
     var(--paper);
   box-shadow: var(--shadow-deep);
 }
 
 .reset-card > small {
   display: block;
-  color: var(--orange-dark);
+  color: var(--accent-ink);
   font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -1249,8 +1249,8 @@ summary:focus-visible {
 .reset-card button.primary {
   border-color: transparent;
   color: white;
-  background: var(--orange-dark);
-  box-shadow: 0 10px 24px rgba(217, 84, 26, 0.22);
+  background: var(--primary);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .name-card--editor { width: min(100%, 540px); min-height: 410px; border-radius: 30px 12px 30px 30px; }
@@ -1261,7 +1261,6 @@ summary:focus-visible {
 .mini {
   min-height: 72px;
   padding: 12px var(--space-4);
-  background: linear-gradient(180deg, rgba(7, 16, 29, 0.94), var(--surface-glass));
   box-shadow: 0 12px 34px rgba(2, 8, 18, 0.2);
 }
 
@@ -1294,10 +1293,10 @@ summary:focus-visible {
   height: 44px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(246, 170, 119, 0.32);
+  border: 1px solid color-mix(in srgb, var(--highlight) 32%, transparent);
   border-radius: 999px;
-  color: #ffd1b2;
-  background: rgba(243, 111, 44, 0.13);
+  color: color-mix(in srgb, var(--highlight) 72%, white);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.07), 0 5px 16px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   animation: install-arrive 420ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
@@ -1318,7 +1317,7 @@ summary:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 15px;
   color: white;
-  background: rgba(7, 16, 29, 0.94);
+  background: color-mix(in srgb, var(--chrome) 94%, transparent);
   box-shadow: 0 18px 44px rgba(1, 8, 18, 0.34);
   font-size: 0.76rem;
   font-weight: 800;
@@ -1350,8 +1349,8 @@ summary:focus-visible {
   border-color: rgba(255, 255, 255, 0.76);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.78), transparent 38%),
-    radial-gradient(circle at 100% 7%, rgba(34, 85, 199, 0.08), transparent 25%),
-    radial-gradient(circle at 0 38%, rgba(243, 111, 44, 0.055), transparent 28%),
+    radial-gradient(circle at 100% 7%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 25%),
+    radial-gradient(circle at 0 38%, color-mix(in srgb, var(--accent) 5.5%, transparent), transparent 28%),
     var(--paper);
   box-shadow: var(--shadow-deep), inset 0 1px rgba(255, 255, 255, 0.74);
 }
@@ -1378,10 +1377,10 @@ summary:focus-visible {
 .why-chip {
   min-height: 34px;
   padding: 0 11px;
-  border: 1px solid rgba(34, 85, 199, 0.18);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-radius: 999px;
-  color: var(--cobalt);
-  background: rgba(34, 85, 199, 0.075);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7.5%, transparent);
   font-size: 0.68rem;
   font-weight: 800;
   cursor: pointer;
@@ -1393,7 +1392,7 @@ summary:focus-visible {
   margin-top: 18px;
   padding: 15px 16px;
   border-radius: 17px 7px 17px 17px;
-  background: linear-gradient(145deg, rgba(34, 85, 199, 0.075), rgba(255, 255, 255, 0.34));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 7.5%, transparent), rgba(255, 255, 255, 0.34));
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.7);
 }
 
@@ -1418,9 +1417,9 @@ summary:focus-visible {
 }
 
 .steps > li.is-expanded {
-  border-color: rgba(34, 85, 199, 0.22);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
   background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 10px 24px rgba(23, 33, 56, 0.08), inset 3px 0 var(--cobalt);
+  box-shadow: 0 10px 24px rgba(23, 33, 56, 0.08), inset 3px 0 var(--accent);
 }
 
 .step-toggle {
@@ -1454,7 +1453,7 @@ summary:focus-visible {
 .step-toggle strong,
 .quick-step-row strong { font-size: 0.84rem; line-height: 1.32; }
 .step-toggle small { color: var(--ink-soft); font-size: 0.6rem; font-weight: 700; }
-.step-toggle > i { color: var(--cobalt); font-size: 1.15rem; font-style: normal; font-weight: 600; text-align: center; }
+.step-toggle > i { color: var(--accent); font-size: 1.15rem; font-style: normal; font-weight: 600; text-align: center; }
 
 .step-detail {
   padding: 1px 14px 14px 56px;
@@ -1503,7 +1502,7 @@ summary:focus-visible {
   padding: 22px;
   border: 1px solid rgba(255, 255, 255, 0.76);
   background:
-    radial-gradient(circle at 92% 3%, rgba(34, 85, 199, 0.09), transparent 30%),
+    radial-gradient(circle at 92% 3%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 30%),
     var(--paper);
   box-shadow: var(--shadow-deep);
 }
@@ -1608,7 +1607,7 @@ summary:focus-visible {
 
 .shell--task::before {
   background:
-    linear-gradient(180deg, rgba(5, 13, 25, 0.38) 0%, rgba(5, 13, 25, 0.7) 68%, rgba(5, 13, 25, 0.92) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome) 66%, transparent), var(--chrome)),
     url("/scenes/store-dawn.webp") center 42% / cover no-repeat;
   filter: saturate(0.78);
 }
@@ -1635,7 +1634,6 @@ summary:focus-visible {
 }
 
 .task-card {
-  --ink-soft: #505968;
   max-height: 100%;
   align-self: start;
   padding-bottom: 22px;
@@ -1652,7 +1650,7 @@ summary:focus-visible {
 
 .task-card::before { background-image: none; }
 .task-progress { height: 4px; margin-inline: var(--panel-x); }
-.task-progress span { background: var(--orange); }
+.task-progress span { background: var(--highlight); }
 
 .task-card > header {
   padding-top: 14px;
@@ -1710,7 +1708,7 @@ summary:focus-visible {
 }
 
 .task-location-line > span {
-  color: var(--cobalt);
+  color: var(--accent);
   font-size: 0.61rem;
   font-weight: 850;
   letter-spacing: 0.08em;
@@ -1732,7 +1730,7 @@ summary:focus-visible {
   margin-top: 9px;
   padding: 0;
   border: 0;
-  color: var(--cobalt);
+  color: var(--accent);
   background: transparent;
   font-size: 0.7rem;
   font-weight: 850;
@@ -1786,7 +1784,7 @@ summary:focus-visible {
   border-radius: 12px;
   background: color-mix(in srgb, var(--paper) 66%, white);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--cobalt) 36%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent),
     0 5px 14px rgba(23, 33, 56, 0.09);
 }
 
@@ -1866,7 +1864,7 @@ summary:focus-visible {
   width: 146px;
   height: 78px;
   border-radius: 999px 999px 22px 999px;
-  background: linear-gradient(135deg, rgba(34, 85, 199, 0.08), rgba(255, 115, 40, 0.055));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), color-mix(in srgb, var(--accent-ink) 5.5%, transparent));
   content: "";
 }
 
@@ -1937,10 +1935,10 @@ dialog::backdrop { background: transparent; }
   padding-right: max(10px, env(safe-area-inset-right));
 }
 .mini__brand { min-height: 44px; }
-::selection { color: white; background: var(--cobalt); }
+::selection { color: white; background: var(--accent); }
 .mini__brand i {
   width: 5px;
-  box-shadow: 0 3px 9px color-mix(in srgb, var(--orange) 35%, transparent);
+  box-shadow: 0 3px 9px color-mix(in srgb, var(--highlight) 35%, transparent);
 }
 .mini__brand:focus-visible, .mini__actions button:focus-visible,
 .step-toggle:focus-visible, .contacts summary:focus-visible { outline-offset: -3px; }
@@ -1949,7 +1947,7 @@ dialog::backdrop { background: transparent; }
   position: relative;
   padding: 10px 16px;
   color: var(--paper);
-  background: #713212;
+  background: color-mix(in srgb, var(--red) 62%, var(--ink));
   text-align: center;
   font-size: 0.875rem;
 }
