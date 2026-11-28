@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { tubeNotes } from "../src/till/scenery.js";
 
 const actor = anchor => `[data-till-anchor="${anchor}"]`;
 const viewport = { width: 390, height: 844 };
@@ -160,14 +161,14 @@ test("Till sends the capsule directly to the phone readout and skipping delivers
   await expect(reply).toContainText("Sending your note");
   await expect(page.getByRole("button", { name: /Open task/ })).toBeInViewport({ ratio: 1 });
   await expect(atrium.locator(".atrium-delivery")).not.toHaveAttribute("data-open");
-  await expect(atrium.locator(".atrium-delivery__readout")).toContainText("receiving snacks", { timeout: 8000 });
+  await expect(atrium.locator(".atrium-delivery__readout")).toContainText(tubeNotes[0], { timeout: 8000 });
   await expect(atrium).toHaveAttribute("data-clip-phase", "still");
   await expect(atrium.locator(".atrium-delivery")).toHaveAttribute("data-open", "true");
   await expect(atrium.locator(".atrium-delivery__screen")).toHaveCSS("opacity", "1");
-  await expect(reply).toContainText("receiving snacks");
+  await expect(reply).toContainText(tubeNotes[0]);
   await trigger.click();
   await page.getByRole("button", { name: "Skip video" }).click();
-  await expect(atrium.locator(".atrium-delivery__readout")).toContainText("a working pen");
+  await expect(atrium.locator(".atrium-delivery__readout")).toContainText(tubeNotes[1]);
   await expect(atrium).toHaveAttribute("data-clip-phase", "still");
 });
 
@@ -176,7 +177,7 @@ test("the tube delivers immediately in quiet and reduced-motion modes", async ({
   await openGuide(page, { preference: "quiet" });
   const trigger = page.getByRole("button", { name: "Tube note" });
   await trigger.press("Enter");
-  await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(page.locator("#home-till-reply")).toContainText(tubeNotes[0]);
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.setViewportSize({ width: 320, height: 610 });
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -184,7 +185,7 @@ test("the tube delivers immediately in quiet and reduced-motion modes", async ({
   await page.getByLabel("Till’s movement").selectOption("full");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await trigger.click();
-  await expect(page.locator("#home-till-reply")).toContainText("a working pen");
+  await expect(page.locator("#home-till-reply")).toContainText(tubeNotes[1]);
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   const launch = await page.locator(".atrium-start__action").boundingBox();
@@ -196,7 +197,7 @@ test("the tube delivers immediately in quiet and reduced-motion modes", async ({
   expect(launch.y + launch.height).toBeLessThan(dock.y);
   await page.reload();
   await trigger.click();
-  await expect(page.locator("#home-till-reply")).toContainText("Full-size coffee");
+  await expect(page.locator("#home-till-reply")).toContainText(tubeNotes[2]);
   await page.locator(".start").click();
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
@@ -271,7 +272,7 @@ test("the atrium still and Till’s task help work offline", async ({ page, cont
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   await expect.poll(() => page.locator(".atrium-media__still").evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Tube note" }).click();
-  await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(page.locator("#home-till-reply")).toContainText(tubeNotes[0]);
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
