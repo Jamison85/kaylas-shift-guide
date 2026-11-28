@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import atriumStill from "../till/art/till-atrium.webp";
 import askClip from "../till/art/till-ask.mp4";
 import tubeClip from "../till/art/till-tube-note.mp4";
+import noteArrival from "../till/art/till-note-arrival.webp";
 import welcomeClip from "../till/art/till-welcome.mp4";
 
 const welcomeKey = "before-rush-atrium-welcome";
@@ -9,7 +10,7 @@ const reduceMotion = "(prefers-reduced-motion: reduce)";
 const scenes = {
   welcome: { src: welcomeClip },
   ask: { src: askClip, replyTime: 1.05 },
-  tube: { src: tubeClip, replyTime: 3.25 },
+  tube: { src: tubeClip },
 };
 let welcomedInPage = false;
 
@@ -51,28 +52,32 @@ function AtriumKey({ engaged, children, ...props }) {
   );
 }
 
-export default function HomeAtrium({ showTill, animate, welcome, paused, reply, talking, onTalk, onReceiveTubeNote, taskCard, children }) {
+export default function HomeAtrium({ showTill, animate, welcome, paused, reply, talking, tubeNote, onTalk, onReceiveTubeNote, taskCard, children }) {
   const [phase, setPhase] = useState(() => animate && welcome && !paused && canPlayWelcome() ? "loading" : "still");
   const [clip, setClip] = useState("welcome");
   const [waiting, setWaiting] = useState(false);
+  const [animateArrival, setAnimateArrival] = useState(false);
   const videoRef = useRef(null);
   const pendingReply = useRef(null);
   const active = phase === "loading" || phase === "playing";
   const busy = clip !== "welcome" && phase !== "still";
   const { src, replyTime } = scenes[clip];
 
-  const deliverReply = useCallback(() => {
+  const deliverReply = useCallback((arriving = false) => {
     const request = pendingReply.current;
     if (!request) return;
     pendingReply.current = null;
     setWaiting(false);
     if (request === "ask") onTalk();
-    else onReceiveTubeNote();
+    else {
+      setAnimateArrival(arriving);
+      onReceiveTubeNote();
+    }
   }, [onTalk, onReceiveTubeNote]);
 
-  const finishClip = useCallback(() => {
+  const finishClip = useCallback((arriving = false) => {
     videoRef.current?.pause();
-    deliverReply();
+    deliverReply(arriving);
     setPhase(current => current === "playing" ? "fading" : current === "loading" ? "still" : current);
   }, [deliverReply]);
 
@@ -80,7 +85,10 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
     if (busy || pendingReply.current) return;
     if ((request === "ask" && talking) || !animate || paused || !canPlayClip()) {
       if (request === "ask") onTalk();
-      else onReceiveTubeNote();
+      else {
+        setAnimateArrival(false);
+        onReceiveTubeNote();
+      }
       return;
     }
     videoRef.current?.pause();
@@ -125,28 +133,45 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
       <div className="atrium-window" data-welcome={clip === "welcome" ? phase : "still"}
         data-clip={phase !== "still" ? clip : undefined} data-clip-phase={phase}>
         {showTill && (
-          <div className="atrium-media" aria-hidden="true">
-            <img src={atriumStill} width="720" height="1280" alt="" fetchPriority="high" />
+          <div className="atrium-media">
+            <img className="atrium-media__still" src={atriumStill} width="720" height="1280" alt="" fetchPriority="high" />
+            <div className="atrium-delivery" data-open={Boolean(tubeNote) || undefined}
+              data-arriving={animateArrival && !waiting || undefined}>
+              <div className="atrium-delivery__frame">
+                <img src={noteArrival} width="720" height="1280" alt="" decoding="async" />
+                <span className="atrium-delivery__signal" aria-hidden="true" />
+              </div>
+              {tubeNote && (
+                <div className="atrium-delivery__screen" key={tubeNote}>
+                  {!waiting && (
+                    <div className="atrium-delivery__readout" id="home-till-reply" role="status">
+                      <span>Till</span>
+                      <p>{tubeNote}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             {phase !== "still" && (
-              <video key={clip} ref={videoRef} src={src} autoPlay muted playsInline disablePictureInPicture
+              <video key={clip} ref={videoRef} src={src} aria-hidden="true" autoPlay muted playsInline disablePictureInPicture
                 onPlaying={() => setPhase(current => current === "loading" ? "playing" : current)}
                 onTimeUpdate={replyTime ? event => {
                   if (event.currentTarget.currentTime >= replyTime) deliverReply();
                 } : undefined}
-                onEnded={finishClip} onError={finishClip} />
+                onEnded={() => finishClip(clip === "tube")} onError={() => finishClip()} />
             )}
           </div>
         )}
         {children}
-        {showTill && (
+        {showTill && (!tubeNote || waiting) && (
           <aside className={`atrium-till${talking && !waiting ? " atrium-till--answer" : ""}`} aria-label="Till">
             <div className="atrium-till__reply" id="home-till-reply" role="status">
-              <span>{waiting ? "Till" : reply.from}</span>
-              <p>{waiting ? (clip === "tube" ? "Sending your note…" : "Checking what’s next…") : reply.text}</p>
+              <span>Till</span>
+              <p>{waiting ? (clip === "tube" ? "Sending your note…" : "Checking what’s next…") : reply}</p>
             </div>
           </aside>
         )}
-        {phase === "playing" && <button type="button" className="atrium-skip" onClick={finishClip}>Skip video</button>}
+        {phase === "playing" && <button type="button" className="atrium-skip" onClick={() => finishClip()}>Skip video</button>}
       </div>
       {taskCard}
       {showTill && (

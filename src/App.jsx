@@ -13,6 +13,7 @@ import { tubeNotes } from "./till/scenery";
 const APP_NAME = "Before the Rush";
 const PROFILE_KEY = "before-rush-profile";
 const INSTALL_GATE_KEY = "before-rush-install-gate-skipped";
+const TUBE_NOTE_KEY = "before-rush-tube-note-index";
 const emptyProgress = { completed: [], currentIndex: 0, mode: "learn", answers: {} };
 
 const dateKey = () => {
@@ -34,6 +35,7 @@ function legacyProgress(day) {
 
 const emptyProfile = { name: "" };
 const taskIds = new Set(guideTasks.map((item) => item.id));
+const normalizeTubeNoteIndex = (value) => Number.isSafeInteger(value) && value >= 0 ? value % tubeNotes.length : 0;
 
 function normalizeProgress(value) {
   const completed = Array.isArray(value?.completed) ? value.completed.filter((id) => taskIds.has(id)) : [];
@@ -239,7 +241,7 @@ function DailyGuide({ day }) {
   const [tillEvent, setTillEvent] = useState(null);
   const [homeTalking, setHomeTalking] = useState(false);
   const [homeNote, setHomeNote] = useState(null);
-  const nextTubeNote = useRef(0);
+  const [nextTubeNote, setNextTubeNote] = useLocalStorage(TUBE_NOTE_KEY, 0, normalizeTubeNoteIndex);
   const tillEventNumber = useRef(0);
   const profileTriggerRef = useRef(null);
   const resetTriggerRef = useRef(null);
@@ -304,9 +306,9 @@ function DailyGuide({ day }) {
   }, []);
   const receiveTubeNote = useCallback(() => {
     setHomeTalking(false);
-    setHomeNote(tubeNotes[nextTubeNote.current % tubeNotes.length]);
-    nextTubeNote.current += 1;
-  }, []);
+    setHomeNote(tubeNotes[nextTubeNote]);
+    setNextTubeNote(nextTubeNote + 1);
+  }, [nextTubeNote, setNextTubeNote]);
   const setMode = (nextMode) => setProgress((current) => ({ ...current, mode: nextMode }));
   const setDecision = (taskId, answer) => setProgress((current) => {
     if (current.answers[taskId] === answer) return current;
@@ -423,13 +425,10 @@ function DailyGuide({ day }) {
       <main className="content">
         {screen === "home" && (
           <HomeAtrium showTill={showTill} animate={till.preference === "full"} welcome={!completedCount}
-            paused={behindDialog} talking={homeTalking} onTalk={talkAtHome} onReceiveTubeNote={receiveTubeNote}
-            reply={{
-              from: homeNote ? "Tube note from Till" : "Till",
-              text: homeTalking
-                ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
-                : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom),
-            }}
+            paused={behindDialog} talking={homeTalking} tubeNote={homeNote} onTalk={talkAtHome} onReceiveTubeNote={receiveTubeNote}
+            reply={homeTalking
+              ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
+              : allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom}
             taskCard={(
               <button type="button" className="start atrium-start" onClick={startOrResume}>
                 <span className="atrium-start__copy">
