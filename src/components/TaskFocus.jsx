@@ -236,8 +236,8 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
 
         <section className={`task-intro ${atIntro ? "task-intro--with-till" : ""}`}>
           <div className="task-intro__copy">
-            <p className="task-intro__summary">{task.short}</p>
             <h1 ref={heading} tabIndex={-1}>{displayTitle.replace(/\bRegister 2\b/g, "Register\u00a02")}</h1>
+            <p className="task-intro__summary">{task.short}</p>
           </div>
           <div className="task-intro__support" data-till-surface={atIntro ? spot : undefined}>
             <div className="task-intro__context">
@@ -261,7 +261,7 @@ export default function TaskFocus({ task, index, total, done, mode, decisionAnsw
         </section>
 
         <div className="steps-heading">
-          <div><small>{mode === "learn" ? "Step by step" : "Quick list"}</small><strong>Do these in order</strong></div>
+          <strong>Do these in order</strong>
           <span>{thingsLabel}</span>
         </div>
 
