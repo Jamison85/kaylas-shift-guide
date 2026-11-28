@@ -118,8 +118,18 @@ test("Till answers from the atrium and follows the step the opener selects", asy
   await enableMotion(page);
   await openGuide(page);
   await page.getByRole("button", { name: "Skip video" }).click();
-  await page.getByRole("button", { name: "Talk to Till" }).click();
+  const ask = page.getByRole("button", { name: "Ask Till" });
+  await ask.click();
+  const atrium = page.locator(".atrium-window");
+  await expect(atrium).toHaveAttribute("data-clip", "ask");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "playing");
+  await expect(page.locator("#home-till-reply")).toContainText("Checking what’s next");
   await expect(page.locator("#home-till-reply")).toContainText("Catch anything urgent");
+  await expect(ask).toHaveAttribute("aria-pressed", "true");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "still");
+  await ask.click();
+  await expect(ask).toHaveAttribute("aria-pressed", "false");
+  await expect(atrium.locator("video")).toHaveCount(0);
   await page.locator(".start").click();
   const task = page.locator(actor("task"));
   await expect(task.locator("canvas")).toHaveAttribute("data-ready", "true");
@@ -141,7 +151,7 @@ test("the office clip delivers one note at launch and skipping delivers the next
   await enableMotion(page);
   await openGuide(page, { completed: ["store-walk"] });
   const atrium = page.locator(".atrium-window");
-  const trigger = page.getByRole("button", { name: "Send a tube note" });
+  const trigger = page.getByRole("button", { name: "Tube note" });
   const reply = page.locator("#home-till-reply");
   await trigger.press("Enter");
   await expect(atrium).toHaveAttribute("data-clip", "tube");
@@ -163,7 +173,7 @@ test("the office clip delivers one note at launch and skipping delivers the next
 test("the tube delivers immediately in quiet and reduced-motion modes", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page, { preference: "quiet" });
-  const trigger = page.getByRole("button", { name: "Send a tube note" });
+  const trigger = page.getByRole("button", { name: "Tube note" });
   await trigger.press("Enter");
   await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
@@ -177,8 +187,12 @@ test("the tube delivers immediately in quiet and reduced-motion modes", async ({
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   const launch = await page.locator(".atrium-start__action").boundingBox();
-  const nav = await page.locator(".bottom-nav").boundingBox();
-  expect(launch.y + launch.height).toBeLessThan(nav.y);
+  const controls = page.getByRole("group", { name: "Till controls" });
+  await expect(controls.getByRole("button")).toHaveCount(2);
+  await expect(controls.getByRole("button", { name: "Ask Till" })).toBeInViewport({ ratio: 1 });
+  await expect(trigger).toBeInViewport({ ratio: 1 });
+  const dock = await controls.boundingBox();
+  expect(launch.y + launch.height).toBeLessThan(dock.y);
   await page.locator(".start").click();
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
@@ -246,13 +260,13 @@ test("the atrium still and Till’s task help work offline", async ({ page, cont
   for (const asset of ["/till-atrium-", "/poster-", "/front-", "/actor-"]) {
     expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
   }
-  expect(cacheUrls.some(path => /\/till-(welcome|tube-note)-/.test(path))).toBe(false);
+  expect(cacheUrls.some(path => /\/till-(welcome|tube-note|ask)-/.test(path))).toBe(false);
   await page.evaluate(() => sessionStorage.removeItem("before-rush-atrium-welcome"));
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   await expect.poll(() => page.locator(".atrium-media img").evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
-  await page.getByRole("button", { name: "Send a tube note" }).click();
+  await page.getByRole("button", { name: "Tube note" }).click();
   await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
   await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.locator(".start").click();

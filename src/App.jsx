@@ -117,13 +117,6 @@ function NameCard({ initialName = "", onSave, onCancel, onReset, till, onTillPre
   );
 }
 
-function NavIcon({ name }) {
-  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
-  if (name === "home") return <svg {...common}><path d="M3.5 10.7 12 3.5l8.5 7.2v9a1 1 0 0 1-1 1h-5.2v-6H9.7v6H4.5a1 1 0 0 1-1-1z" /></svg>;
-  if (name === "guide") return <svg {...common}><rect x="4.5" y="3.5" width="15" height="17" rx="2.2" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>;
-  return <svg {...common}><path d="M20 11a8 8 0 1 1-2.3-5.7L20 7.6" /><path d="M20 3.5v4.1h-4.1" /></svg>;
-}
-
 function InstallIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v11" /><path d="m7.5 10 4.5 4.5 4.5-4.5" /><path d="M5 18.5h14" /></svg>;
 }
@@ -305,10 +298,10 @@ function DailyGuide({ day }) {
     }
     setScreen("home");
   };
-  const talkAtHome = () => {
+  const talkAtHome = useCallback(() => {
     setHomeNote(null);
     setHomeTalking(talking => !talking);
-  };
+  }, []);
   const receiveTubeNote = useCallback(() => {
     setHomeTalking(false);
     setHomeNote(tubeNotes[nextTubeNote.current % tubeNotes.length]);
@@ -429,35 +422,35 @@ function DailyGuide({ day }) {
 
       <main className="content">
         {screen === "home" && (
-          <section className={`home ${showTill ? "home--atrium" : "home--plain"}`}>
-            <HomeAtrium showTill={showTill} animate={till.preference === "full"} welcome={!completedCount}
-              paused={behindDialog} talking={homeTalking} onTalk={talkAtHome} onReceiveTubeNote={receiveTubeNote}
-              reply={{
-                from: homeNote ? "Tube note from Till" : "Till",
-                text: homeTalking
-                  ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
-                  : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom),
-              }}>
-              <div className="home-head">
-                {completedCount > 0 && <small>Good morning, {displayName}</small>}
-                <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : `Good morning, ${displayName}`}</h1>
-                <div className="home-head__meta">
-                  {!showTill && <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>}
-                  <div className="progress-status" aria-label={`${percent}% complete`}>
-                    <span>{completedCount}<small>/{guideTasks.length}</small></span>
-                    <em>{percent}% done</em>
-                  </div>
+          <HomeAtrium showTill={showTill} animate={till.preference === "full"} welcome={!completedCount}
+            paused={behindDialog} talking={homeTalking} onTalk={talkAtHome} onReceiveTubeNote={receiveTubeNote}
+            reply={{
+              from: homeNote ? "Tube note from Till" : "Till",
+              text: homeTalking
+                ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
+                : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom),
+            }}
+            taskCard={(
+              <button type="button" className="start atrium-start" onClick={startOrResume}>
+                <span className="atrium-start__copy">
+                  <small>Task {resumeIndex + 1} of {guideTasks.length}</small>
+                  <strong>{nextTask.title}</strong>
+                </span>
+                <span className="atrium-start__action">{allDone ? "Review task" : "Open task"} <span aria-hidden="true">→</span></span>
+              </button>
+            )}>
+            <div className="home-head">
+              {completedCount > 0 && <small>Good morning, {displayName}</small>}
+              <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : `Good morning, ${displayName}`}</h1>
+              <div className="home-head__meta">
+                {!showTill && <p>{allDone ? "You’ve finished today’s opening guide." : completedCount ? `${completedCount} tasks finished. Pick up where you left off.` : wisdom}</p>}
+                <div className="progress-status" aria-label={`${percent}% complete`}>
+                  <span>{completedCount}<small>/{guideTasks.length}</small></span>
+                  <em>{percent}% done</em>
                 </div>
               </div>
-            </HomeAtrium>
-            <button type="button" className="start atrium-start" onClick={startOrResume}>
-              <span className="atrium-start__copy">
-                <small>Task {resumeIndex + 1} of {guideTasks.length}</small>
-                <strong>{nextTask.title}</strong>
-              </span>
-              <span className="atrium-start__action">{allDone ? "Review task" : "Open task"} <span aria-hidden="true">→</span></span>
-            </button>
-          </section>
+            </div>
+          </HomeAtrium>
         )}
 
         {screen === "task" && (
@@ -476,13 +469,6 @@ function DailyGuide({ day }) {
           </section>
         )}
       </main>
-
-      {screen === "home" && (
-        <nav className="bottom-nav" aria-label="Primary navigation">
-          <button type="button" aria-current="page" className={screen === "home" ? "active" : ""} onClick={goHome}><NavIcon name="home" /><small>Home</small></button>
-          <button type="button" onClick={startOrResume}><NavIcon name="guide" /><small>Guide</small></button>
-        </nav>
-      )}
 
       {showProfile && (
         <Modal className="profile-overlay" label="Profile and settings" returnFocus={profileTriggerRef} onClose={() => setShowProfile(false)}>

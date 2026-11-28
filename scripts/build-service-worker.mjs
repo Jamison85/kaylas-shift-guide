@@ -26,7 +26,7 @@ for (const file of files) {
 }
 
 const cacheName = `before-rush-${revision.digest("hex").slice(0, 12)}`;
-const optionalHomeClip = /\/till-(?:welcome|tube-note)-[^/]+\.mp4$/;
+const optionalHomeClip = /\/till-(?:welcome|tube-note|ask)-[^/]+\.mp4$/;
 const precacheUrls = [
   basePath,
   ...files.map((file) => `${basePath}${relative(outputDirectory, file).split(sep).join("/")}`)
