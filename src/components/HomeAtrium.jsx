@@ -4,8 +4,9 @@ import askClip from "../till/art/till-ask.mp4";
 import tubeClip from "../till/art/till-tube-note.mp4";
 import noteArrival from "../till/art/till-note-arrival.webp";
 import welcomeClip from "../till/art/till-welcome.mp4";
+import workspaceStill from "../till/art/till-workspace.webp";
 
-const welcomeKey = "before-rush-atrium-welcome";
+const welcomeKey = "before-rush-workspace-welcome";
 const reduceMotion = "(prefers-reduced-motion: reduce)";
 const scenes = {
   welcome: { src: welcomeClip },
@@ -55,12 +56,13 @@ function AtriumKey({ engaged, children, ...props }) {
 export default function HomeAtrium({ showTill, animate, welcome, paused, reply, talking, tubeNote, onTalk, onReceiveTubeNote, taskCard, children }) {
   const [phase, setPhase] = useState(() => animate && welcome && !paused && canPlayWelcome() ? "loading" : "still");
   const [clip, setClip] = useState("welcome");
+  const [workspaceReached, setWorkspaceReached] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [animateArrival, setAnimateArrival] = useState(false);
   const videoRef = useRef(null);
   const pendingReply = useRef(null);
   const active = phase === "loading" || phase === "playing";
-  const busy = clip !== "welcome" && phase !== "still";
+  const busy = clip !== "welcome" && (phase !== "still" || animateArrival);
   const { src, replyTime } = scenes[clip];
 
   const deliverReply = useCallback((arriving = false) => {
@@ -99,14 +101,19 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
   };
 
   useEffect(() => {
-    if (!active) return;
-    if (clip === "welcome") {
+    if (!active && !animateArrival) return;
+    if (active && clip === "welcome") {
       welcomedInPage = true;
       try { sessionStorage.setItem(welcomeKey, "seen"); } catch { /* Keep the in-page fallback. */ }
+      const still = new Image();
+      still.src = workspaceStill;
     }
     const motion = window.matchMedia(reduceMotion);
     const checkVisibility = () => {
-      if (document.hidden || motion.matches || paused || !animate) finishClip();
+      if (document.hidden || motion.matches || paused || !animate) {
+        if (active) finishClip();
+        if (animateArrival) setAnimateArrival(false);
+      }
     };
     checkVisibility();
     motion.addEventListener("change", checkVisibility);
@@ -115,7 +122,7 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
       motion.removeEventListener("change", checkVisibility);
       document.removeEventListener("visibilitychange", checkVisibility);
     };
-  }, [active, animate, clip, paused, finishClip]);
+  }, [active, animate, animateArrival, clip, paused, finishClip]);
 
   useEffect(() => {
     if (phase === "loading") {
@@ -134,17 +141,26 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
         data-clip={phase !== "still" ? clip : undefined} data-clip-phase={phase}>
         {showTill && (
           <div className="atrium-media">
-            <img className="atrium-media__still" src={atriumStill} width="720" height="1280" alt="" fetchPriority="high" />
+            <img className={`atrium-media__still${workspaceReached ? " atrium-media__still--workspace" : ""}`}
+              src={workspaceReached ? workspaceStill : atriumStill}
+              width="720" height="1280" alt="" fetchPriority="high" />
             <div className="atrium-delivery" data-open={Boolean(tubeNote) || undefined}
               data-arriving={animateArrival && !waiting || undefined}>
               <div className="atrium-delivery__frame">
                 <img src={noteArrival} width="720" height="1280" alt="" decoding="async" />
-                <span className="atrium-delivery__signal" aria-hidden="true" />
+                <div className="atrium-delivery__traffic" aria-hidden="true">
+                  <span className="atrium-delivery__signal atrium-delivery__signal--tube" />
+                  <span className="atrium-delivery__signal atrium-delivery__signal--upper" />
+                  <span className="atrium-delivery__signal atrium-delivery__signal--side" />
+                  <span className="atrium-delivery__signal atrium-delivery__signal--lower" />
+                  <span className="atrium-delivery__scan" />
+                </div>
               </div>
               {tubeNote && (
                 <div className="atrium-delivery__screen" key={tubeNote}>
                   {!waiting && (
-                    <div className="atrium-delivery__readout" id="home-till-reply" role="status">
+                    <div className="atrium-delivery__readout" id="home-till-reply" role="status"
+                      onAnimationEnd={() => setAnimateArrival(false)}>
                       <span>Till</span>
                       <p>{tubeNote}</p>
                     </div>
@@ -158,7 +174,10 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
                 onTimeUpdate={replyTime ? event => {
                   if (event.currentTarget.currentTime >= replyTime) deliverReply();
                 } : undefined}
-                onEnded={() => finishClip(clip === "tube")} onError={() => finishClip()} />
+                onEnded={() => {
+                  if (clip === "welcome") setWorkspaceReached(true);
+                  finishClip(clip === "tube");
+                }} onError={() => finishClip()} />
             )}
           </div>
         )}
@@ -172,6 +191,7 @@ export default function HomeAtrium({ showTill, animate, welcome, paused, reply, 
           </aside>
         )}
         {phase === "playing" && <button type="button" className="atrium-skip" onClick={() => finishClip()}>Skip video</button>}
+        {animateArrival && <button type="button" className="atrium-skip atrium-skip--delivery" onClick={() => setAnimateArrival(false)}>Skip delivery</button>}
       </div>
       {taskCard}
       {showTill && (

@@ -39,7 +39,7 @@ test("reduced motion shows the atrium still and keeps the launch control usable"
   await expect(page.getByRole("heading", { name: "Store Walk" })).toBeVisible();
 });
 
-test("the welcome plays muted once and fades back to the atrium", async ({ page }) => {
+test("the welcome plays muted once and holds on Till’s workspace", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page);
   const atrium = page.locator(".atrium-window");
@@ -51,9 +51,13 @@ test("the welcome plays muted once and fades back to the atrium", async ({ page 
   await expect(atrium).toHaveAttribute("data-welcome", "fading");
   await expect(atrium).toHaveAttribute("data-welcome", "still");
   await expect(video).toHaveCount(0);
+  const still = atrium.locator(".atrium-media__still");
+  await expect(still).toHaveAttribute("src", /till-workspace-/);
+  await expect.poll(() => still.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await page.reload();
   await expect(atrium).toHaveAttribute("data-welcome", "still");
   await expect(video).toHaveCount(0);
+  await expect(still).toHaveAttribute("src", /till-atrium-/);
 });
 
 test("the opener can leave mid-clip and Till performs distinct actions during the shift", async ({ page }) => {
@@ -164,6 +168,9 @@ test("Till sends the capsule directly to the phone readout and skipping delivers
   await expect(atrium.locator(".atrium-delivery__readout")).toContainText(tubeNotes[0], { timeout: 8000 });
   await expect(atrium).toHaveAttribute("data-clip-phase", "still");
   await expect(atrium.locator(".atrium-delivery")).toHaveAttribute("data-open", "true");
+  await expect(atrium.locator(".atrium-delivery__screen")).toHaveCSS("opacity", "0");
+  await expect(page.getByRole("button", { name: "Skip delivery" })).toBeVisible();
+  await expect(trigger).toBeDisabled();
   await expect(atrium.locator(".atrium-delivery__screen")).toHaveCSS("opacity", "1");
   await expect(reply).toContainText(tubeNotes[0]);
   await trigger.click();
@@ -266,7 +273,7 @@ test("the atrium still and Till’s task help work offline", async ({ page, cont
     expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
   }
   expect(cacheUrls.some(path => /\/till-(welcome|tube-note|ask)-/.test(path))).toBe(false);
-  await page.evaluate(() => sessionStorage.removeItem("before-rush-atrium-welcome"));
+  await page.evaluate(() => sessionStorage.removeItem("before-rush-workspace-welcome"));
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");

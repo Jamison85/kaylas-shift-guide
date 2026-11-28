@@ -59,6 +59,10 @@
   transition-duration: 160ms;
 }
 
+[data-clip="welcome"] .atrium-media video,
+[data-clip="welcome"] .atrium-media__still,
+.atrium-media__still--workspace { object-position: center 52%; }
+
 [data-clip="ask"] .atrium-media video { object-position: center 12%; }
 
 .atrium-media::after {
@@ -74,6 +78,7 @@
 }
 
 .atrium-delivery {
+  --phone-travel: 3250ms;
   position: absolute;
   z-index: 1;
   inset: 0;
@@ -91,7 +96,7 @@
   width: max(100%, 56.25cqh);
   aspect-ratio: 9 / 16;
   transform: translate(-50%, -49%);
-  transform-origin: 78% 23%;
+  transform-origin: 67% 37%;
 }
 
 .atrium-delivery__frame img { display: block; width: 100%; height: 100%; }
@@ -121,36 +126,94 @@
 .atrium-delivery__readout span { color: #8bcf74; font-size: 0.73rem; font-weight: 700; letter-spacing: 0.18em; }
 .atrium-delivery__readout p { margin: 0; font-size: clamp(1.12rem, 5.2vw, 1.72rem); font-weight: 650; line-height: 1.34; }
 
+.atrium-delivery__traffic { position: absolute; inset: 0; }
+
 .atrium-delivery__signal {
+  --signal-light: #b7ff77;
   position: absolute;
-  left: 89%;
-  top: 9%;
-  width: 14px;
-  height: 24px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   opacity: 0;
-  background: radial-gradient(ellipse, #f7ffe6, #a9f17b 34%, transparent 72%);
-  box-shadow: 0 0 14px 2px #b7ff77;
+  background: radial-gradient(ellipse, #f7ffe6, var(--signal-light) 34%, transparent 72%);
+  box-shadow: 0 0 14px 2px var(--signal-light);
+  transform: translate(-50%, -50%);
 }
 
-.atrium-delivery[data-open][data-arriving] .atrium-delivery__frame { animation: phone-entry 1280ms cubic-bezier(0.18, 0.68, 0.28, 1) both; }
-.atrium-delivery[data-open][data-arriving] .atrium-delivery__signal { animation: phone-signal 1280ms linear both; }
-.atrium-delivery[data-open][data-arriving] .atrium-delivery__screen { animation: phone-surface 300ms ease-out 1280ms both; }
-.atrium-delivery[data-open][data-arriving] .atrium-delivery__readout { animation: phone-readout 320ms ease-out 1460ms both; }
+.atrium-delivery__signal--tube { width: 14px; height: 25px; }
+.atrium-delivery__signal--upper { --signal-light: #b2f9cb; }
+.atrium-delivery__signal--lower { --signal-light: #fbbc68; width: 13px; height: 7px; }
+.atrium-delivery__signal--side { --signal-light: #b2f9cb; width: 6px; height: 15px; }
+
+.atrium-delivery__scan {
+  position: absolute;
+  top: 36%;
+  right: 7.5%;
+  left: 7.5%;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, #bcff95 46%, transparent);
+  box-shadow: 0 -6px 20px rgba(183, 255, 119, 0.3);
+}
+
+[data-arriving] .atrium-delivery__frame { animation: phone-entry var(--phone-travel) ease-in-out both; }
+[data-arriving] .atrium-delivery__signal--tube { animation: phone-tube var(--phone-travel) linear both; }
+[data-arriving] .atrium-delivery__signal--upper { animation: phone-upper-traces var(--phone-travel) linear both; }
+[data-arriving] .atrium-delivery__signal--lower { animation: phone-lower-traces var(--phone-travel) linear both; }
+[data-arriving] .atrium-delivery__signal--side { animation: phone-side-traces var(--phone-travel) linear both; }
+[data-arriving] .atrium-delivery__scan { animation: phone-scan var(--phone-travel) ease-in-out both; }
+[data-arriving] .atrium-delivery__screen { animation: phone-surface 300ms ease-out var(--phone-travel) both; }
+[data-arriving] .atrium-delivery__readout { animation: phone-readout 320ms ease-out calc(var(--phone-travel) + 180ms) both; }
 
 @keyframes phone-entry {
-  from { transform: translate(-50%, -49%) scale(1.34); }
+  from { transform: translate(-53%, -46%) scale(1.29); }
+  38% { transform: translate(-52%, -48%) scale(1.14); }
+  69% { transform: translate(-49%, -52%) scale(1.13); }
   to { transform: translate(-50%, -49%) scale(1); }
 }
 
-@keyframes phone-signal {
-  0% { left: 91%; top: 7%; opacity: 0; rotate: 32deg; }
-  17% { left: 82%; top: 13%; opacity: 0.9; rotate: 27deg; }
-  35% { left: 73%; top: 23%; opacity: 1; rotate: 5deg; }
-  53% { left: 76%; top: 32%; opacity: 0; rotate: -10deg; }
-  65% { left: 84%; top: 60%; opacity: 0; rotate: 16deg; }
-  79% { left: 77%; top: 66%; opacity: 0.92; rotate: 26deg; }
-  100% { left: 68%; top: 76%; opacity: 0; rotate: 20deg; }
+@keyframes phone-tube {
+  0%, 7% { left: 91%; top: 10%; opacity: 0; rotate: 33deg; }
+  15% { left: 80%; top: 16%; opacity: 1; rotate: 30deg; }
+  25% { left: 74%; top: 25%; opacity: 1; rotate: -4deg; }
+  33% { left: 77%; top: 33%; opacity: 0; rotate: -11deg; }
+  38% { left: 84%; top: 60%; opacity: 0; rotate: 17deg; }
+  46% { left: 79%; top: 66%; opacity: 1; rotate: 26deg; }
+  54% { left: 69%; top: 75%; opacity: 0.9; rotate: 18deg; }
+  60%, 100% { left: 66%; top: 82%; opacity: 0; rotate: 9deg; }
+}
+
+@keyframes phone-upper-traces {
+  0%, 25% { left: 19%; top: 32%; opacity: 0; }
+  32% { left: 26%; top: 27%; opacity: 0.9; }
+  43% { left: 46%; top: 27%; opacity: 0.94; }
+  54% { left: 63%; top: 26%; opacity: 0.8; }
+  61% { left: 67%; top: 16%; opacity: 0.92; }
+  72%, 100% { left: 91%; top: 16%; opacity: 0; }
+}
+
+@keyframes phone-lower-traces {
+  0%, 45% { left: 65%; top: 82%; opacity: 0; }
+  53% { left: 52%; top: 79%; opacity: 0.93; }
+  62% { left: 52%; top: 68%; opacity: 0.85; }
+  73% { left: 29%; top: 66%; opacity: 0.98; }
+  81% { left: 20%; top: 62%; opacity: 0.94; }
+  91%, 100% { left: 10%; top: 61%; opacity: 0; }
+}
+
+@keyframes phone-side-traces {
+  0%, 55% { left: 96%; top: 28%; opacity: 0; }
+  64% { left: 96%; top: 37%; opacity: 0.85; }
+  75% { left: 96%; top: 59%; opacity: 0.82; }
+  84% { left: 90%; top: 64%; opacity: 0.7; }
+  94%, 100% { left: 72%; top: 65%; opacity: 0; }
+}
+
+@keyframes phone-scan {
+  0%, 65% { top: 34%; opacity: 0; }
+  72% { top: 36%; opacity: 0.65; }
+  92% { top: 55%; opacity: 0.68; }
+  97%, 100% { top: 59%; opacity: 0; }
 }
 
 @keyframes phone-readout {
@@ -278,7 +341,8 @@
 }
 
 [data-clip="tube"] .atrium-skip,
-[data-clip="ask"] .atrium-skip { right: auto; left: 12px; }
+[data-clip="ask"] .atrium-skip,
+.atrium-skip--delivery { right: auto; left: 12px; }
 
 .start.atrium-start {
   display: flex;
@@ -336,7 +400,7 @@
 @media (prefers-reduced-motion: reduce) {
   .atrium-media video,
   .atrium-key__face { transition: none; }
-  .atrium-delivery[data-open][data-arriving] :is(.atrium-delivery__frame, .atrium-delivery__signal, .atrium-delivery__screen, .atrium-delivery__readout) { animation: none; }
+  [data-arriving] :is(.atrium-delivery__frame, .atrium-delivery__signal, .atrium-delivery__scan, .atrium-delivery__screen, .atrium-delivery__readout) { animation: none; }
 }
 
 @media (max-height: 560px) {

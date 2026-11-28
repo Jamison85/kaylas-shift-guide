@@ -24,7 +24,7 @@ Mobile-first working/training guide for any opening employee at **Casey's Store 
 18. LTO reporting day is no longer a current task.
 19. Keep the app installable as a PWA. Preserve the manifest, generated offline service worker, Android icons, and the unobtrusive header install control.
 20. Fresh, uninstalled phone visitors see a Home-screen invitation before name setup. Desktop visitors and standalone launches skip it, and **Continue in browser** must always remain available so installation can never block the workflow.
-21. The atrium clip plays once on the first Home visit of a session with full motion and a fresh shift. Home and its task button are available immediately. The atrium stays still offline and in reduced-motion or quiet mode.
+21. The welcome clip plays once on the first Home visit of a session with full motion and a fresh shift. It follows Till from the atrium into his workspace and holds the final shot of him at his desk. Home and its task button are available immediately. The atrium stays still offline and in reduced-motion or quiet mode.
 22. The Tube note button starts with Till writing and sending the note from his workspace, follows the capsule into the phone and brings the live message to the app screen. It delivers the message immediately without motion or when the clip is skipped or fails to play. The next message in the 40-note rotation is saved on the device.
 23. Ask Till plays a close-up greeting and explains the next task. It shares the bottom control panel with Tube note. The task card above the panel remains available during either clip.
 
