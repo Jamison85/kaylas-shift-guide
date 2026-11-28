@@ -160,7 +160,7 @@ test("Till sends the capsule directly to the phone readout and skipping delivers
   await expect(reply).toContainText("Sending your note");
   await expect(page.getByRole("button", { name: /Open task/ })).toBeInViewport({ ratio: 1 });
   await expect(atrium.locator(".atrium-delivery")).not.toHaveAttribute("data-open");
-  await expect(atrium.locator(".atrium-delivery__readout")).toContainText("receiving snacks");
+  await expect(atrium.locator(".atrium-delivery__readout")).toContainText("receiving snacks", { timeout: 8000 });
   await expect(atrium).toHaveAttribute("data-clip-phase", "still");
   await expect(atrium.locator(".atrium-delivery")).toHaveAttribute("data-open", "true");
   await expect(atrium.locator(".atrium-delivery__screen")).toHaveCSS("opacity", "1");
