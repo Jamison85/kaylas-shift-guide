@@ -137,16 +137,44 @@ test("Till answers from the atrium and follows the step the opener selects", asy
   await expect(task.locator("canvas")).toHaveCount(0);
 });
 
-test("the tube delivers a note with touch or keyboard and works with reduced motion", async ({ page }) => {
+test("the office clip delivers one note at launch and skipping delivers the next note", async ({ page }) => {
+  await enableMotion(page);
+  await openGuide(page, { completed: ["store-walk"] });
+  const atrium = page.locator(".atrium-window");
+  const trigger = page.getByRole("button", { name: "Send a tube note" });
+  const reply = page.locator("#home-till-reply");
+  await trigger.press("Enter");
+  await expect(atrium).toHaveAttribute("data-clip", "tube");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "playing");
+  await expect(trigger).toBeDisabled();
+  await expect(reply).toContainText("Sending your note");
+  await expect(page.getByRole("button", { name: /Open task/ })).toBeInViewport({ ratio: 1 });
+  await atrium.locator("video").evaluate(media => { media.currentTime = 3.4; });
+  await expect(reply).toContainText("receiving snacks");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "playing");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "still");
+  await expect(reply).toContainText("receiving snacks");
+  await trigger.click();
+  await page.getByRole("button", { name: "Skip video" }).click();
+  await expect(reply).toContainText("a working pen");
+  await expect(atrium).toHaveAttribute("data-clip-phase", "still");
+});
+
+test("the tube delivers immediately in quiet and reduced-motion modes", async ({ page }) => {
   await enableMotion(page);
   await openGuide(page, { preference: "quiet" });
   const trigger = page.getByRole("button", { name: "Send a tube note" });
   await trigger.press("Enter");
   await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.setViewportSize({ width: 320, height: 610 });
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.locator(".profile-button").click();
+  await page.getByLabel("Till’s movement").selectOption("full");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await trigger.click();
   await expect(page.locator("#home-till-reply")).toContainText("a working pen");
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   const launch = await page.locator(".atrium-start__action").boundingBox();
   const nav = await page.locator(".bottom-nav").boundingBox();
@@ -218,12 +246,15 @@ test("the atrium still and Till’s task help work offline", async ({ page, cont
   for (const asset of ["/till-atrium-", "/poster-", "/front-", "/actor-"]) {
     expect(cacheUrls.some(path => path.includes(asset))).toBe(true);
   }
-  expect(cacheUrls.some(path => path.includes("/till-welcome-"))).toBe(false);
+  expect(cacheUrls.some(path => /\/till-(welcome|tube-note)-/.test(path))).toBe(false);
   await page.evaluate(() => sessionStorage.removeItem("before-rush-atrium-welcome"));
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator(".atrium-window")).toHaveAttribute("data-welcome", "still");
   await expect.poll(() => page.locator(".atrium-media img").evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Send a tube note" }).click();
+  await expect(page.locator("#home-till-reply")).toContainText("receiving snacks");
+  await expect(page.locator(".atrium-media video")).toHaveCount(0);
   await page.locator(".start").click();
   await page.locator(".task-why-link").click();
   await expect(page.locator(actor("help")).locator("canvas")).toHaveAttribute("data-ready", "true");

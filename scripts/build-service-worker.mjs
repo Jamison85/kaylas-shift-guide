@@ -26,17 +26,17 @@ for (const file of files) {
 }
 
 const cacheName = `before-rush-${revision.digest("hex").slice(0, 12)}`;
-const optionalWelcome = /\/till-welcome-[^/]+\.mp4$/;
+const optionalHomeClip = /\/till-(?:welcome|tube-note)-[^/]+\.mp4$/;
 const precacheUrls = [
   basePath,
   ...files.map((file) => `${basePath}${relative(outputDirectory, file).split(sep).join("/")}`)
-    .filter((url) => !optionalWelcome.test(url)),
+    .filter((url) => !optionalHomeClip.test(url)),
 ];
 
 const worker = `const CACHE_NAME = ${JSON.stringify(cacheName)};
 const CACHE_PREFIX = "before-rush-";
 const BASE_PATH = ${JSON.stringify(basePath)};
-const OPTIONAL_WELCOME = ${optionalWelcome};
+const OPTIONAL_HOME_CLIP = ${optionalHomeClip};
 const PRECACHE_URLS = ${JSON.stringify(precacheUrls, null, 2)};
 self.addEventListener("install", (event) => {
   const requests = PRECACHE_URLS.map((url) => new Request(url, { cache: "reload" }));
@@ -57,8 +57,8 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE_PATH)) return;
-  // The atrium still is available offline. The optional clip streams with native byte ranges.
-  if (OPTIONAL_WELCOME.test(url.pathname)) return;
+  // The atrium still is available offline. The optional clips stream with native byte ranges.
+  if (OPTIONAL_HOME_CLIP.test(url.pathname)) return;
 
   // Keep the shell and its hashed assets on the same release for this shift.
   const path = event.request.mode === "navigate" ? BASE_PATH : url.pathname;

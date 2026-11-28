@@ -59,7 +59,7 @@
   transition: opacity 420ms ease;
 }
 
-[data-welcome="playing"] .atrium-media video {
+[data-clip-phase="playing"] .atrium-media video {
   opacity: 1;
   transition-duration: 160ms;
 }
@@ -118,6 +118,7 @@
 .atrium-till__actions button { flex: 1; padding: 4px; }
 .atrium-till__actions button + button { border-left: 1px solid rgba(255, 255, 255, 0.14); }
 .atrium-till__actions button[aria-pressed="true"] { color: #f6aa77; }
+.atrium-till__actions button:disabled { opacity: 0.55; cursor: default; }
 
 .atrium-skip {
   position: absolute;
@@ -128,6 +129,8 @@
   border-radius: 999px;
   background: rgba(9, 17, 29, 0.91);
 }
+
+[data-clip="tube"] .atrium-skip { right: auto; left: 12px; }
 
 .start.atrium-start {
   display: flex;

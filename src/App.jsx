@@ -430,7 +430,14 @@ function DailyGuide({ day }) {
       <main className="content">
         {screen === "home" && (
           <section className={`home ${showTill ? "home--atrium" : "home--plain"}`}>
-            <HomeAtrium showTill={showTill} animate={till.preference === "full" && !completedCount} paused={behindDialog}>
+            <HomeAtrium showTill={showTill} animate={till.preference === "full"} welcome={!completedCount}
+              paused={behindDialog} talking={homeTalking} onTalk={talkAtHome} onReceiveTubeNote={receiveTubeNote}
+              reply={{
+                from: homeNote ? "Tube note from Till" : "Till",
+                text: homeTalking
+                  ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
+                  : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom),
+              }}>
               <div className="home-head">
                 {completedCount > 0 && <small>Good morning, {displayName}</small>}
                 <h1>{allDone ? "Morning guide complete." : completedCount ? "Keep it moving." : `Good morning, ${displayName}`}</h1>
@@ -442,20 +449,6 @@ function DailyGuide({ day }) {
                   </div>
                 </div>
               </div>
-              {showTill && (
-                <aside className="atrium-till" aria-label="Till">
-                  <div className="atrium-till__reply" id="home-till-reply" role="status">
-                    <span>{homeNote ? "Tube note from Till" : "Till"}</span>
-                    <p>{homeTalking
-                      ? allDone ? "You’ve finished today’s opening guide. I’ll be here for the next open." : nextTask.purpose
-                      : homeNote ?? (allDone ? closing : completedCount ? "You're back. I kept your place." : wisdom)}</p>
-                  </div>
-                  <div className="atrium-till__actions">
-                    <button type="button" onClick={talkAtHome} aria-label="Talk to Till" aria-controls="home-till-reply" aria-pressed={homeTalking}>Ask Till</button>
-                    <button type="button" onClick={receiveTubeNote} aria-label="Send a tube note" aria-controls="home-till-reply">Tube note</button>
-                  </div>
-                </aside>
-              )}
             </HomeAtrium>
             <button type="button" className="start atrium-start" onClick={startOrResume}>
               <span className="atrium-start__copy">
